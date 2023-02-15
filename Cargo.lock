@@ -49,6 +49,7 @@ name = "crabe_io"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "crabe_protocol",
  "prost",
 ]
 

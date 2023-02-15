@@ -10,5 +10,5 @@
 
 /// TODO: Make network documentation
 pub mod network;
-/// Modules which some constants related to the package `crabe_io`.
+/// Modules which some constants related to the package `CRAbE_io`.
 mod constants;
