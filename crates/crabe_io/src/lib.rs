@@ -1,14 +1,14 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+//! # CRAbE_IO
+//!
+//! This crate handles all I/O operations on the project such as :
+//! - USB Serial communication (CRAbE <-> MainBoard)
+//! - UDP Socket communication (CRAbE <-> Vision / Simulation / Python)
+//! - Websockets communication (CRAbE <-> Viewer)
+//!
+//! This crate produce some tools to debug I/O operations.
+//! - `vision_log` : Log packets receive of the vision project.
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+/// TODO: Make network documentation
+pub mod network;
+/// Modules which some constants related to the package `crabe_io`.
+mod constants;

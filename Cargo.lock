@@ -47,6 +47,10 @@ version = "0.1.0"
 [[package]]
 name = "crabe_io"
 version = "0.1.0"
+dependencies = [
+ "bytes",
+ "prost",
+]
 
 [[package]]
 name = "crabe_navigation"
