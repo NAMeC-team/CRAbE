@@ -9,7 +9,7 @@ fn compile_packet(filename: &str, protos: &[impl AsRef<Path>], includes: &[impl 
         .default_package_filename(filename)
         .out_dir(PathBuf::from("src/protobuf"))
         .compile_protos(protos, includes)
-        .expect(format!("Failed to compile {} protobuf files", filename).as_str());
+        .unwrap_or_else(|_| panic!("Failed to compile {} protobuf files", filename));
 }
 
 fn main() {
