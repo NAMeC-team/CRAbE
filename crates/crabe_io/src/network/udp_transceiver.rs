@@ -7,7 +7,6 @@ use crate::constants::BUFFER_SIZE;
 pub struct UDPTransceiver {
     socket: UdpSocket,
     buffer: [u8; BUFFER_SIZE],
-    // port: u32,
 }
 
 /// TODO:
@@ -32,22 +31,29 @@ impl UDPTransceiver {
     pub fn send<T: prost::Message+ Default>(&self, packet: T) {
         let mut buf = Vec::new();
         buf.reserve(packet.encoded_len());
-        packet.encode(&mut buf).unwrap();
+        if let Err(e) = packet.encode(&mut buf) {
+            println!("{}", e)
+        }
 
-        self.socket
-            .send(
-                &buf[0..packet.encoded_len()],
-                // format!("127.0.0.1:{}", self.port),
-            )
-            .expect("couldn't send data");
+        if let Err(e) = self.socket.send(&buf[0..packet.encoded_len()]) {
+            println!("Couldn't send data {}", e);
+        }
     }
 
     pub fn receive<T: prost::Message + Default>(&mut self) -> Option<T> {
         match self.socket.recv(&mut self.buffer) {
             Ok(p_size) => {
-                Some(T::decode(Cursor::new(&self.buffer[0..p_size])).expect("Error - Decoding the packet"))
+                match T::decode(Cursor::new(&self.buffer[0..p_size])) {
+                    Ok(packet) => {
+                        Some(packet)
+                    }
+                    Err(e) => {
+                        println!("{}", e);
+                        None
+                    }
+                }
             }
-            Err(e) => {
+            Err(_e) => {
                 // error!("couldn't recv from socket, err: {}", e);
                 None
             }
