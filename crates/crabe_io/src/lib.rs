@@ -10,5 +10,5 @@
 
 /// Modules which some constants related to the package `CRAbE_io`.
 mod constants;
-/// TODO: Make network documentation
+/// The `network` module provides a set of types and functions for network communication.
 pub mod network;
