@@ -25,7 +25,7 @@ fn create_commands() -> RobotControl {
 }
 
 fn main() {
-    let mut udp_transceiver = UDPTransceiver::new(10301);
+    let mut udp_transceiver = UDPTransceiver::new("127.0.0.1", 10301);
 
     loop {
         udp_transceiver.send::<RobotControl>(create_commands());

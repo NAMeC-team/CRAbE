@@ -12,26 +12,26 @@ pub struct MulticastUDPReceiver {
 }
 
 impl MulticastUDPReceiver {
-    /// Creates a new Multicast UDP Receiver that joins the IPv4 multicast group.
+    /// Creates a new `MulticastUDPReceiver` that joins an IPv4 multicast group.
     ///
     /// # Arguments
     ///
-    /// * `ip`: The IP address of the Multicast UDP Receiver, in the form of a str slice.
-    /// * `port`: The port number of the Multicast UDP Receiver.
+    /// * `ip`: The IP address of the Multicast UDP receiver as a string slice.
+    /// * `port`: The port number of the Multicast UDP receiver.
     ///
     /// # Returns
     ///
-    /// A new Multicast UDP Receiver that is ready to receive data.
+    /// A new `MulticastUDPReceiver` that is ready to receive data.
     ///
     /// # Example
     ///
     /// ```
-    /// use crabe_io::MulticastReceiver;
+    /// use crabe_io::network::MulticastUDPReceiver;
     ///
-    /// let receiver = MulticastReceiver::new("224.5.23.2", 10020);
+    /// let receiver = MulticastUDPReceiver::new("224.5.23.2", 10020);
     /// ```
     ///
-    /// This example creates a new Multicast UDP Receiver that listens on IP address 224.5.23.2 and port 10020 (grSim).
+    /// This example creates a new `MulticastUDPReceiver` that listens on IP address 224.5.23.2 and port 10020, which is the default grSim vision address and port.
     pub fn new(ip: &str, port: u32) -> Self {
         let ipv4 = Ipv4Addr::from_str(ip).expect("TODO: Failed to parse vision server ip");
         let socket =

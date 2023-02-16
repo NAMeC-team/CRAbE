@@ -3,23 +3,43 @@ use log::error;
 use std::io::Cursor;
 use std::net::UdpSocket;
 
-/// TODO:
+/// A struct that provides bidirectional communication over UDP.
 pub struct UDPTransceiver {
+    /// The underlying UDP socket that sends and receives data.
     socket: UdpSocket,
+    /// A buffer that is used to receive data from the socket without allocating new heap memory.
     buffer: [u8; BUFFER_SIZE],
 }
 
-/// TODO:
 impl UDPTransceiver {
-    /// TODO:
-    pub fn new(port: u32) -> Self {
+    /// Creates a new UDP transceiver that listens on the specified IP address and port number.
+    ///
+    /// # Arguments
+    ///
+    /// * `ip`: The IP address of the UDP transceiver as a string slice.
+    /// * `port`: The port number of the UDP transceiver.
+    ///
+    /// # Returns
+    ///
+    /// A new `UDPTransceiver` that is ready to send and receive data.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use crabe_io::network::UDPTransceiver;
+    ///
+    /// let transceiver = UDPTransceiver::new("127.0.0.1", 10301);
+    /// ```
+    ///
+    /// This example creates a new `UDPTransceiver` that listens on IP address 127.0.0.1 and port 10301, which is the default grSim control port for the blue team.
+    pub fn new(ip: &str, port: u32) -> Self {
         let socket = UdpSocket::bind("0.0.0.0:0").expect("Failed to bind the UDP Socket");
 
         socket
             .set_nonblocking(true)
             .expect("Failed to set socket to non-blocking mode");
         socket
-            .connect(format!("127.0.0.1:{}", port)) // TODO : Put some ip
+            .connect(format!("{}:{}", ip, port)) // TODO : Put some ip
             .expect("connect function failed");
 
         Self {
