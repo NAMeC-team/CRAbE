@@ -1,7 +1,7 @@
+use crate::constants::BUFFER_SIZE;
 use std::io::Cursor;
 use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;
-use crate::constants::BUFFER_SIZE;
 
 /// TODO:
 pub struct MulticastUDPReceiver {
@@ -38,7 +38,7 @@ impl MulticastUDPReceiver {
     }
 
     /// TODO:
-    pub fn receive<T: prost::Message + Default> (&mut self) -> Option<T> {
+    pub fn receive<T: prost::Message + Default>(&mut self) -> Option<T> {
         if let Ok(p_size) = self.socket.recv(&mut self.buffer) {
             let packet = T::decode(Cursor::new(&self.buffer[0..p_size]))
                 .expect("Error - Decoding the packet");
