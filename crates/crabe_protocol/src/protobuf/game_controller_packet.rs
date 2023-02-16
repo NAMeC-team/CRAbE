@@ -1034,7 +1034,7 @@ pub mod game_event {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Referee {
     /// A random UUID of the source that is kept constant at the source while running
-    /// If multiple sources are broadcasting to the same communication, this id can be used to identify individual sources
+    /// If multiple sources are broadcasting to the same network, this id can be used to identify individual sources
     #[prost(string, optional, tag = "18")]
     pub source_identifier: ::core::option::Option<::prost::alloc::string::String>,
     /// The match type is a meta information about the current match that helps to process the logs after a competition

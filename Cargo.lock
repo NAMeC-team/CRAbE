@@ -33,7 +33,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "crabe"
+version = "0.1.0"
+dependencies = [
+ "crabe_io",
+]
+
+[[package]]
 name = "crabe_ai"
+version = "0.1.0"
+
+[[package]]
+name = "crabe_common"
 version = "0.1.0"
 
 [[package]]

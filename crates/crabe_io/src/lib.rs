@@ -1,12 +1,11 @@
 //! # CRAbE_IO
 //!
-//! This crate handles all I/O operations on the project such as :
-//! - USB Serial communication (CRAbE <> MainBoard)
-//! - UDP Socket communication (CRAbE <> Vision / Simulation / Python)
-//! - Websockets communication (CRAbE <> Viewer)
+//! This crate provides tools for input/output operations on the CRAbE project, including:
+//!
+//! - `serial`: USB serial communication between CRAbE and the MainBoard.
+//! - `network`: UDP and websockets communication between CRAbE and the vision system, game_controller, simulation, and viewer.
 //!
 //! This crate produce some tools to debug I/O operations.
-//! - `vision_log` : Log packets receive of the vision project.
 
 /// This module provides constants related to the `crabe_io` package.
 pub mod constants;
