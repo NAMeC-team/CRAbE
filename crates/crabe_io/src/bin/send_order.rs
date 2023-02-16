@@ -1,4 +1,4 @@
-use crabe_io::network::UDPTransceiver;
+use crabe_io::communication::UDPTransceiver;
 use crabe_protocol::protobuf::simulation_packet::robot_move_command::Command::LocalVelocity;
 use crabe_protocol::protobuf::simulation_packet::{
     MoveLocalVelocity, RobotCommand, RobotControl, RobotControlResponse, RobotMoveCommand,

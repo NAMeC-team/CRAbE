@@ -10,5 +10,5 @@
 
 /// This module provides constants related to the `crabe_io` package.
 pub mod constants;
-/// The `network` module provides a set of types and functions for network communication.
-pub mod network;
+/// The `communication` module provides a set of generic types and functions for network and usb communication.
+pub mod communication;

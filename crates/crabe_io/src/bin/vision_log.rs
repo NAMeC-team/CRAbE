@@ -1,4 +1,4 @@
-use crabe_io::network::MulticastUDPReceiver;
+use crabe_io::communication::MulticastUDPReceiver;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 
 fn main() {

@@ -30,7 +30,7 @@ impl UDPTransceiver {
     /// # Example
     ///
     /// ```
-    /// use crabe_io::network::UDPTransceiver;
+    /// use crabe_io::communication::UDPTransceiver;
     ///
     /// let transceiver = UDPTransceiver::new("127.0.0.1", 10301).expect("Failed to create UDPTransceiver");
     /// ```

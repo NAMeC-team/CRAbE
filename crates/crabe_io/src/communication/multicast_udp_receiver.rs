@@ -30,7 +30,7 @@ impl MulticastUDPReceiver {
     /// # Examples
     ///
     /// ```
-    /// use crabe_io::network::MulticastUDPReceiver;
+    /// use crabe_io::communication::MulticastUDPReceiver;
     ///
     /// let receiver = MulticastUDPReceiver::new("224.5.23.2", 10020).expect("Failed to create MulticastUDPReceiver");
     /// ```
