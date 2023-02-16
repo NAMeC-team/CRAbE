@@ -23,6 +23,10 @@ impl UDPTransceiver {
     ///
     /// A `Result` containing a new non-blocking `UDPTransceiver` that is ready to send and receive data if the operation is successful, or an `std::io::Error` if it fails.
     ///
+    /// # Errors
+    ///
+    /// This function will return an `std::io::Error` if there is an error while binding and connect the socket or setting the socket to non-blocking mode.
+    ///
     /// # Example
     ///
     /// ```

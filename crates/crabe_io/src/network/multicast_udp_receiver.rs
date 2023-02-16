@@ -16,37 +16,38 @@ impl MulticastUDPReceiver {
     ///
     /// # Arguments
     ///
-    /// * `ip`: The IP address of the Multicast UDP receiver as a string slice.
-    /// * `port`: The port number of the Multicast UDP receiver.
+    /// * `ip`: The IP address of the multicast group as a string slice.
+    /// * `port`: The port number of the multicast group.
     ///
     /// # Returns
     ///
-    /// A new `MulticastUDPReceiver` that is ready to receive data.
+    /// A new `MulticastUDPReceiver` that is ready to receive data in a non-blocking mode.
     ///
-    /// # Example
+    /// # Errors
+    ///
+    /// This function will return an `Box<dyn std::error::Error>` if the IP address string cannot be parsed into an IPv4 address, if there is an error while binding the socket, joining the multicast group or setting the socket to non-blocking mode.
+    ///
+    /// # Examples
     ///
     /// ```
     /// use crabe_io::network::MulticastUDPReceiver;
     ///
-    /// let receiver = MulticastUDPReceiver::new("224.5.23.2", 10020);
+    /// let receiver = MulticastUDPReceiver::new("224.5.23.2", 10020).expect("Failed to create MulticastUDPReceiver");
     /// ```
     ///
     /// This example creates a new `MulticastUDPReceiver` that listens on IP address 224.5.23.2 and port 10020, which is the default grSim vision address and port.
-    pub fn new(ip: &str, port: u32) -> Self {
-        let ipv4 = Ipv4Addr::from_str(ip).expect("TODO: Failed to parse vision server ip");
-        let socket =
-            UdpSocket::bind(format!("{}:{}", ip, port)).expect("Failed to bind the UDP Socket");
-        socket
-            .join_multicast_v4(&ipv4, &Ipv4Addr::UNSPECIFIED)
-            .expect("Error to join multicast group");
-        socket
-            .set_nonblocking(true)
-            .expect("Failed to set non blocking");
+    pub fn new(ip: &str, port: u32) -> Result<Self, Box<dyn std::error::Error>> {
+        let ipv4 = Ipv4Addr::from_str(ip)?;
 
-        Self {
+        let socket = UdpSocket::bind(format!("{}:{}", ip, port))?;
+
+        socket.join_multicast_v4(&ipv4, &Ipv4Addr::UNSPECIFIED)?;
+        socket.set_nonblocking(true)?;
+
+        Ok(Self {
             socket,
             buffer: [0u8; BUFFER_SIZE],
-        }
+        })
     }
 
     /// Attempts to receive a packet of type `T` from the socket and decode it using `prost`.    
