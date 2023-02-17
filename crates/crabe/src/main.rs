@@ -5,8 +5,8 @@ mod vision;
 use clap::Parser;
 use std::time::Duration;
 
-use crate::data_receiver::DataReceiverPipeline;
-use crate::vision::VisionCli;
+use crate::data_receiver::{DataReceiverPipeline, ReceiverTask};
+use crate::vision::{Vision, VisionCli};
 use crabe_common::cli::CrabeCommonCLI;
 
 #[derive(Parser)]
@@ -32,7 +32,13 @@ impl System {
 
     pub fn run(&mut self, refresh_rate: Duration) {
         loop {
-            println!("Hello World");
+            let receive_data = self.receiver_pipeline.run();
+            dbg!(receive_data);
+            // Filters
+            // Decision
+            // Tools
+            // Guard
+            // Output
         }
     }
 }
@@ -41,8 +47,14 @@ fn main() {
     // 1. Logger + CLI
     let cli = Cli::parse();
 
+    let default_pipeline = DataReceiverPipeline::new(vec![Box::new(Vision::new(cli.vision))]);
+
     // 2. Init
     // Vision_GC_threaded::new()
+    let mut system = System::new(default_pipeline);
+
+    system.run(Duration::from_millis(16));
+
 
     // 3. loop
     // input_pipeline.run(&input_data, &feedback);

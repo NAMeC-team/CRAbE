@@ -16,7 +16,7 @@ pub struct VisionCli {
     vision_port: u32,
 }
 
-struct Vision {
+pub struct Vision {
     rx_vision: Receiver<SslWrapperPacket>,
 }
 
@@ -29,7 +29,7 @@ impl Vision {
 
         std::thread::spawn(move || loop {
             if let Some(packet) = vision.receive() {
-                tx_vision.send(packet).expect("TODO: panic message");
+                tx_vision.send(packet).expect("TODO: Panic"); // TODO : Don't panic
             }
         });
 
