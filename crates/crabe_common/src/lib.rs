@@ -7,6 +7,5 @@
 //!
 //! This crate is intended to be used as a dependency by other CRAbE crates, and should not be used on its own. Please refer to the individual modules for more information and usage instructions.
 
-
 /// Contains the implementation for the Command-Line Interface (CLI) utilities that are common to multiple CRAbE crates.
 pub mod cli;

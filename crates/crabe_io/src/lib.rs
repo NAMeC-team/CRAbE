@@ -7,7 +7,7 @@
 //!
 //! This crate produce some tools to debug I/O operations.
 
-/// This module provides constants related to the `crabe_io` package.
-pub mod constants;
 /// The `communication` module provides a set of generic types and functions for network and usb communication.
 pub mod communication;
+/// This module provides constants related to the `crabe_io` package.
+pub mod constants;

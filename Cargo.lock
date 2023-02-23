@@ -83,6 +83,7 @@ dependencies = [
  "crabe_common",
  "crabe_io",
  "crabe_protocol",
+ "log",
 ]
 
 [[package]]

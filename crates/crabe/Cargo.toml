@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 clap = { version = "4.1.1", features = ["derive"] }
+log = "0.4.17"
 crabe_common = { path = "../crabe_common" }
 crabe_io = { path = "../crabe_io" }
 crabe_protocol = { path = "../crabe_protocol" }
