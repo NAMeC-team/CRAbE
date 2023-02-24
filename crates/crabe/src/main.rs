@@ -17,6 +17,7 @@ pub struct Cli {
     pub common: CommonConfig,
 
     #[command(flatten)]
+    #[command(next_help_heading = "Data Receiver")]
     pub data_receiver_config: DataReceiverConfig,
 }
 
