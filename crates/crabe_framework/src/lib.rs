@@ -1,4 +1,4 @@
-//! # CRAbE_common
+//! # CRAbE_framework
 //!
 //! This crate contains common utilities that are shared across multiple other crates in the CRAbE project, including:
 //!

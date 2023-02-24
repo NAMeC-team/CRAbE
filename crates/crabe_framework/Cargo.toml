@@ -1,5 +1,5 @@
 [package]
-name = "crabe_common"
+name = "crabe_framework"
 version = "0.1.0"
 edition = "2021"
 

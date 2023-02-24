@@ -9,7 +9,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use crate::data_receiver::{DataReceiverConfig, DataReceiverPipeline};
-use crabe_common::cli::CommonConfig;
+use crabe_framework::cli::CommonConfig;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
