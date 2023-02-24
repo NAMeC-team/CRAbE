@@ -11,3 +11,5 @@
 pub mod communication;
 /// This module provides constants related to the `crabe_io` package.
 pub mod constants;
+/// This module provide implementations
+pub mod ssl;

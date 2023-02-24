@@ -1,8 +1,7 @@
 use crate::gc::{GameController, GameControllerConfig};
 use crate::vision::{Vision, VisionConfig};
 use clap::Args;
-use crabe_protocol::protobuf::game_controller_packet::Referee;
-use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
+use crabe_framework::data::ReceiverDataSet;
 
 #[derive(Args)]
 pub struct DataReceiverConfig {
@@ -18,20 +17,6 @@ pub struct DataReceiverConfig {
     pub gc_cfg: GameControllerConfig,
 }
 
-#[derive(Debug)]
-pub struct ReceiverDataSet {
-    pub vision_packet: Vec<SslWrapperPacket>,
-    pub gc_packet: Vec<Referee>,
-}
-
-impl Default for ReceiverDataSet {
-    fn default() -> Self {
-        Self {
-            vision_packet: vec![],
-            gc_packet: vec![],
-        }
-    }
-}
 
 pub trait ReceiverTask {
     fn fetch(&mut self, input: &mut ReceiverDataSet);

@@ -1,4 +1,5 @@
-use crate::data_receiver::{ReceiverDataSet, ReceiverTask};
+use crate::data_receiver::ReceiverTask;
+use crabe_framework::data::ReceiverDataSet;
 use clap::Args;
 use crabe_io::communication::MulticastUDPReceiver;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
