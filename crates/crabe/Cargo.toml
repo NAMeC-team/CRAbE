@@ -11,3 +11,5 @@ log = "0.4.17"
 crabe_common = { path = "../crabe_common" }
 crabe_io = { path = "../crabe_io" }
 crabe_protocol = { path = "../crabe_protocol" }
+env_logger = "0.10.0"
+ctrlc = "3.2.4"

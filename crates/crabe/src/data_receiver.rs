@@ -35,6 +35,7 @@ impl Default for ReceiverDataSet {
 
 pub trait ReceiverTask {
     fn fetch(&mut self, input: &mut ReceiverDataSet);
+    fn close(&mut self);
 }
 
 pub struct DataReceiverPipeline {
@@ -59,5 +60,9 @@ impl DataReceiverPipeline {
         let mut data = ReceiverDataSet::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
         data
+    }
+
+    pub fn close(&mut self) {
+        self.receivers.iter_mut().for_each(|x| x.close());
     }
 }

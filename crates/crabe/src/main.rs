@@ -3,10 +3,12 @@ mod gc;
 mod vision;
 
 use clap::Parser;
+use env_logger::Env;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
-use crate::data_receiver::{DataReceiverConfig, DataReceiverPipeline, ReceiverTask};
-use crate::vision::{Vision, VisionConfig};
+use crate::data_receiver::{DataReceiverConfig, DataReceiverPipeline};
 use crabe_common::cli::CommonConfig;
 
 #[derive(Parser)]
@@ -23,41 +25,47 @@ pub struct Cli {
 
 pub struct System {
     receiver_pipeline: DataReceiverPipeline,
+    running: Arc<AtomicBool>,
 }
 
 impl System {
     pub fn new(receiver_pipeline: DataReceiverPipeline) -> Self {
-        Self { receiver_pipeline }
+        let running = Arc::new(AtomicBool::new(true));
+        let running_ctrlc = Arc::clone(&running);
+
+        ctrlc::set_handler(move || {
+            running_ctrlc.store(false, Ordering::Relaxed);
+        })
+        .expect("Failed to set Ctrl-C handler");
+
+        Self {
+            receiver_pipeline,
+            running,
+        }
     }
 
-    pub fn run(&mut self, refresh_rate: Duration) {
-        loop {
+    pub fn run(&mut self, _refresh_rate: Duration) {
+        while self.running.load(Ordering::SeqCst) {
             let receive_data = self.receiver_pipeline.run();
             dbg!(receive_data);
-            // Filters
-            // Decision
-            // Tools
-            // Guard
-            // Output
         }
+    }
+
+    pub fn close(&mut self) {
+        self.receiver_pipeline.close();
     }
 }
 
 fn main() {
-    // 1. Logger + CLI
     let cli = Cli::parse();
+    let env = Env::default()
+        .filter_or("CRABE_LOG_LEVEL", "debug")
+        .write_style_or("CRABE_LOG_STYLE", "always");
+    env_logger::init_from_env(env);
 
-    let default_pipeline = DataReceiverPipeline::with_config(cli.data_receiver_config);
+    let data_receiver = DataReceiverPipeline::with_config(cli.data_receiver_config);
 
-    // 2. Init
-    // Vision_GC_threaded::new()
-    let mut system = System::new(default_pipeline);
-
+    let mut system = System::new(data_receiver);
     system.run(Duration::from_millis(16));
-
-    // 3. loop
-    // input_pipeline.run(&input_data, &feedback);
-    // filter_pipeline.run(&filter_data, &data_store);
-    // let mut commands = decision_pipeline.run(&data_store);
-    // send_pipeline.run(&data_store, &commands, &feedback);
+    system.close();
 }
