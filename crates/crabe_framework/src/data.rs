@@ -1,2 +1,2 @@
 mod data_receiver;
-pub use self::data_receiver::ReceiverDataSet;
+pub use self::data_receiver::IncomingDataset;

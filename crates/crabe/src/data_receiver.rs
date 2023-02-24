@@ -1,8 +1,9 @@
 use crate::gc::{GameController, GameControllerConfig};
 use crate::vision::{Vision, VisionConfig};
 use clap::Args;
-use crabe_framework::data::ReceiverDataSet;
+use crabe_framework::data::IncomingDataset;
 
+// CrabeIO
 #[derive(Args)]
 pub struct DataReceiverConfig {
     #[arg(long)]
@@ -18,15 +19,18 @@ pub struct DataReceiverConfig {
 }
 
 
+/// CrabeIO
 pub trait ReceiverTask {
-    fn fetch(&mut self, input: &mut ReceiverDataSet);
+    fn fetch(&mut self, input: &mut IncomingDataset);
     fn close(&mut self);
 }
 
+/// CrabeIO
 pub struct DataReceiverPipeline {
     receivers: Vec<Box<dyn ReceiverTask>>,
 }
 
+/// CrabeIO
 impl DataReceiverPipeline {
     pub fn with_config(config: DataReceiverConfig) -> Self {
         let mut tasks: Vec<Box<dyn ReceiverTask>> =
@@ -41,8 +45,8 @@ impl DataReceiverPipeline {
         }
     }
 
-    pub fn run(&mut self) -> ReceiverDataSet {
-        let mut data = ReceiverDataSet::default();
+    pub fn run(&mut self) -> IncomingDataset {
+        let mut data = IncomingDataset::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
         data
     }
@@ -51,3 +55,7 @@ impl DataReceiverPipeline {
         self.receivers.iter_mut().for_each(|x| x.close());
     }
 }
+/*
+trait DataReceiverPipeline {
+
+}*/

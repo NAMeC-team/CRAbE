@@ -110,6 +110,7 @@ name = "crabe_framework"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "crabe_protocol",
 ]
 
 [[package]]

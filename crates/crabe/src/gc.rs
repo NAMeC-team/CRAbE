@@ -1,5 +1,5 @@
 use crate::data_receiver::ReceiverTask;
-use crabe_framework::data::ReceiverDataSet;
+use crabe_framework::data::IncomingDataset;
 use clap::Args;
 use crabe_io::communication::MulticastUDPReceiver;
 use crabe_protocol::protobuf::game_controller_packet::Referee;
@@ -54,7 +54,7 @@ impl GameController {
 }
 
 impl ReceiverTask for GameController {
-    fn fetch(&mut self, input: &mut ReceiverDataSet) {
+    fn fetch(&mut self, input: &mut IncomingDataset) {
         input.gc_packet.extend(self.rx_gc.try_iter());
     }
 
