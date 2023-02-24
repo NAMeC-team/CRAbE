@@ -1,11 +1,12 @@
 //! # CRAbE_framework
 //!
-//! This crate contains common utilities that are shared across multiple other crates in the CRAbE project, including:
+//! This crate provides shared utilities and settings for the CRAbE project.
 //!
-//! * `cli`: Command-line interface (CLI) utilities that are common to multiple CRAbE crates
-//! * `types`: Shared data types used across multiple CRAbE crates
+//! The `config` module contains settings that are common to multiple CRAbE crates.
 //!
 //! This crate is intended to be used as a dependency by other CRAbE crates, and should not be used on its own. Please refer to the individual modules for more information and usage instructions.
 
-/// Contains the implementation for the Command-Line Interface (CLI) utilities that are common to multiple CRAbE crates.
-pub mod cli;
+/// This module contains the implementation of the configuration settings that are shared across multiple other crates in the CRAbE project.
+/// These settings are meant to be accessed and used by other CRAbE crates as a way of maintaining consistency across the project.
+/// Please refer to the documentation of individual settings for more information and usage instructions.
+pub mod config;
