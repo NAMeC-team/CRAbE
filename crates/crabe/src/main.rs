@@ -1,6 +1,7 @@
 mod data_receiver;
 mod gc;
 mod vision;
+mod world;
 
 use clap::Parser;
 use env_logger::Env;
