@@ -1,6 +1,6 @@
 use crate::data_receiver::ReceiverTask;
-use crabe_framework::data::receiver::InboundData;
 use clap::Args;
+use crabe_framework::data::receiver::InboundData;
 use crabe_io::communication::MulticastUDPReceiver;
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use log::{error, info};

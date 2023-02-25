@@ -1,6 +1,6 @@
-use std::fmt::Debug;
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
+use std::fmt::Debug;
 
 // TODO
 #[derive(Debug)]

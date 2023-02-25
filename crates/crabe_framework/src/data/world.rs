@@ -1,40 +1,7 @@
+use crate::data::geometry::Geometry;
 use serde::{Deserialize, Serialize};
 
 pub const MAX_ROBOTS: usize = 16;
-
-#[derive(Debug)]
-pub struct Field {
-    pub width: f32,
-    pub length: f32,
-}
-
-#[derive(Debug)]
-pub struct Goal {
-    pub width: f32,
-    pub depth: f32,
-}
-
-#[derive(Debug)]
-pub struct Penalty {
-    pub width: f32,
-    pub depth: f32,
-}
-
-#[derive(Debug)]
-pub struct Circle {
-    // center ?
-    pub radius: f32,
-}
-
-#[derive(Debug)]
-pub struct Geometry {
-    pub field : Field,
-    pub ally_goal: Goal,
-    pub opponent_goal: Goal,
-    pub ally_penalty: Penalty,
-    pub opponent_penalty: Penalty,
-    pub center: Circle,
-}
 
 pub struct AllyInfo;
 pub struct EnemyInfo;

@@ -23,7 +23,12 @@ pub trait Tools {
 }
 
 pub trait Guard {
-    fn step(&self, world_data: &mut World, command: &mut Commands, tools_commands: &mut ToolsCommands);
+    fn step(
+        &self,
+        world_data: &mut World,
+        command: &mut Commands,
+        tools_commands: &mut ToolsCommands,
+    );
     fn close();
 }
 

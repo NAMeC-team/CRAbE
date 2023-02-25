@@ -18,7 +18,6 @@ pub struct DataReceiverConfig {
     pub gc_cfg: GameControllerConfig,
 }
 
-
 /// CrabeIO
 pub trait ReceiverTask {
     fn fetch(&mut self, input: &mut InboundData);
