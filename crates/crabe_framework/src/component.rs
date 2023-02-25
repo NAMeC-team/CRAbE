@@ -1,18 +1,16 @@
-use crabe_framework::data::IncomingDataset;
-use crate::world::World;
+use crate::data::output::{Commands, Feedback, ToolsCommands};
+pub use crate::data::receiver::InboundData;
+use crate::data::tool::ToolsData;
+use crate::data::world::World;
 
-pub struct Feedback;
-pub struct ToolsData;
-pub struct Commands;
-pub struct ToolsCommands;
 
-trait Receiver {
-    fn step(&self, feedback: Feedback) -> IncomingDataset;
+pub trait Receiver {
+    fn step(&self, feedback: Feedback) -> InboundData;
     fn close();
 }
 
-trait Filter {
-    fn step(&self, data: IncomingDataset) -> World;
+pub trait Filter {
+    fn step(&self, data: InboundData) -> World;
     fn close();
 }
 

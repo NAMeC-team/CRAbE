@@ -1,5 +1,5 @@
 use crate::data_receiver::ReceiverTask;
-use crabe_framework::data::IncomingDataset;
+use crabe_framework::component::InboundData;
 use clap::Args;
 use crabe_io::communication::MulticastUDPReceiver;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
@@ -56,7 +56,7 @@ impl Vision {
 }
 
 impl ReceiverTask for Vision {
-    fn fetch(&mut self, input: &mut IncomingDataset) {
+    fn fetch(&mut self, input: &mut InboundData) {
         input.vision_packet.extend(self.rx_vision.try_iter());
     }
 

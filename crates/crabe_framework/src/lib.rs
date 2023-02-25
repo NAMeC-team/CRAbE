@@ -11,6 +11,8 @@
 /// Please refer to the documentation of individual settings for more information and usage instructions.
 pub mod config;
 
-/// This module defines the schema of all data that is passed between the various modules in the system.
-/// Each crate typically implements a subset of these data types to handle a specific aspect of the system's functionality.
+/// TODO: Make comment
+pub mod component;
+
+/// TODO
 pub mod data;
