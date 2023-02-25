@@ -1,4 +1,5 @@
 use crate::data::geometry::Geometry;
+use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 
 pub const MAX_ROBOTS: usize = 16;
@@ -7,15 +8,15 @@ pub struct AllyInfo;
 pub struct EnemyInfo;
 
 pub struct Robot<T> {
-    id: u32,
-    // pos : 2D
-    orientation: f32,
-    has_ball: bool,
-    robot_info: T,
+    pub id: u32,
+    pub pos: Point2<f32>,
+    pub orientation: f32,
+    pub has_ball: bool,
+    pub robot_info: T,
 }
 
 pub struct Ball {
-    // pos : 3D
+    pub pos: Point3<f32>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
