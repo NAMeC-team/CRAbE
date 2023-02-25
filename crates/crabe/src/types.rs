@@ -1,35 +1,37 @@
+use clap::command;
 use crabe_framework::data::IncomingDataset;
 use crate::world::World;
 
 pub struct Feedback;
-
+pub struct ToolsData;
 pub struct Commands;
+pub struct ToolsCommands;
 
-trait ReceiverPipeline {
+trait Receiver {
     fn step(&self, feedback: Feedback) -> IncomingDataset;
     fn close();
 }
 
-trait FilterPipeline {
+trait Filter {
     fn step(&self, data: IncomingDataset) -> World;
     fn close();
 }
 
-trait DecisionPipeline {
-    fn step(&self, data: &mut World) -> Commands;
+trait Decision {
+    fn step(&self, data: &World) -> (Commands, ToolsData);
 }
 
-trait ToolsPipeline {
-    fn step(&self, data: &mut World, command: &mut Commands) -> Commands;
+trait Tools {
+    fn step(&self, world_data: &World, tools_data: &mut ToolsData) -> ToolsCommands;
     fn close();
 }
 
-trait GuardPipeline {
-    fn step(&self, data: &mut World, command: &mut Commands);
+trait Guard {
+    fn step(&self, world_data: &mut World, command: &mut Commands, tools_commands: &mut ToolsCommands);
     fn close();
 }
 
-trait OutputPipeline {
-    fn step(&self, command: &mut Commands) -> Feedback;
+trait Output {
+    fn step(&self, command: &mut Commands, tools_commands: &mut ToolsCommands) -> Feedback;
     fn close();
 }
