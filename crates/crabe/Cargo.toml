@@ -13,6 +13,3 @@ crabe_io = { path = "../crabe_io" }
 crabe_protocol = { path = "../crabe_protocol" }
 env_logger = "0.10.0"
 ctrlc = "3.2.5"
-
-serde = { version= "1.0.152", features = ["derive"] }
-serde_json = "1.0.93"

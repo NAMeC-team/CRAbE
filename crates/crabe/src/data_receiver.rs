@@ -1,7 +1,7 @@
 use crate::gc::{GameController, GameControllerConfig};
 use crate::vision::{Vision, VisionConfig};
 use clap::Args;
-use crabe_framework::component::InboundData;
+use crabe_framework::data::receiver::InboundData;
 
 // CrabeIO
 #[derive(Args)]

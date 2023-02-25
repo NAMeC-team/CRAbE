@@ -1,8 +1,7 @@
 use crate::data::output::{Commands, Feedback, ToolsCommands};
-pub use crate::data::receiver::InboundData;
+use crate::data::receiver::InboundData;
 use crate::data::tool::ToolsData;
 use crate::data::world::World;
-
 
 pub trait Receiver {
     fn step(&self, feedback: Feedback) -> InboundData;
@@ -14,21 +13,21 @@ pub trait Filter {
     fn close();
 }
 
-trait Decision {
+pub trait Decision {
     fn step(&self, data: &World) -> (Commands, ToolsData);
 }
 
-trait Tools {
+pub trait Tools {
     fn step(&self, world_data: &World, tools_data: &mut ToolsData) -> ToolsCommands;
     fn close();
 }
 
-trait Guard {
+pub trait Guard {
     fn step(&self, world_data: &mut World, command: &mut Commands, tools_commands: &mut ToolsCommands);
     fn close();
 }
 
-trait Output {
+pub trait Output {
     fn step(&self, command: &mut Commands, tools_commands: &mut ToolsCommands) -> Feedback;
     fn close();
 }
