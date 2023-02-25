@@ -13,7 +13,18 @@ pub struct Field {
     pub center_radius: f32,
 }
 
+pub struct AllyInfo;
+pub struct EnemyInfo;
+
+pub struct Robot<T> {
+    robot_info: T,
+
+}
+
+
+
 pub struct World {
     pub field: Option<Field>,
-    pub allies: [Option<AllyRobot>; MAX_ROBOTS]
+    pub allies: [Option<Robot<AllyInfo>>; MAX_ROBOTS],
+    pub enemies: [Option<Robot<EnemyInfo>>; MAX_ROBOTS],
 }
