@@ -1,4 +1,4 @@
-use crate::constants::BUFFER_SIZE;
+use crate::constant::BUFFER_SIZE;
 use std::io::Cursor;
 use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;

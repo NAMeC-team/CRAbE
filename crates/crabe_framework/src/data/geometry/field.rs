@@ -1,5 +1,4 @@
 // TODO : Document
-
 #[derive(Debug)]
 pub struct Field {
     pub width: f32,

@@ -1,4 +1,4 @@
-use crate::constants::BUFFER_SIZE;
+use crate::constant::BUFFER_SIZE;
 use log::error;
 use std::io::Cursor;
 use std::net::UdpSocket;

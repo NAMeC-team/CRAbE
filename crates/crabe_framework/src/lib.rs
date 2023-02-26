@@ -16,3 +16,6 @@ pub mod component;
 
 /// TODO
 pub mod data;
+
+// TODO: Document
+pub mod constant;

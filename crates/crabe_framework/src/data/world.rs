@@ -1,8 +1,7 @@
+use crate::constant::MAX_ROBOTS;
 use crate::data::geometry::Geometry;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
-
-pub const MAX_ROBOTS: usize = 16;
 
 pub struct AllyInfo;
 pub struct EnemyInfo;

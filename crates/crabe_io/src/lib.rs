@@ -10,6 +10,6 @@
 /// The `communication` module provides a set of generic types and functions for network and usb communication.
 pub mod communication;
 /// This module provides constants related to the `crabe_io` package.
-pub mod constants;
+pub mod constant;
 /// This module provide implementations
 pub mod ssl;
