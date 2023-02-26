@@ -64,6 +64,11 @@ fn main() {
     env_logger::init_from_env(env);
 
     let data_receiver = DataReceiverPipeline::with_config(cli.data_receiver_config);
+    // FilterPipeline
+    // DecisionPipeline
+    // ToolsPipeline
+    // GuardPipeline
+    // OutputPipeline
 
     let mut system = System::new(data_receiver);
     system.run(Duration::from_millis(16));

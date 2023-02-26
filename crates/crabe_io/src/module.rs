@@ -5,7 +5,6 @@ use crabe_framework::component::Receiver;
 use crabe_framework::data::output::Feedback;
 use crabe_framework::data::receiver::InboundData;
 
-// CrabeIO
 #[derive(Args)]
 pub struct DataReceiverConfig {
     #[arg(long)]
@@ -20,18 +19,15 @@ pub struct DataReceiverConfig {
     pub gc_cfg: GameControllerConfig,
 }
 
-/// CrabeIO
 pub trait ReceiverTask {
     fn fetch(&mut self, input: &mut InboundData);
     fn close(&mut self);
 }
 
-/// CrabeIO
 pub struct DataReceiverPipeline {
     receivers: Vec<Box<dyn ReceiverTask>>,
 }
 
-/// CrabeIO
 impl DataReceiverPipeline {
     pub fn with_config(config: DataReceiverConfig) -> Self {
         let mut tasks: Vec<Box<dyn ReceiverTask>> =
