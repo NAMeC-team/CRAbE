@@ -1,6 +1,5 @@
 use crate::constant::BUFFER_SIZE;
 use log::error;
-use prost::DecodeError;
 use std::io::Cursor;
 use std::net::{Ipv4Addr, UdpSocket};
 use std::str::FromStr;
