@@ -19,7 +19,7 @@ impl Default for InboundData {
         Self {
             vision_packet: Vec::new(),
             gc_packet: Vec::new(),
-            feedback: Feedback,
+            feedback: Feedback {},
         }
     }
 }

@@ -44,7 +44,7 @@ impl System {
     }
 
     pub fn run(&mut self, _refresh_rate: Duration) {
-        let mut feedback = Feedback;
+        let mut feedback = Feedback {};
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.receiver_pipeline.step(&mut feedback);
             dbg!(receive_data);
