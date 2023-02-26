@@ -4,27 +4,27 @@ use crate::data::tool::{ToolsCommands, ToolsData};
 use crate::data::world::World;
 
 pub trait Receiver {
-    fn step(&self, feedback: Feedback) -> InboundData;
+    fn step(&mut self, feedback: Feedback) -> InboundData;
     fn close();
 }
 
 pub trait Filter {
-    fn step(&self, data: InboundData) -> World;
+    fn step(&mut self, data: InboundData) -> World;
     fn close();
 }
 
 pub trait Decision {
-    fn step(&self, data: &World) -> (Commands, ToolsData);
+    fn step(&mut self, data: &World) -> (Commands, ToolsData);
 }
 
 pub trait Tools {
-    fn step(&self, world_data: &World, tools_data: &mut ToolsData) -> ToolsCommands;
+    fn step(&mut self, world_data: &World, tools_data: &mut ToolsData) -> ToolsCommands;
     fn close();
 }
 
 pub trait Guard {
     fn step(
-        &self,
+        &mut self,
         world_data: &mut World,
         command: &mut Commands,
         tools_commands: &mut ToolsCommands,
@@ -33,6 +33,6 @@ pub trait Guard {
 }
 
 pub trait Output {
-    fn step(&self, command: &mut Commands, tools_commands: &mut ToolsCommands) -> Feedback;
+    fn step(&mut self, command: &mut Commands, tools_commands: &mut ToolsCommands) -> Feedback;
     fn close();
 }

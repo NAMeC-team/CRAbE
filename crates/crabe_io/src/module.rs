@@ -1,6 +1,7 @@
 use crate::league::game_controller::{GameController, GameControllerConfig};
-use crate::vision::{Vision, VisionConfig};
+use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
+use crabe_framework::component::Receiver;
 use crabe_framework::data::receiver::InboundData;
 
 // CrabeIO
@@ -43,18 +44,16 @@ impl DataReceiverPipeline {
             receivers: tasks, // How to box ?
         }
     }
+}
 
-    pub fn run(&mut self) -> InboundData {
+impl Receiver for DataReceiverPipeline {
+    fn step(&mut self) -> InboundData {
         let mut data = InboundData::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
         data
     }
 
-    pub fn close(&mut self) {
+    fn close(&mut self) {
         self.receivers.iter_mut().for_each(|x| x.close());
     }
 }
-/*
-trait DataReceiverPipeline {
-
-}*/

@@ -1,6 +1,7 @@
 A renommer avant la release :
 - [ ] Data folder in crabe_framework.
 - [ ] Bot ou Robot
+- Module.rs -> Remove this
 
 ## Fonctionnalités / Choses prévus
 
