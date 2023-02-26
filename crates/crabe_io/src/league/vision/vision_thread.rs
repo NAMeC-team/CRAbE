@@ -9,6 +9,7 @@ use std::sync::{mpsc, Arc};
 use std::thread;
 use std::thread::JoinHandle;
 
+// TODO: Document
 pub struct Vision {
     rx_vision: Receiver<SslWrapperPacket>,
     handle: Option<JoinHandle<()>>,

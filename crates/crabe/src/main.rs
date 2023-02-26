@@ -1,8 +1,6 @@
 extern crate core;
 
 mod data_receiver;
-mod gc;
-mod vision;
 
 use clap::Parser;
 use env_logger::Env;

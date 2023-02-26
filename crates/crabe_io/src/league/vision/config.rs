@@ -1,3 +1,5 @@
+use clap::Args;
+
 // TODO: Document
 #[derive(Args)]
 pub struct VisionConfig {
