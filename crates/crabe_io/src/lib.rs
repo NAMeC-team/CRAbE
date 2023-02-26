@@ -12,5 +12,7 @@ pub mod communication;
 /// This module provides constants related to the `crabe_io` package.
 pub mod constant;
 
+// TODO : Document
 pub mod league;
+pub mod module;
 // pub mod serial;
