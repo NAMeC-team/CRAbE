@@ -1,7 +1,7 @@
 extern crate core;
 
 use clap::Parser;
-use crabe_framework::component::Receiver;
+use crabe_framework::component::InputComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::Feedback;
 use crabe_io::module::{DataReceiverConfig, DataReceiverPipeline};
@@ -23,12 +23,12 @@ pub struct Cli {
 }
 
 pub struct System {
-    receiver_pipeline: Box<dyn Receiver>,
+    receiver_pipeline: Box<dyn InputComponent>,
     running: Arc<AtomicBool>,
 }
 
 impl System {
-    pub fn new(receiver_pipeline: Box<dyn Receiver>) -> Self {
+    pub fn new(receiver_pipeline: Box<dyn InputComponent>) -> Self {
         let running = Arc::new(AtomicBool::new(true));
         let running_ctrlc = Arc::clone(&running);
 

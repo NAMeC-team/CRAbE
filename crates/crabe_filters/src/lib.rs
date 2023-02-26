@@ -1,14 +1,15 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+use crabe_framework::component::FilterComponent;
+use crabe_framework::data::receiver::InboundData;
+use crabe_framework::data::world::World;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+struct FilterPipeline;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+impl FilterComponent for FilterPipeline {
+    fn step(&mut self, data: InboundData) -> World {
+        todo!()
+    }
+
+    fn close(&mut self) {
+        todo!()
     }
 }

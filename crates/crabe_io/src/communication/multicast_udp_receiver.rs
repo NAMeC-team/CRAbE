@@ -65,7 +65,7 @@ impl MulticastUDPReceiver {
             return match T::decode(Cursor::new(&self.buffer[0..p_size])) {
                 Ok(packet) => Some(packet),
                 Err(e) => {
-                    error!("Error decoding message: {}", e);
+                    error!("Decoding of the received packet failed: {}", e);
                     None
                 }
             };

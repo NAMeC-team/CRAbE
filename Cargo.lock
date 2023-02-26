@@ -119,6 +119,12 @@ version = "0.1.0"
 [[package]]
 name = "crabe_filters"
 version = "0.1.0"
+dependencies = [
+ "clap",
+ "crabe_framework",
+ "crabe_protocol",
+ "log",
+]
 
 [[package]]
 name = "crabe_framework"

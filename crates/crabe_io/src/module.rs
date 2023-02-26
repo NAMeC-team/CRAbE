@@ -1,7 +1,7 @@
 use crate::league::game_controller::{GameController, GameControllerConfig};
 use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
-use crabe_framework::component::Receiver;
+use crabe_framework::component::InputComponent;
 use crabe_framework::data::output::Feedback;
 use crabe_framework::data::receiver::InboundData;
 
@@ -41,7 +41,7 @@ impl DataReceiverPipeline {
     }
 }
 
-impl Receiver for DataReceiverPipeline {
+impl InputComponent for DataReceiverPipeline {
     fn step(&mut self, _feedback: &mut Feedback) -> InboundData {
         let mut data = InboundData::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
