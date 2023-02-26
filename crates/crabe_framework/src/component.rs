@@ -1,6 +1,6 @@
-use crate::data::output::{Commands, Feedback, ToolsCommands};
+use crate::data::output::{Commands, Feedback};
 use crate::data::receiver::InboundData;
-use crate::data::tool::ToolsData;
+use crate::data::tool::{ToolsCommands, ToolsData};
 use crate::data::world::World;
 
 pub trait Receiver {

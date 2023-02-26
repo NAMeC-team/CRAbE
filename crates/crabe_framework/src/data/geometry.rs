@@ -4,7 +4,6 @@ use crate::data::geometry::penalty::Penalty;
 
 use nalgebra::Point2;
 
-pub mod field;
 pub mod goal;
 pub mod penalty;
 
@@ -18,7 +17,8 @@ pub struct Circle {
 
 #[derive(Debug)]
 pub struct Geometry {
-    pub field: Field,
+    pub field_width: f32,
+    pub field_length: f32,
     pub ally_goal: Goal,
     pub opponent_goal: Goal,
     pub ally_penalty: Penalty,
