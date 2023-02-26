@@ -140,6 +140,7 @@ name = "crabe_io"
 version = "0.1.0"
 dependencies = [
  "bytes",
+ "crabe_framework",
  "crabe_protocol",
  "log",
  "prost",
