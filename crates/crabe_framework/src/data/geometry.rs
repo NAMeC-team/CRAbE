@@ -1,4 +1,3 @@
-use crate::data::geometry::field::Field;
 use crate::data::geometry::goal::Goal;
 use crate::data::geometry::penalty::Penalty;
 
