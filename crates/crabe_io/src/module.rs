@@ -29,7 +29,7 @@ pub struct DataReceiverPipeline {
 }
 
 impl DataReceiverPipeline {
-    pub fn with_config(config: DataReceiverConfig) -> Self {
+    pub fn with_config(config: DataReceiverConfig) -> Box<Self> {
         let mut tasks: Vec<Box<dyn ReceiverTask>> =
             vec![Vision::with_config_boxed(config.vision_cfg)];
 
@@ -37,9 +37,7 @@ impl DataReceiverPipeline {
             tasks.push(GameController::with_config_boxed(config.gc_cfg));
         }
 
-        Self {
-            receivers: tasks, // How to box ?
-        }
+        Box::from(Self { receivers: tasks })
     }
 }
 

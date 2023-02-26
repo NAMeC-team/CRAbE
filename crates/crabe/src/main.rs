@@ -23,12 +23,12 @@ pub struct Cli {
 }
 
 pub struct System {
-    receiver_pipeline: DataReceiverPipeline,
+    receiver_pipeline: Box<dyn Receiver>,
     running: Arc<AtomicBool>,
 }
 
 impl System {
-    pub fn new(receiver_pipeline: DataReceiverPipeline) -> Self {
+    pub fn new(receiver_pipeline: Box<dyn Receiver>) -> Self {
         let running = Arc::new(AtomicBool::new(true));
         let running_ctrlc = Arc::clone(&running);
 

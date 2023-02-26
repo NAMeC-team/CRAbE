@@ -11,7 +11,6 @@ use std::thread;
 use std::thread::JoinHandle;
 
 // TODO: Document
-
 pub struct GameController {
     rx_gc: Receiver<Referee>,
     handle: Option<JoinHandle<()>>,
@@ -21,7 +20,7 @@ pub struct GameController {
 impl GameController {
     pub fn with_config_boxed(cli: GameControllerConfig) -> Box<Self> {
         let (tx_gc, rx_gc) = mpsc::channel::<Referee>();
-        let mut gc = MulticastUDPReceiver::new(cli.gc_ip.clone().as_str(), cli.gc_port.clone())
+        let mut gc = MulticastUDPReceiver::new(cli.gc_ip.as_str(), cli.gc_port)
             .expect("Failed to create vision receiver");
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);
