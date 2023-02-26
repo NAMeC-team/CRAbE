@@ -1,5 +1,6 @@
 use crate::communication::MulticastUDPReceiver;
 use crate::league::vision::VisionConfig;
+use crate::module::ReceiverTask;
 use crabe_framework::data::receiver::InboundData;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use log::{error, info};
@@ -19,9 +20,8 @@ pub struct Vision {
 impl Vision {
     pub fn with_config_boxed(cli: VisionConfig) -> Box<Self> {
         let (tx_vision, rx_vision) = mpsc::channel::<SslWrapperPacket>();
-        let mut vision =
-            MulticastUDPReceiver::new(cli.vision_ip.clone().as_str(), cli.vision_port.clone())
-                .expect("Failed to create vision receiver");
+        let mut vision = MulticastUDPReceiver::new(cli.vision_ip.as_str(), cli.vision_port)
+            .expect("Failed to create vision receiver");
 
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);

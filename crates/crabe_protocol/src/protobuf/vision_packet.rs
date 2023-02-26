@@ -289,10 +289,18 @@ impl SslFieldShapeType {
             SslFieldShapeType::CenterLine => "CenterLine",
             SslFieldShapeType::LeftPenaltyStretch => "LeftPenaltyStretch",
             SslFieldShapeType::RightPenaltyStretch => "RightPenaltyStretch",
-            SslFieldShapeType::LeftFieldLeftPenaltyStretch => "LeftFieldLeftPenaltyStretch",
-            SslFieldShapeType::LeftFieldRightPenaltyStretch => "LeftFieldRightPenaltyStretch",
-            SslFieldShapeType::RightFieldLeftPenaltyStretch => "RightFieldLeftPenaltyStretch",
-            SslFieldShapeType::RightFieldRightPenaltyStretch => "RightFieldRightPenaltyStretch",
+            SslFieldShapeType::LeftFieldLeftPenaltyStretch => {
+                "LeftFieldLeftPenaltyStretch"
+            }
+            SslFieldShapeType::LeftFieldRightPenaltyStretch => {
+                "LeftFieldRightPenaltyStretch"
+            }
+            SslFieldShapeType::RightFieldLeftPenaltyStretch => {
+                "RightFieldLeftPenaltyStretch"
+            }
+            SslFieldShapeType::RightFieldRightPenaltyStretch => {
+                "RightFieldRightPenaltyStretch"
+            }
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.

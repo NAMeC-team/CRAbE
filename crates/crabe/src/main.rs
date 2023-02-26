@@ -1,15 +1,14 @@
 extern crate core;
 
-mod data_receiver;
-
 use clap::Parser;
+use crabe_framework::component::Receiver;
+use crabe_framework::config::CommonConfig;
+use crabe_framework::data::output::Feedback;
+use crabe_io::module::{DataReceiverConfig, DataReceiverPipeline};
 use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
-
-use crate::data_receiver::{DataReceiverConfig, DataReceiverPipeline};
-use crabe_framework::config::CommonConfig;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -45,8 +44,9 @@ impl System {
     }
 
     pub fn run(&mut self, _refresh_rate: Duration) {
+        let mut feedback = Feedback;
         while self.running.load(Ordering::SeqCst) {
-            let receive_data = self.receiver_pipeline.run();
+            let receive_data = self.receiver_pipeline.step(&mut feedback);
             dbg!(receive_data);
         }
     }

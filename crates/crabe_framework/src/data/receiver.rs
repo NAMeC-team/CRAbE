@@ -1,10 +1,7 @@
+use crate::data::output::Feedback;
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use std::fmt::Debug;
-
-// TODO
-#[derive(Debug)]
-pub struct Feedback;
 
 /// Represents the data received by the software from external sources and passed through the filters.
 #[derive(Debug)]

@@ -702,7 +702,17 @@ pub mod game_event {
         #[prost(message, optional, tag = "2")]
         pub location: ::core::option::Option<super::Vector2>,
     }
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum Type {
         UnknownGameEventType = 0,
@@ -796,7 +806,9 @@ pub mod game_event {
                 Type::BallLeftFieldTouchLine => "BALL_LEFT_FIELD_TOUCH_LINE",
                 Type::BallLeftFieldGoalLine => "BALL_LEFT_FIELD_GOAL_LINE",
                 Type::AimlessKick => "AIMLESS_KICK",
-                Type::AttackerTooCloseToDefenseArea => "ATTACKER_TOO_CLOSE_TO_DEFENSE_AREA",
+                Type::AttackerTooCloseToDefenseArea => {
+                    "ATTACKER_TOO_CLOSE_TO_DEFENSE_AREA"
+                }
                 Type::DefenderInDefenseArea => "DEFENDER_IN_DEFENSE_AREA",
                 Type::BoundaryCrossing => "BOUNDARY_CROSSING",
                 Type::KeeperHeldBall => "KEEPER_HELD_BALL",
@@ -804,7 +816,9 @@ pub mod game_event {
                 Type::BotPushedBot => "BOT_PUSHED_BOT",
                 Type::BotHeldBallDeliberately => "BOT_HELD_BALL_DELIBERATELY",
                 Type::BotTippedOver => "BOT_TIPPED_OVER",
-                Type::AttackerTouchedBallInDefenseArea => "ATTACKER_TOUCHED_BALL_IN_DEFENSE_AREA",
+                Type::AttackerTouchedBallInDefenseArea => {
+                    "ATTACKER_TOUCHED_BALL_IN_DEFENSE_AREA"
+                }
                 Type::BotKickedBallTooFast => "BOT_KICKED_BALL_TOO_FAST",
                 Type::BotCrashUnique => "BOT_CRASH_UNIQUE",
                 Type::BotCrashDrawn => "BOT_CRASH_DRAWN",
@@ -839,7 +853,9 @@ pub mod game_event {
                 }
                 Type::BotCrashUniqueSkipped => "BOT_CRASH_UNIQUE_SKIPPED",
                 Type::BotPushedBotSkipped => "BOT_PUSHED_BOT_SKIPPED",
-                Type::DefenderInDefenseAreaPartially => "DEFENDER_IN_DEFENSE_AREA_PARTIALLY",
+                Type::DefenderInDefenseAreaPartially => {
+                    "DEFENDER_IN_DEFENSE_AREA_PARTIALLY"
+                }
                 Type::MultiplePlacementFailures => "MULTIPLE_PLACEMENT_FAILURES",
             }
         }
@@ -850,7 +866,9 @@ pub mod game_event {
                 "BALL_LEFT_FIELD_TOUCH_LINE" => Some(Self::BallLeftFieldTouchLine),
                 "BALL_LEFT_FIELD_GOAL_LINE" => Some(Self::BallLeftFieldGoalLine),
                 "AIMLESS_KICK" => Some(Self::AimlessKick),
-                "ATTACKER_TOO_CLOSE_TO_DEFENSE_AREA" => Some(Self::AttackerTooCloseToDefenseArea),
+                "ATTACKER_TOO_CLOSE_TO_DEFENSE_AREA" => {
+                    Some(Self::AttackerTooCloseToDefenseArea)
+                }
                 "DEFENDER_IN_DEFENSE_AREA" => Some(Self::DefenderInDefenseArea),
                 "BOUNDARY_CROSSING" => Some(Self::BoundaryCrossing),
                 "KEEPER_HELD_BALL" => Some(Self::KeeperHeldBall),
@@ -864,7 +882,9 @@ pub mod game_event {
                 "BOT_KICKED_BALL_TOO_FAST" => Some(Self::BotKickedBallTooFast),
                 "BOT_CRASH_UNIQUE" => Some(Self::BotCrashUnique),
                 "BOT_CRASH_DRAWN" => Some(Self::BotCrashDrawn),
-                "DEFENDER_TOO_CLOSE_TO_KICK_POINT" => Some(Self::DefenderTooCloseToKickPoint),
+                "DEFENDER_TOO_CLOSE_TO_KICK_POINT" => {
+                    Some(Self::DefenderTooCloseToKickPoint)
+                }
                 "BOT_TOO_FAST_IN_STOP" => Some(Self::BotTooFastInStop),
                 "BOT_INTERFERED_PLACEMENT" => Some(Self::BotInterferedPlacement),
                 "POSSIBLE_GOAL" => Some(Self::PossibleGoal),
@@ -895,7 +915,9 @@ pub mod game_event {
                 }
                 "BOT_CRASH_UNIQUE_SKIPPED" => Some(Self::BotCrashUniqueSkipped),
                 "BOT_PUSHED_BOT_SKIPPED" => Some(Self::BotPushedBotSkipped),
-                "DEFENDER_IN_DEFENSE_AREA_PARTIALLY" => Some(Self::DefenderInDefenseAreaPartially),
+                "DEFENDER_IN_DEFENSE_AREA_PARTIALLY" => {
+                    Some(Self::DefenderInDefenseAreaPartially)
+                }
                 "MULTIPLE_PLACEMENT_FAILURES" => Some(Self::MultiplePlacementFailures),
                 _ => None,
             }
@@ -990,7 +1012,9 @@ pub mod game_event {
         AttackerTouchedOpponentInDefenseArea(AttackerTouchedOpponentInDefenseArea),
         /// obsolete
         #[prost(message, tag = "42")]
-        AttackerTouchedOpponentInDefenseAreaSkipped(AttackerTouchedOpponentInDefenseArea),
+        AttackerTouchedOpponentInDefenseAreaSkipped(
+            AttackerTouchedOpponentInDefenseArea,
+        ),
         /// obsolete
         #[prost(message, tag = "23")]
         BotCrashUniqueSkipped(BotCrashUnique),
@@ -1014,12 +1038,7 @@ pub struct Referee {
     #[prost(string, optional, tag = "18")]
     pub source_identifier: ::core::option::Option<::prost::alloc::string::String>,
     /// The match type is a meta information about the current match that helps to process the logs after a competition
-    #[prost(
-        enumeration = "MatchType",
-        optional,
-        tag = "19",
-        default = "UnknownMatch"
-    )]
+    #[prost(enumeration = "MatchType", optional, tag = "19", default = "UnknownMatch")]
     pub match_type: ::core::option::Option<i32>,
     /// The UNIX timestamp when the packet was sent, in microseconds.
     /// Divide by 1,000,000 to get a time_t.
@@ -1145,7 +1164,17 @@ pub mod referee {
         pub y: f32,
     }
     /// These are the "coarse" stages of the game.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum Stage {
         /// The first half is about to start.
@@ -1230,7 +1259,17 @@ pub mod referee {
         }
     }
     /// These are the "fine" states of play on the field.
-    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
+    #[derive(
+        Clone,
+        Copy,
+        Debug,
+        PartialEq,
+        Eq,
+        Hash,
+        PartialOrd,
+        Ord,
+        ::prost::Enumeration
+    )]
     #[repr(i32)]
     pub enum Command {
         /// All robots should completely stop moving.
