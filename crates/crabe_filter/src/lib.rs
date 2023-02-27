@@ -3,20 +3,42 @@ use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::constant::MAX_ROBOTS;
 use crabe_framework::data::receiver::InboundData;
-use crabe_framework::data::world::World;
+use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, TeamColor, World};
+use nalgebra::{Point2, Point3};
+use std::time::Instant;
 
 #[derive(Args)]
 pub struct FilterConfig {}
 
 struct CamBall {}
 
-struct CamRobot {}
+struct CamRobot {
+    pub id: usize,
+    pub camera_id: usize,
+    pub position: Point2<f32>,
+    pub orientation: f32,
+    pub time: Instant,
+    pub frame_number: u32,
+}
 
 struct CamField {}
 
+struct TrackedRobot<T> {
+    pub packets: Vec<CamRobot>, // TODO: Make circular vector
+    pub last_update: Instant,
+    pub data: Robot<T>,
+}
+
+struct TrackedBall {
+    pub packets: Vec<CamBall>, // TODO: Make circular vector
+    pub last_update: Instant,
+    pub last_position: Ball,
+}
+
 pub struct FilterData {
-    allies: [Option<CamRobot>; MAX_ROBOTS], // TODO: Use HASHMAP ?
-    opponents: [Option<CamRobot>; MAX_ROBOTS],
+    allies: [Option<TrackedRobot<AllyInfo>>; MAX_ROBOTS], // TODO: Use HASHMAP ?
+    enemies: [Option<TrackedRobot<EnemyInfo>>; MAX_ROBOTS], // TODO: Use HASHMAP ?
+    ball: Option<TrackedBall>,                            // TODO: Remove option ?
 }
 
 pub trait Filter {}
@@ -33,7 +55,8 @@ impl FilterPipeline {
             filters: vec![],
             filter_data: FilterData {
                 allies: Default::default(),
-                opponents: Default::default(),
+                enemies: Default::default(),
+                ball: Default::default(),
             },
             yellow: common_config.yellow,
         })

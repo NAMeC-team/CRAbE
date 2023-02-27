@@ -8,7 +8,7 @@ pub struct EnemyInfo;
 
 pub struct Robot<T> {
     pub id: u32,
-    pub pos: Point2<f32>,
+    pub position: Point2<f32>,
     pub orientation: f32,
     pub has_ball: bool,
     pub robot_info: T,
