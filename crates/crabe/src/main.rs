@@ -5,7 +5,7 @@ use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{FilterComponent, InputComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::Feedback;
-use crabe_io::module::{DataReceiverConfig, DataReceiverPipeline};
+use crabe_io::module::{InputConfig, InputPipeline};
 use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -19,11 +19,11 @@ pub struct Cli {
     pub common: CommonConfig,
 
     #[command(flatten)]
-    #[command(next_help_heading = "Data Receiver")]
-    pub data_receiver_config: DataReceiverConfig,
+    #[command(next_help_heading = "Input")]
+    pub input_config: InputConfig,
 
     #[command(flatten)]
-    #[command(next_help_heading = "Filters")]
+    #[command(next_help_heading = "Filter")]
     pub filter_config: FilterConfig,
 }
 
@@ -53,6 +53,7 @@ impl System {
         }
     }
 
+    // TODO: Use refresh rate
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback = Feedback {};
         while self.running.load(Ordering::SeqCst) {
@@ -82,7 +83,7 @@ fn main() {
     // OutputPipeline
 
     let mut system = System::new(
-        DataReceiverPipeline::with_config(cli.data_receiver_config),
+        InputPipeline::with_config_boxed(cli.input_config),
         FilterPipeline::with_config_boxed(cli.filter_config),
     );
     system.run(Duration::from_millis(16));

@@ -6,7 +6,7 @@ use crabe_framework::data::output::Feedback;
 use crabe_framework::data::receiver::InboundData;
 
 #[derive(Args)]
-pub struct DataReceiverConfig {
+pub struct InputConfig {
     #[arg(long)]
     gc: bool,
 
@@ -24,12 +24,12 @@ pub trait ReceiverTask {
     fn close(&mut self);
 }
 
-pub struct DataReceiverPipeline {
+pub struct InputPipeline {
     receivers: Vec<Box<dyn ReceiverTask>>,
 }
 
-impl DataReceiverPipeline {
-    pub fn with_config(config: DataReceiverConfig) -> Box<Self> {
+impl InputPipeline {
+    pub fn with_config_boxed(config: InputConfig) -> Box<Self> {
         let mut tasks: Vec<Box<dyn ReceiverTask>> =
             vec![Vision::with_config_boxed(config.vision_cfg)];
 
@@ -41,7 +41,7 @@ impl DataReceiverPipeline {
     }
 }
 
-impl InputComponent for DataReceiverPipeline {
+impl InputComponent for InputPipeline {
     fn step(&mut self, _feedback: &mut Feedback) -> InboundData {
         let mut data = InboundData::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
