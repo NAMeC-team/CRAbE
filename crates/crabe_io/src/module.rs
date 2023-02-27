@@ -3,7 +3,7 @@ use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
 use crabe_framework::component::InputComponent;
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::Feedback;
+use crabe_framework::data::output::{Feedback, FeedbackMap};
 use crabe_framework::data::receiver::InboundData;
 
 #[derive(Args)]
@@ -43,7 +43,7 @@ impl InputPipeline {
 }
 
 impl InputComponent for InputPipeline {
-    fn step(&mut self, _feedback: &mut Feedback) -> InboundData {
+    fn step(&mut self, _feedback: &mut FeedbackMap) -> InboundData {
         let mut data = InboundData::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
         data

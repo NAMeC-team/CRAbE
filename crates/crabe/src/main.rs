@@ -2,7 +2,7 @@ use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{FilterComponent, InputComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::Feedback;
+use crabe_framework::data::output::{Feedback, FeedbackMap};
 use crabe_io::module::{InputConfig, InputPipeline};
 use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -53,7 +53,8 @@ impl System {
 
     // TODO: Use refresh rate
     pub fn run(&mut self, _refresh_rate: Duration) {
-        let mut feedback = Feedback {};
+        let mut feedback = FeedbackMap { feedbacks: Default::default() };
+
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.input_component.step(&mut feedback);
             let _world = self.filter_component.step(receive_data); // TODO : Verify it's good ?
