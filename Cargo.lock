@@ -125,6 +125,7 @@ dependencies = [
  "crabe_framework",
  "crabe_protocol",
  "log",
+ "nalgebra",
 ]
 
 [[package]]

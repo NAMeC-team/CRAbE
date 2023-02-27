@@ -1,5 +1,3 @@
-extern crate core;
-
 use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{FilterComponent, InputComponent};
@@ -76,15 +74,14 @@ fn main() {
         .write_style_or("CRABE_LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
-    // FilterPipeline
     // DecisionPipeline
     // ToolsPipeline
     // GuardPipeline
     // OutputPipeline
 
     let mut system = System::new(
-        InputPipeline::with_config_boxed(cli.input_config),
-        FilterPipeline::with_config_boxed(cli.filter_config),
+        InputPipeline::with_config_boxed(cli.input_config, &cli.common),
+        FilterPipeline::with_config_boxed(cli.filter_config, &cli.common),
     );
     system.run(Duration::from_millis(16));
     system.close();

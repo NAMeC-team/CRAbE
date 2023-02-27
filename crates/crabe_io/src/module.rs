@@ -2,6 +2,7 @@ use crate::league::game_controller::{GameController, GameControllerConfig};
 use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
 use crabe_framework::component::InputComponent;
+use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::Feedback;
 use crabe_framework::data::receiver::InboundData;
 
@@ -29,7 +30,7 @@ pub struct InputPipeline {
 }
 
 impl InputPipeline {
-    pub fn with_config_boxed(config: InputConfig) -> Box<Self> {
+    pub fn with_config_boxed(config: InputConfig, _: &CommonConfig) -> Box<Self> {
         let mut tasks: Vec<Box<dyn ReceiverTask>> =
             vec![Vision::with_config_boxed(config.vision_cfg)];
 

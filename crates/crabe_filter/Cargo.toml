@@ -8,5 +8,6 @@ edition = "2021"
 [dependencies]
 log = "0.4.17"
 clap = { version = "4.1.6", features = ["derive"] }
+nalgebra = { version = "0.32.1" }
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
