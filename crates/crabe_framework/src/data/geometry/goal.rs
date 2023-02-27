@@ -1,4 +1,5 @@
 // TODO : Document
+// TODO: This information doesn't represent the goal
 #[derive(Debug)]
 pub struct Goal {
     pub width: f32,

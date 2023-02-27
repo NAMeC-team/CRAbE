@@ -9,7 +9,7 @@ pub trait InputComponent {
 }
 
 pub trait FilterComponent {
-    fn step(&mut self, data: InboundData) -> World;
+    fn step(&mut self, data: InboundData) -> Option<World>; // TODO: Remove this
     fn close(&mut self);
 }
 

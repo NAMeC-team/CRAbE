@@ -1,4 +1,5 @@
 // TODO : Document
+// TODO: This information doesn't represent the penalty
 #[derive(Debug)]
 pub struct Penalty {
     pub width: f32,
