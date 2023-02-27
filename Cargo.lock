@@ -104,6 +104,7 @@ name = "crabe"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "crabe_filter",
  "crabe_framework",
  "crabe_io",
  "crabe_protocol",
@@ -117,7 +118,7 @@ name = "crabe_ai"
 version = "0.1.0"
 
 [[package]]
-name = "crabe_filters"
+name = "crabe_filter"
 version = "0.1.0"
 dependencies = [
  "clap",

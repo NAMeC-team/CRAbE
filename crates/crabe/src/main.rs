@@ -1,7 +1,8 @@
 extern crate core;
 
 use clap::Parser;
-use crabe_framework::component::InputComponent;
+use crabe_filter::{FilterConfig, FilterPipeline};
+use crabe_framework::component::{FilterComponent, InputComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::Feedback;
 use crabe_io::module::{DataReceiverConfig, DataReceiverPipeline};
@@ -20,15 +21,23 @@ pub struct Cli {
     #[command(flatten)]
     #[command(next_help_heading = "Data Receiver")]
     pub data_receiver_config: DataReceiverConfig,
+
+    #[command(flatten)]
+    #[command(next_help_heading = "Filters")]
+    pub filter_config: FilterConfig,
 }
 
 pub struct System {
-    receiver_pipeline: Box<dyn InputComponent>,
+    input_component: Box<dyn InputComponent>,
+    filter_component: Box<dyn FilterComponent>,
     running: Arc<AtomicBool>,
 }
 
 impl System {
-    pub fn new(receiver_pipeline: Box<dyn InputComponent>) -> Self {
+    pub fn new(
+        input_component: Box<dyn InputComponent>,
+        filter_component: Box<dyn FilterComponent>,
+    ) -> Self {
         let running = Arc::new(AtomicBool::new(true));
         let running_ctrlc = Arc::clone(&running);
 
@@ -38,7 +47,8 @@ impl System {
         .expect("Failed to set Ctrl-C handler");
 
         Self {
-            receiver_pipeline,
+            input_component,
+            filter_component,
             running,
         }
     }
@@ -46,13 +56,15 @@ impl System {
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback = Feedback {};
         while self.running.load(Ordering::SeqCst) {
-            let receive_data = self.receiver_pipeline.step(&mut feedback);
-            dbg!(receive_data);
+            let receive_data = self.input_component.step(&mut feedback);
+            let _world = self.filter_component.step(receive_data); // TODO : Verify it's good ?
+                                                                   // dbg!(world);
         }
     }
 
     pub fn close(&mut self) {
-        self.receiver_pipeline.close();
+        self.input_component.close();
+        self.filter_component.close();
     }
 }
 
@@ -63,14 +75,16 @@ fn main() {
         .write_style_or("CRABE_LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
-    let data_receiver = DataReceiverPipeline::with_config(cli.data_receiver_config);
     // FilterPipeline
     // DecisionPipeline
     // ToolsPipeline
     // GuardPipeline
     // OutputPipeline
 
-    let mut system = System::new(data_receiver);
+    let mut system = System::new(
+        DataReceiverPipeline::with_config(cli.data_receiver_config),
+        FilterPipeline::with_config_boxed(cli.filter_config),
+    );
     system.run(Duration::from_millis(16));
     system.close();
 }

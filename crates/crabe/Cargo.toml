@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 clap = { version = "4.1.6", features = ["derive"] }
 log = "0.4.17"
-crabe_framework = { path = "../crabe_framework" }
-crabe_io = { path = "../crabe_io" }
-crabe_protocol = { path = "../crabe_protocol" }
 env_logger = "0.10.0"
 ctrlc = "3.2.5"
+
+crabe_framework = { path = "../crabe_framework" }
+crabe_protocol = { path = "../crabe_protocol" }
+crabe_io = { path = "../crabe_io" }
+crabe_filter = { path = "../crabe_filter" }
