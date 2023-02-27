@@ -15,7 +15,7 @@ pub struct Robot<T> {
 }
 
 pub struct Ball {
-    pub pos: Point3<f32>,
+    pub position: Point3<f32>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]

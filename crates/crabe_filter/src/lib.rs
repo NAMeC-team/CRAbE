@@ -10,7 +10,10 @@ use std::time::Instant;
 #[derive(Args)]
 pub struct FilterConfig {}
 
-struct CamBall {}
+struct CamBall {
+    pub camera_id: usize,
+    pub position: Point3<f32>,
+}
 
 struct CamRobot {
     pub id: usize,
@@ -24,15 +27,15 @@ struct CamRobot {
 struct CamField {}
 
 struct TrackedRobot<T> {
-    pub packets: Vec<CamRobot>, // TODO: Make circular vector
+    pub history: Vec<CamRobot>, // TODO: Make circular vector
     pub last_update: Instant,
     pub data: Robot<T>,
 }
 
 struct TrackedBall {
-    pub packets: Vec<CamBall>, // TODO: Make circular vector
+    pub history: Vec<CamBall>, // TODO: Make circular vector
     pub last_update: Instant,
-    pub last_position: Ball,
+    pub data: Ball,
 }
 
 pub struct FilterData {
