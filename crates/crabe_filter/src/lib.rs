@@ -14,6 +14,7 @@ pub struct FilterConfig {}
 
 pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
+#[derive(Default)] // TODO: Find a way to remove this?
 struct CamBall {
     pub camera_id: u32,
     pub position: Point3<f32>,
@@ -30,29 +31,44 @@ struct CamRobot {
 
 struct CamField {}
 
-struct TrackedRobot<T> {
-    pub packets: ConstGenericRingBuffer<CamRobot, 50>,
-    // TODO: Make circular vector
-    pub last_update: Instant,
-    pub data: Robot<T>,
+struct Tracked<T, U> {
+    packets: ConstGenericRingBuffer<U, 50>,
+    pub data: T,
+    pub last_update: Instant
 }
 
-struct TrackedBall {
-    pub packets: ConstGenericRingBuffer<CamBall, 50>,
-    // TODO: Make circular vector
-    pub last_update: Instant,
-    pub data: Ball,
-}
-
-impl Default for TrackedBall {
+impl<T: Default, U> Default for Tracked<T, U> {
     fn default() -> Self {
-        Self {
+        Tracked {
             packets: ConstGenericRingBuffer::new(),
             last_update: Instant::now(),
-            data: Default::default(),
+            data: Default::default()
         }
     }
 }
+
+impl<T: Default, U> Tracked<T, U> {
+    fn new(data: T) -> Tracked<T, U> {
+        Tracked {
+            data,
+            ..Default::default()
+        }
+    }
+}
+
+impl<T, U> Tracked<T, U> {
+    fn handle_packet(&mut self, packet: U) {
+        self.packets.push(packet);
+    }
+
+    fn handle_packets(&mut self, packets: impl Iterator<Item=U>) {
+        self.packets.extend(packets);
+    }
+}
+
+
+type TrackedRobot<T> = Tracked<Robot<T>, CamRobot>;
+type TrackedBall = Tracked<Ball, CamBall>;
 
 pub struct FilterData {
     allies: TrackedRobotMap<AllyInfo>,
@@ -82,7 +98,7 @@ impl FilterPipeline {
     }
 }
 
-fn map_camera_packets(
+fn map_camera_robots(
     robots: impl Iterator<Item=SslDetectionRobot>,
     camera_id: u32,
     frame_number: u32,
@@ -107,22 +123,17 @@ fn map_camera_packets(
 }
 
 // TODO: Rename function?
-fn handle_camera_packets<T: Default>(robots: &mut TrackedRobotMap<T>, cam_robots: impl Iterator<Item=CamRobot>) {
+fn handle_camera_robots<T: Default>(robots: &mut TrackedRobotMap<T>, cam_robots: impl Iterator<Item=CamRobot>) {
     cam_robots.for_each(|r| {
         let robot = robots.entry(r.id as u32)
-            .or_insert_with(|| TrackedRobot {
-                packets: ConstGenericRingBuffer::new(),
-                last_update: Instant::now(),
-                data: Robot {
-                    id: r.id as u32,
-                    ..Default::default()
-                },
-            });
+            .or_insert_with(|| Tracked::new(Robot {
+                id: r.id as u32,
+                ..Default::default()
+            }));
 
-        robot.packets.push(r);
+        robot.handle_packet(r);
     })
 }
-
 
 impl FilterComponent for FilterPipeline {
     fn step(&mut self, mut data: InboundData, world: &mut World) -> Option<World> {
@@ -131,8 +142,8 @@ impl FilterComponent for FilterPipeline {
                 let camera_id = detection.camera_id;
                 let frame_number = detection.frame_number;
                 let time = detection.t_capture;
-                let yellow = map_camera_packets(detection.robots_yellow.drain(..), camera_id, frame_number, time);
-                let blue = map_camera_packets(detection.robots_blue.drain(..), camera_id, frame_number, time);
+                let yellow = map_camera_robots(detection.robots_yellow.drain(..), camera_id, frame_number, time);
+                let blue = map_camera_robots(detection.robots_blue.drain(..), camera_id, frame_number, time);
                 let allies;
                 let enemies;
                 if self.yellow {
@@ -143,8 +154,8 @@ impl FilterComponent for FilterPipeline {
                     enemies = yellow;
                 }
 
-                handle_camera_packets(&mut self.filter_data.allies, allies);
-                handle_camera_packets(&mut self.filter_data.enemies, enemies);
+                handle_camera_robots(&mut self.filter_data.allies, allies);
+                handle_camera_robots(&mut self.filter_data.enemies, enemies);
 
                 detection.balls.drain(..).for_each(|b| {
                     self.filter_data.ball.packets.push(CamBall {
