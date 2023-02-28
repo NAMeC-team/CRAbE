@@ -120,7 +120,7 @@ impl FilterComponent for FilterPipeline {
                 let camera_id = detection.camera_id;
                 let frame_number = detection.frame_number;
                 let time = Duration::try_from_secs_f64(detection.t_capture).unwrap(); // TODO: handle error & check if t_capture is in seconds
-                let map_cam_robots = |r| if let Some(id) = r.robot_id {
+                let map_cam_robots = |r: SslDetectionRobot| if let Some(id) = r.robot_id {
                     Some(CamRobot {
                         id: id as usize,
                         camera_id,
@@ -150,7 +150,7 @@ impl FilterComponent for FilterPipeline {
                 handle_camera_robots(&mut self.filter_data.allies, allies);
                 handle_camera_robots(&mut self.filter_data.enemies, enemies);
 
-                let ball_packets = detection.balls.drain(..).map(|x| CamBall {
+                let ball_packets = detection.balls.drain(..).map(|b| CamBall {
                     camera_id,
                     position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
                 });
@@ -162,8 +162,6 @@ impl FilterComponent for FilterPipeline {
                 dbg!(geometry.field);
             }
         });
-
-        None
     }
 
     fn close(&mut self) {}
