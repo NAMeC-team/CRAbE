@@ -24,3 +24,33 @@ pub struct Geometry {
     pub opponent_penalty: Penalty,
     pub center: Circle,
 }
+
+// TODO: Add default dimension of field Division B
+impl Default for Geometry {
+    fn default() -> Self {
+        Self {
+            field_width: 9.0,
+            field_length: 6.0,
+            ally_goal: Goal {
+                width: 0.0,
+                depth: 0.0,
+            },
+            opponent_goal: Goal {
+                width: 0.0,
+                depth: 0.0,
+            },
+            ally_penalty: Penalty {
+                width: 0.0,
+                depth: 0.0,
+            },
+            opponent_penalty: Penalty {
+                width: 0.0,
+                depth: 0.0,
+            },
+            center: Circle {
+                center: Default::default(),
+                radius: 0.0,
+            },
+        }
+    }
+}

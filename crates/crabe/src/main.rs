@@ -53,7 +53,9 @@ impl System {
 
     // TODO: Use refresh rate
     pub fn run(&mut self, _refresh_rate: Duration) {
-        let mut feedback = FeedbackMap { feedbacks: Default::default() };
+        let mut feedback = FeedbackMap {
+            feedbacks: Default::default(),
+        };
 
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.input_component.step(&mut feedback);

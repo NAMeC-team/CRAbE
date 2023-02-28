@@ -1,9 +1,9 @@
-use crate::constant::MAX_ROBOTS;
+use crate::constant::MAX_ID_ROBOTS;
 
 // TODO: Document
 #[derive(Debug)]
 pub struct FeedbackMap {
-    pub feedbacks: [Option<Feedback>; MAX_ROBOTS]
+    pub feedbacks: [Option<Feedback>; MAX_ID_ROBOTS],
 }
 
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub struct Feedback {
 }
 
 pub struct CommandMap {
-    commands: [Option<Command>; MAX_ROBOTS]
+    commands: [Option<Command>; MAX_ID_ROBOTS],
 }
 
 pub enum Kick {

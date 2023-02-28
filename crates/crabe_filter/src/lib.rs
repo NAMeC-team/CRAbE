@@ -1,7 +1,7 @@
 use clap::Args;
 use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
-use crabe_framework::constant::MAX_ROBOTS;
+use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, TeamColor, World};
 use nalgebra::{Point2, Point3};
@@ -39,9 +39,9 @@ struct TrackedBall {
 }
 
 pub struct FilterData {
-    allies: [Option<TrackedRobot<AllyInfo>>; MAX_ROBOTS], // TODO: Use HASHMAP ?
-    enemies: [Option<TrackedRobot<EnemyInfo>>; MAX_ROBOTS], // TODO: Use HASHMAP ?
-    ball: Option<TrackedBall>,                            // TODO: Remove option ?
+    allies: [Option<TrackedRobot<AllyInfo>>; MAX_ID_ROBOTS], // TODO: Use HASHMAP ?
+    enemies: [Option<TrackedRobot<EnemyInfo>>; MAX_ID_ROBOTS], // TODO: Use HASHMAP ?
+    ball: Option<TrackedBall>,                               // TODO: Remove option ?
 }
 
 pub trait Filter {}

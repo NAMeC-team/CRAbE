@@ -1,7 +1,7 @@
-use crate::constant::MAX_ROBOTS;
 use crate::data::geometry::Geometry;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 pub struct AllyInfo;
 pub struct EnemyInfo;
@@ -20,6 +20,7 @@ pub struct Ball {
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TeamColor {
+    NEUTRAL,
     BLUE,
     YELLOW,
 }
@@ -29,16 +30,27 @@ pub struct Team {
     name: String,
 }
 
+impl Default for Team {
+    fn default() -> Self {
+        Self {
+            color: TeamColor::NEUTRAL,
+            name: "UNKNOWN".to_string(),
+        }
+    }
+}
+
+#[derive(Default)]
 pub struct GameState {
     pub ally: Team,
     pub enemy: Team,
     pub blue_positive_half: bool,
 }
 
+#[derive(Default)]
 pub struct World {
     pub state: GameState,
-    pub geometry: Geometry, // TODO : Add default value
-    pub allies_bot: [Option<Robot<AllyInfo>>; MAX_ROBOTS],
-    pub enemies_bot: [Option<Robot<EnemyInfo>>; MAX_ROBOTS],
-    pub ball: Ball,
+    pub geometry: Geometry,
+    pub allies_bot: HashMap<u8, Robot<AllyInfo>>,
+    pub enemies_bot: HashMap<u8, Robot<EnemyInfo>>,
+    pub ball: Option<Ball>,
 }

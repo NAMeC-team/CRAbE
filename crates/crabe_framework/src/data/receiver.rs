@@ -1,8 +1,8 @@
+use crate::constant::MAX_ID_ROBOTS;
 use crate::data::output::{Feedback, FeedbackMap};
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use std::fmt::Debug;
-use crate::constant::MAX_ROBOTS;
 
 /// Represents the data received by the software from external sources and passed through the filters.
 #[derive(Debug)]
@@ -20,7 +20,9 @@ impl Default for InboundData {
         Self {
             vision_packet: Vec::new(),
             gc_packet: Vec::new(),
-            feedback: FeedbackMap{ feedbacks: Default::default() }
+            feedback: FeedbackMap {
+                feedbacks: Default::default(),
+            },
         }
     }
 }
