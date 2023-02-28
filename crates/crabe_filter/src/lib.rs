@@ -13,9 +13,13 @@ pub struct FilterConfig {}
 
 pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
+#[derive(Debug)]
 struct CamBall {
-    pub camera_id: u32,
     pub position: Point3<f32>,
+    pub camera_id: u32,
+    pub time: Instant,
+    pub frame_number: u32,
+    pub confidence: f32,
 }
 
 struct CamRobot {
@@ -25,18 +29,27 @@ struct CamRobot {
     pub orientation: f32,
     pub time: Instant,
     pub frame_number: u32,
+    pub confidence: f32,
 }
 
-struct CamField {}
+#[derive(Debug, Default)]
+struct CamGeometry {
+    pub field_length: f32,
+    pub field_width: f32,
+    pub goal_width: f32,
+    pub goal_depth: f32,
+    // pub last_update: Instant,
+
+}
 
 struct TrackedRobot<T> {
-    pub packets: ConstGenericRingBuffer<CamRobot, 50>, // TODO: Make circular vector
+    pub packets: ConstGenericRingBuffer<CamRobot, 64>,
     pub last_update: Instant,
     pub data: Robot<T>,
 }
 
 struct TrackedBall {
-    pub packets: ConstGenericRingBuffer<CamBall, 50>, // TODO: Make circular vector
+    pub packets: ConstGenericRingBuffer<CamBall, 64>,
     pub last_update: Instant,
     pub data: Ball,
 }
@@ -55,6 +68,7 @@ pub struct FilterData {
     allies: TrackedRobotMap<AllyInfo>,
     enemies: TrackedRobotMap<EnemyInfo>,
     ball: TrackedBall,
+    geometry: CamGeometry,
 }
 
 pub trait Filter {}
@@ -73,6 +87,7 @@ impl FilterPipeline {
                 allies: Default::default(),
                 enemies: Default::default(),
                 ball: Default::default(),
+                geometry: Default::default(),
             },
             yellow: common_config.yellow,
         })
@@ -161,11 +176,16 @@ impl FilterComponent for FilterPipeline {
                     self.filter_data.ball.packets.push(CamBall {
                         camera_id,
                         position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
-                    })
+                        confidence: b.confidence,
+                        frame_number,
+                        time: Instant::now(), // TODO: Convert t_capture to a time (Train)
+                    });
+                    // dbg!(time);
                 });
             }
 
             if let Some(mut geometry) = packet.geometry {
+
                 dbg!(geometry.field);
             }
         });
