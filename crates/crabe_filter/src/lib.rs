@@ -7,6 +7,8 @@ use nalgebra::{Point2, Point3};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
 use std::collections::HashMap;
 use std::time::Instant;
+use chrono::{DateTime, Duration, LocalResult, NaiveDateTime, TimeZone, Utc};
+use log::error;
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -100,7 +102,27 @@ impl FilterComponent for FilterPipeline {
             if let Some(mut detection) = packet.detection {
                 let camera_id = detection.camera_id;
                 let frame_number = detection.frame_number;
-                let time = detection.t_capture;
+                let t_capture = match Utc.timestamp_millis_opt((detection.t_capture * 1000.0) as i64) {
+                    LocalResult::Single(dt) => dt,
+                    LocalResult::None => {
+                        let now_utc = Utc::now();
+                        error!("Invalid timestamp, using current time: {}", now_utc);
+                        now_utc
+                    },
+                    LocalResult::Ambiguous(dt_min, dt_max) => {
+                        let dt_midpoint = dt_min + (dt_max - dt_min) / 2;
+                        error!("Ambiguous timestamp resolved to midpoint: {}", dt_midpoint);
+                        dt_midpoint
+                    }                };
+                println!("t_capture: {}", t_capture);
+                /*
+                JUST FOR THE TEST ! TODO: Remove this line
+                println!("DateTime: {}", dt);
+                let now: DateTime<Utc> = Utc::now();
+                let duration = now.signed_duration_since(dt);
+                println!("Duration between dt1 and dt2: {}", duration.num_milliseconds());
+                */
+
 
                 detection.robots_blue.drain(..).for_each(|r| {
                     if let Some(id) = r.robot_id {
@@ -186,7 +208,7 @@ impl FilterComponent for FilterPipeline {
 
             if let Some(mut geometry) = packet.geometry {
 
-                dbg!(geometry.field);
+                //dbg!(geometry.field);
             }
         });
 
