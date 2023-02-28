@@ -1,14 +1,17 @@
 use clap::Args;
 use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
-use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::receiver::InboundData;
-use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, TeamColor, World};
+use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, World};
 use nalgebra::{Point2, Point3};
+use ringbuffer::ConstGenericRingBuffer;
+use std::collections::HashMap;
 use std::time::Instant;
 
 #[derive(Args)]
 pub struct FilterConfig {}
+
+pub type TrackedRobotMap<T> = HashMap<u8, TrackedRobot<T>>;
 
 struct CamBall {
     pub camera_id: usize,
@@ -27,21 +30,21 @@ struct CamRobot {
 struct CamField {}
 
 struct TrackedRobot<T> {
-    pub packets: Vec<CamRobot>, // TODO: Make circular vector
+    pub packets: ConstGenericRingBuffer<CamRobot, 50>, // TODO: Make circular vector
     pub last_update: Instant,
     pub data: Robot<T>,
 }
 
 struct TrackedBall {
-    pub packets: Vec<CamBall>, // TODO: Make circular vector
+    pub packets: ConstGenericRingBuffer<CamBall, 50>, // TODO: Make circular vector
     pub last_update: Instant,
     pub data: Ball,
 }
 
 pub struct FilterData {
-    allies: [Option<TrackedRobot<AllyInfo>>; MAX_ID_ROBOTS], // TODO: Use HASHMAP ?
-    enemies: [Option<TrackedRobot<EnemyInfo>>; MAX_ID_ROBOTS], // TODO: Use HASHMAP ?
-    ball: Option<TrackedBall>,                               // TODO: Remove option ?
+    allies: TrackedRobotMap<AllyInfo>,
+    enemies: TrackedRobotMap<EnemyInfo>,
+    ball: Option<TrackedBall>, // TODO: Remove option ?
 }
 
 pub trait Filter {}
