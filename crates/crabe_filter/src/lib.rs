@@ -14,7 +14,6 @@ pub struct FilterConfig {}
 
 pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
-#[derive(Default)] // TODO: Find a way to remove this?
 struct CamBall {
     pub camera_id: u32,
     pub position: Point3<f32>,
