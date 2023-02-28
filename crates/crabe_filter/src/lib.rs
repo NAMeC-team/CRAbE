@@ -8,7 +8,7 @@ use ringbuffer::{ConstGenericRingBuffer, RingBuffer, RingBufferExt, RingBufferWr
 use std::collections::HashMap;
 use std::time::Instant;
 use chrono::{DateTime, Duration, LocalResult, NaiveDateTime, TimeZone, Utc};
-use log::error;
+use log::{error, info};
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -19,7 +19,7 @@ pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 struct CamBall {
     pub position: Point3<f32>,
     pub camera_id: u32,
-    pub time: Instant,
+    pub t_capture: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
 }
@@ -29,7 +29,7 @@ struct CamRobot {
     pub camera_id: u32,
     pub position: Point2<f32>,
     pub orientation: f32,
-    pub time: Instant,
+    pub t_capture: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
 }
@@ -114,7 +114,7 @@ impl FilterComponent for FilterPipeline {
                         error!("Ambiguous timestamp resolved to midpoint: {}", dt_midpoint);
                         dt_midpoint
                     }                };
-                println!("t_capture: {}", t_capture);
+                info!("t_capture: {}", t_capture);
                 /*
                 JUST FOR THE TEST ! TODO: Remove this line
                 println!("DateTime: {}", dt);
@@ -200,7 +200,7 @@ impl FilterComponent for FilterPipeline {
                         position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
                         confidence: b.confidence,
                         frame_number,
-                        time: Instant::now(), // TODO: Convert t_capture to a time (Train)
+                        t_capture,
                     });
                     // dbg!(time);
                 });
