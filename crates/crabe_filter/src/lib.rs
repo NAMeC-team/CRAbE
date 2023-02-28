@@ -20,17 +20,18 @@ pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 struct CamBall {
     pub position: Point3<f32>,
     pub camera_id: u32,
-    pub time: Instant,
+    pub time: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
 }
 
+#[derive(Debug)]
 struct CamRobot {
     pub id: usize,
     pub camera_id: u32,
     pub position: Point2<f32>,
     pub orientation: f32,
-    pub time: Instant,
+    pub time: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
 }
@@ -150,7 +151,7 @@ impl FilterComponent for FilterPipeline {
                     }
                 };
 
-                let map_cam_robots = |r: SslDetectionRobot| if let Some(id) = r.robot_id {
+                let map_robot_packets = |r: SslDetectionRobot| if let Some(id) = r.robot_id {
                     Some(CamRobot {
                         id: id as usize,
                         camera_id,
@@ -164,8 +165,8 @@ impl FilterComponent for FilterPipeline {
                     None
                 };
 
-                let yellow = detection.robots_yellow.drain(..).filter_map(map_cam_robots);
-                let blue = detection.robots_blue.drain(..).filter_map(map_cam_robots);
+                let yellow = detection.robots_yellow.drain(..).filter_map(map_robot_packets);
+                let blue = detection.robots_blue.drain(..).filter_map(map_robot_packets);
 
                 let allies;
                 let enemies;
@@ -183,6 +184,7 @@ impl FilterComponent for FilterPipeline {
 
                 let ball_packets = detection.balls.drain(..).map(|b| CamBall {
                     camera_id,
+                    frame_number,
                     position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
                     time: t_capture,
                     confidence: b.confidence
