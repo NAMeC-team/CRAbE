@@ -1,10 +1,7 @@
 use crate::constant::MAX_ID_ROBOTS;
 
 // TODO: Document
-#[derive(Debug)]
-pub struct FeedbackMap {
-    pub feedbacks: [Option<Feedback>; MAX_ID_ROBOTS],
-}
+pub type FeedbackMap = [Option<Feedback>; MAX_ID_ROBOTS];
 
 #[derive(Debug)]
 pub struct Feedback {

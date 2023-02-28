@@ -46,11 +46,13 @@ pub struct GameState {
     pub blue_positive_half: bool,
 }
 
+pub type RobotMap<T> = HashMap<u8, Robot<T>>;
+
 #[derive(Default)]
 pub struct World {
     pub state: GameState,
     pub geometry: Geometry,
-    pub allies_bot: HashMap<u8, Robot<AllyInfo>>,
-    pub enemies_bot: HashMap<u8, Robot<EnemyInfo>>,
+    pub allies_bot: RobotMap<AllyInfo>,
+    pub enemies_bot: RobotMap<EnemyInfo>,
     pub ball: Option<Ball>,
 }

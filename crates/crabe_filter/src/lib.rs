@@ -27,13 +27,13 @@ struct CamRobot {
 struct CamField {}
 
 struct TrackedRobot<T> {
-    pub history: Vec<CamRobot>, // TODO: Make circular vector
+    pub packets: Vec<CamRobot>, // TODO: Make circular vector
     pub last_update: Instant,
     pub data: Robot<T>,
 }
 
 struct TrackedBall {
-    pub history: Vec<CamBall>, // TODO: Make circular vector
+    pub packets: Vec<CamBall>, // TODO: Make circular vector
     pub last_update: Instant,
     pub data: Ball,
 }
@@ -67,7 +67,7 @@ impl FilterPipeline {
 }
 
 impl FilterComponent for FilterPipeline {
-    fn step(&mut self, mut data: InboundData) -> Option<World> {
+    fn step(&mut self, mut data: InboundData, world: &mut World) -> Option<World> {
         data.vision_packet.drain(..).for_each(|packet| {
             if let Some(mut detection) = packet.detection {
                 let camera_id = detection.camera_id;
