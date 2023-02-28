@@ -4,7 +4,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, World};
 use nalgebra::{Point2, Point3};
-use ringbuffer::ConstGenericRingBuffer;
+use ringbuffer::{ConstGenericRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
 use std::collections::HashMap;
 use std::time::Instant;
 
@@ -54,7 +54,7 @@ impl Default for TrackedBall {
 pub struct FilterData {
     allies: TrackedRobotMap<AllyInfo>,
     enemies: TrackedRobotMap<EnemyInfo>,
-    ball: TrackedBall, // TODO: Remove option ?
+    ball: TrackedBall,
 }
 
 pub trait Filter {}
