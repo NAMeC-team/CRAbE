@@ -114,25 +114,23 @@ fn handle_camera_robots<T: Default>(
 }
 
 impl FilterComponent for FilterPipeline {
-    fn step(&mut self, mut data: InboundData, world: &mut World) -> Option<World> {
+    fn step(&mut self, mut data: InboundData, world: &mut World) {
         data.vision_packet.drain(..).for_each(|packet| {
             if let Some(mut detection) = packet.detection {
                 let camera_id = detection.camera_id;
                 let frame_number = detection.frame_number;
                 let time = Duration::try_from_secs_f64(detection.t_capture).unwrap(); // TODO: handle error & check if t_capture is in seconds
-                let map_cam_robots = |r| {
-                    if let Some(id) = r.robot_id {
-                        Some(CamRobot {
-                            id: id as usize,
-                            camera_id,
-                            position: Point2::new(r.x / 1000.0, r.y / 1000.0),
-                            orientation: r.orientation.unwrap_or(0.),
-                            time,
-                            frame_number,
-                        })
-                    } else {
-                        None
-                    }
+                let map_cam_robots = |r| if let Some(id) = r.robot_id {
+                    Some(CamRobot {
+                        id: id as usize,
+                        camera_id,
+                        position: Point2::new(r.x / 1000.0, r.y / 1000.0),
+                        orientation: r.orientation.unwrap_or(0.),
+                        time,
+                        frame_number,
+                    })
+                } else {
+                    None
                 };
 
                 let yellow = detection.robots_yellow.drain(..).filter_map(map_cam_robots);
