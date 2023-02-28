@@ -6,6 +6,7 @@ use std::collections::HashMap;
 pub struct AllyInfo;
 pub struct EnemyInfo;
 
+#[derive(Default)]
 pub struct Robot<T> {
     pub id: u32,
     pub position: Point2<f32>,
@@ -14,6 +15,7 @@ pub struct Robot<T> {
     pub robot_info: T,
 }
 
+#[derive(Default)]
 pub struct Ball {
     pub position: Point3<f32>,
 }

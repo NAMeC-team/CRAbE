@@ -11,16 +11,16 @@ use std::time::Instant;
 #[derive(Args)]
 pub struct FilterConfig {}
 
-pub type TrackedRobotMap<T> = HashMap<u8, TrackedRobot<T>>;
+pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
 struct CamBall {
-    pub camera_id: usize,
+    pub camera_id: u32,
     pub position: Point3<f32>,
 }
 
 struct CamRobot {
     pub id: usize,
-    pub camera_id: usize,
+    pub camera_id: u32,
     pub position: Point2<f32>,
     pub orientation: f32,
     pub time: Instant,
@@ -41,10 +41,20 @@ struct TrackedBall {
     pub data: Ball,
 }
 
+impl Default for TrackedBall {
+    fn default() -> Self {
+        Self {
+            packets: ConstGenericRingBuffer::new(),
+            last_update: Instant::now(),
+            data: Default::default(),
+        }
+    }
+}
+
 pub struct FilterData {
     allies: TrackedRobotMap<AllyInfo>,
     enemies: TrackedRobotMap<EnemyInfo>,
-    ball: Option<TrackedBall>, // TODO: Remove option ?
+    ball: TrackedBall, // TODO: Remove option ?
 }
 
 pub trait Filter {}
@@ -77,9 +87,82 @@ impl FilterComponent for FilterPipeline {
                 let frame_number = detection.frame_number;
                 let time = detection.t_capture;
 
-                detection.robots_blue.drain(..).for_each(|r| {});
-                detection.robots_yellow.drain(..).for_each(|r| {});
-                detection.balls.drain(..).for_each(|b| {});
+                detection.robots_blue.drain(..).for_each(|r| {
+                    if let Some(id) = r.robot_id {
+                        if self.yellow {
+                            self.filter_data
+                                .enemies
+                                .entry(id)
+                                .or_insert_with(|| TrackedRobot {
+                                    packets: ConstGenericRingBuffer::new(),
+                                    last_update: Instant::now(),
+                                    data: Robot {
+                                        id,
+                                        position: Default::default(),
+                                        orientation: 0.0,
+                                        has_ball: false,
+                                        robot_info: EnemyInfo {},
+                                    },
+                                });
+                        } else {
+                            self.filter_data
+                                .allies
+                                .entry(id)
+                                .or_insert_with(|| TrackedRobot {
+                                    packets: ConstGenericRingBuffer::new(),
+                                    last_update: Instant::now(),
+                                    data: Robot {
+                                        id,
+                                        position: Default::default(),
+                                        orientation: 0.0,
+                                        has_ball: false,
+                                        robot_info: AllyInfo {},
+                                    },
+                                });
+                        }
+                    }
+                });
+                detection.robots_yellow.drain(..).for_each(|r| {
+                    if let Some(id) = r.robot_id {
+                        if self.yellow {
+                            self.filter_data
+                                .allies
+                                .entry(id)
+                                .or_insert_with(|| TrackedRobot {
+                                    packets: ConstGenericRingBuffer::new(),
+                                    last_update: Instant::now(),
+                                    data: Robot {
+                                        id,
+                                        position: Default::default(),
+                                        orientation: 0.0,
+                                        has_ball: false,
+                                        robot_info: AllyInfo {},
+                                    },
+                                });
+                        } else {
+                            self.filter_data
+                                .enemies
+                                .entry(id)
+                                .or_insert_with(|| TrackedRobot {
+                                    packets: ConstGenericRingBuffer::new(),
+                                    last_update: Instant::now(),
+                                    data: Robot {
+                                        id,
+                                        position: Default::default(),
+                                        orientation: 0.0,
+                                        has_ball: false,
+                                        robot_info: EnemyInfo {},
+                                    },
+                                });
+                        }
+                    }
+                });
+                detection.balls.drain(..).for_each(|b| {
+                    self.filter_data.ball.packets.push(CamBall {
+                        camera_id,
+                        position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
+                    })
+                });
             }
 
             if let Some(mut geometry) = packet.geometry {
