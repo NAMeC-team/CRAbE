@@ -14,8 +14,6 @@ use log::error;
 #[derive(Args)]
 pub struct FilterConfig {}
 
-pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
-
 #[derive(Debug)]
 struct CamBall {
     pub position: Point3<f32>,
@@ -36,6 +34,11 @@ struct CamRobot {
     pub confidence: f32,
 }
 
+pub enum TeamColor {
+    Yellow,
+    Blue
+}
+
 #[derive(Debug, Default)]
 struct CamGeometry {
     pub field_length: f32,
@@ -47,7 +50,7 @@ struct CamGeometry {
 }
 
 struct Tracked<T, U> {
-    packets: ConstGenericRingBuffer<U, 50>,
+    pub packets: ConstGenericRingBuffer<U, 50>,
     pub data: T,
     pub last_update: Instant,
 }
@@ -71,18 +74,10 @@ impl<T: Default, U> Tracked<T, U> {
     }
 }
 
-impl<T, U> Tracked<T, U> {
-    fn handle_packet(&mut self, packet: U) {
-        self.packets.push(packet);
-    }
+pub type TrackedRobot<T> = Tracked<Robot<T>, CamRobot>;
+pub type TrackedBall = Tracked<Ball, CamBall>;
 
-    fn handle_packets(&mut self, packets: impl Iterator<Item = U>) {
-        self.packets.extend(packets);
-    }
-}
-
-type TrackedRobot<T> = Tracked<Robot<T>, CamRobot>;
-type TrackedBall = Tracked<Ball, CamBall>;
+pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
 pub struct FilterData {
     allies: TrackedRobotMap<AllyInfo>,
@@ -96,7 +91,7 @@ pub trait Filter {}
 pub struct FilterPipeline {
     pub filters: Vec<Box<dyn Filter>>,
     pub filter_data: FilterData,
-    pub yellow: bool,
+    pub team_color: TeamColor,
 }
 
 impl FilterPipeline {
@@ -109,7 +104,7 @@ impl FilterPipeline {
                 ball: Default::default(),
                 geometry: Default::default(),
             },
-            yellow: common_config.yellow,
+            team_color: if common_config.yellow { TeamColor::Yellow } else { TeamColor::Blue },
         })
     }
 }
@@ -127,7 +122,7 @@ fn handle_camera_robots<T: Default>(
             })
         });
 
-        robot.handle_packet(r);
+        robot.packets.push(r);
     })
 }
 
@@ -171,12 +166,16 @@ impl FilterComponent for FilterPipeline {
                 let allies;
                 let enemies;
 
-                if self.yellow {
-                    allies = yellow;
-                    enemies = blue;
-                } else {
-                    allies = blue;
-                    enemies = yellow;
+                match self.team_color {
+                    TeamColor::Yellow => {
+                        allies = yellow;
+                        enemies = blue;
+                    },
+
+                    TeamColor::Blue => {
+                        allies = blue;
+                        enemies = yellow;
+                    }
                 }
 
                 handle_camera_robots(&mut self.filter_data.allies, allies);
@@ -190,11 +189,10 @@ impl FilterComponent for FilterPipeline {
                     confidence: b.confidence
                 });
 
-                self.filter_data.ball.handle_packets(ball_packets);
+                self.filter_data.ball.packets.extend(ball_packets);
             }
 
             if let Some(mut geometry) = packet.geometry {
-
                 //dbg!(geometry.field);
             }
         });
