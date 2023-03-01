@@ -16,7 +16,7 @@ pub struct FilterConfig {}
 pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
 #[derive(Debug)]
-struct CamBall {
+pub struct CamBall {
     pub position: Point3<f32>,
     pub camera_id: u32,
     pub t_capture: DateTime<Utc>,
@@ -24,7 +24,7 @@ struct CamBall {
     pub confidence: f32,
 }
 
-struct CamRobot {
+pub struct CamRobot {
     pub id: u32,
     pub camera_id: u32,
     pub position: Point2<f32>,
@@ -35,7 +35,7 @@ struct CamRobot {
 }
 
 #[derive(Debug, Default)]
-struct CamGeometry {
+pub struct CamGeometry {
     pub field_length: f32,
     pub field_width: f32,
     pub goal_width: f32,
@@ -43,7 +43,7 @@ struct CamGeometry {
     // pub last_update: Instant,
 }
 
-struct TrackedRobot<T> {
+pub struct TrackedRobot<T> {
     pub packets: ConstGenericRingBuffer<CamRobot, 64>,
     pub last_update: Instant,
     pub data: Robot<T>,
@@ -207,7 +207,6 @@ impl FilterComponent for FilterPipeline {
                         frame_number,
                         t_capture,
                     });
-                    // dbg!(time);
                 });
             }
 
