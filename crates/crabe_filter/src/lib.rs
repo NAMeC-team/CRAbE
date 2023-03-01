@@ -43,33 +43,37 @@ struct CamGeometry {
     // pub last_update: Instant,
 }
 
-struct Tracked<T, U> {
-    pub packets: ConstGenericRingBuffer<U, 50>,
-    pub data: T,
+struct TrackedRobot<T> {
+    pub packets: ConstGenericRingBuffer<CamRobot, 50>,
+    pub data: Robot<T>,
     pub last_update: Instant,
 }
 
-impl<T: Default, U> Default for Tracked<T, U> {
+impl<T: Default> Default for TrackedRobot<T> {
     fn default() -> Self {
-        Self {
+        TrackedRobot {
             packets: ConstGenericRingBuffer::new(),
-            last_update: Instant::now(),
-            data: Default::default(),
+            data: Robot::<T>::default(),
+            last_update: Instant::now()
         }
     }
 }
 
-impl<T: Default, U> Tracked<T, U> {
-    fn new(data: T) -> Tracked<T, U> {
-        Tracked {
-            data,
-            ..Default::default()
+struct TrackedBall {
+    pub packets: ConstGenericRingBuffer<CamBall, 50>,
+    pub data: Ball,
+    pub last_update: Instant,
+}
+
+impl Default for TrackedBall {
+    fn default() -> Self {
+        TrackedBall {
+            packets: ConstGenericRingBuffer::new(),
+            data: Ball::default(),
+            last_update: Instant::now()
         }
     }
 }
-
-pub type TrackedRobot<T> = Tracked<Robot<T>, CamRobot>;
-pub type TrackedBall = Tracked<Ball, CamBall>;
 
 pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
 
@@ -109,10 +113,13 @@ fn track_robots<T: Default>(
 ) {
     cam_robots.for_each(|r| {
         let robot = robots.entry(r.id as u32).or_insert_with(|| {
-            Tracked::new(Robot {
-                id: r.id as u32,
+            TrackedRobot {
+                data: Robot {
+                    id: r.id as u32,
+                    ..Default::default()
+                },
                 ..Default::default()
-            })
+            }
         });
 
         robot.packets.push(r);
@@ -141,9 +148,9 @@ impl FilterComponent for FilterPipeline {
 
                 let map_robot_packets = |r: SslDetectionRobot| if let Some(id) = r.robot_id {
                     Some(CamRobot {
-                        id: id,
+                        id,
                         camera_id,
-                        position: Point2::new(r.x / 1000.0, r.y / 1000.0),
+                        position: Point2::new(r.x, r.y),
                         orientation: r.orientation.unwrap_or(0.),
                         t_capture,
                         frame_number,
