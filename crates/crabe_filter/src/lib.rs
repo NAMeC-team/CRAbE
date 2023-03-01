@@ -1,14 +1,14 @@
+use chrono::{DateTime, Duration, LocalResult, NaiveDateTime, TimeZone, Utc};
 use clap::Args;
 use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, World};
+use log::{error, info};
 use nalgebra::{Point2, Point3};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
 use std::collections::HashMap;
 use std::time::Instant;
-use chrono::{DateTime, Duration, LocalResult, NaiveDateTime, TimeZone, Utc};
-use log::{error, info};
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -25,7 +25,7 @@ struct CamBall {
 }
 
 struct CamRobot {
-    pub id: usize,
+    pub id: u32,
     pub camera_id: u32,
     pub position: Point2<f32>,
     pub orientation: f32,
@@ -41,7 +41,6 @@ struct CamGeometry {
     pub goal_width: f32,
     pub goal_depth: f32,
     // pub last_update: Instant,
-
 }
 
 struct TrackedRobot<T> {
@@ -102,18 +101,20 @@ impl FilterComponent for FilterPipeline {
             if let Some(mut detection) = packet.detection {
                 let camera_id = detection.camera_id;
                 let frame_number = detection.frame_number;
-                let t_capture = match Utc.timestamp_millis_opt((detection.t_capture * 1000.0) as i64) {
-                    LocalResult::Single(dt) => dt,
-                    LocalResult::None => {
-                        let now_utc = Utc::now();
-                        error!("Invalid timestamp, using current time: {}", now_utc);
-                        now_utc
-                    },
-                    LocalResult::Ambiguous(dt_min, dt_max) => {
-                        let dt_midpoint = dt_min + (dt_max - dt_min) / 2;
-                        error!("Ambiguous timestamp resolved to midpoint: {}", dt_midpoint);
-                        dt_midpoint
-                    }                };
+                let t_capture =
+                    match Utc.timestamp_millis_opt((detection.t_capture * 1000.0) as i64) {
+                        LocalResult::Single(dt) => dt,
+                        LocalResult::None => {
+                            let now_utc = Utc::now();
+                            error!("Invalid timestamp, using current time: {}", now_utc);
+                            now_utc
+                        }
+                        LocalResult::Ambiguous(dt_min, dt_max) => {
+                            let dt_midpoint = dt_min + (dt_max - dt_min) / 2;
+                            error!("Ambiguous timestamp resolved to midpoint: {}", dt_midpoint);
+                            dt_midpoint
+                        }
+                    };
                 info!("t_capture: {}", t_capture);
                 /*
                 JUST FOR THE TEST ! TODO: Remove this line
@@ -122,7 +123,6 @@ impl FilterComponent for FilterPipeline {
                 let duration = now.signed_duration_since(dt);
                 println!("Duration between dt1 and dt2: {}", duration.num_milliseconds());
                 */
-
 
                 detection.robots_blue.drain(..).for_each(|r| {
                     if let Some(id) = r.robot_id {
@@ -177,20 +177,30 @@ impl FilterComponent for FilterPipeline {
                                     },
                                 });
                         } else {
-                            self.filter_data
-                                .enemies
-                                .entry(id)
-                                .or_insert_with(|| TrackedRobot {
-                                    packets: ConstGenericRingBuffer::new(),
-                                    last_update: Instant::now(),
-                                    data: Robot {
-                                        id,
-                                        position: Default::default(),
-                                        orientation: 0.0,
-                                        has_ball: false,
-                                        robot_info: EnemyInfo {},
-                                    },
+                            let tracked_robot =
+                                self.filter_data.enemies.entry(id).or_insert_with(|| {
+                                    TrackedRobot {
+                                        packets: ConstGenericRingBuffer::new(),
+                                        last_update: Instant::now(),
+                                        data: Robot {
+                                            id,
+                                            position: Default::default(),
+                                            orientation: 0.0,
+                                            has_ball: false,
+                                            robot_info: EnemyInfo {},
+                                        },
+                                    }
                                 });
+
+                            tracked_robot.packets.push(CamRobot {
+                                id,
+                                camera_id,
+                                position: Point2::new(r.x, r.y),
+                                orientation: 0.0,
+                                t_capture,
+                                frame_number,
+                                confidence: 0.0,
+                            })
                         }
                     }
                 });
