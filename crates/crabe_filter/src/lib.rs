@@ -3,7 +3,7 @@ use clap::Args;
 use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
-use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, World};
+use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, Team, TeamColor, World};
 use log::{error, info};
 use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
 use nalgebra::{Point2, Point3};
@@ -32,11 +32,6 @@ struct CamRobot {
     pub t_capture: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
-}
-
-pub enum TeamColor {
-    Yellow,
-    Blue
 }
 
 #[derive(Debug, Default)]
@@ -108,8 +103,7 @@ impl FilterPipeline {
     }
 }
 
-// TODO: Rename function?
-fn handle_camera_robots<T: Default>(
+fn track_robots<T: Default>(
     robots: &mut TrackedRobotMap<T>,
     cam_robots: impl Iterator<Item = CamRobot>,
 ) {
@@ -147,11 +141,11 @@ impl FilterComponent for FilterPipeline {
 
                 let map_robot_packets = |r: SslDetectionRobot| if let Some(id) = r.robot_id {
                     Some(CamRobot {
-                        id: id as usize,
+                        id: id,
                         camera_id,
                         position: Point2::new(r.x / 1000.0, r.y / 1000.0),
                         orientation: r.orientation.unwrap_or(0.),
-                        time: t_capture,
+                        t_capture,
                         frame_number,
                         confidence: r.confidence
                     })
@@ -171,14 +165,14 @@ impl FilterComponent for FilterPipeline {
                         enemies = blue;
                     },
 
-                    TeamColor::Blue => {
+                    _ => {
                         allies = blue;
                         enemies = yellow;
                     }
                 }
 
-                handle_camera_robots(&mut self.filter_data.allies, allies);
-                handle_camera_robots(&mut self.filter_data.enemies, enemies);
+                track_robots(&mut self.filter_data.allies, allies);
+                track_robots(&mut self.filter_data.enemies, enemies);
 
                 let ball_packets = detection.balls.drain(..).map(|b| CamBall {
                     camera_id,
