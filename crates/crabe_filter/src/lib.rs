@@ -44,7 +44,7 @@ pub struct CamGeometry {
 }
 
 struct TrackedRobot<T> {
-    pub packets: ConstGenericRingBuffer<CamRobot, 50>,
+    pub packets: ConstGenericRingBuffer<CamRobot, 64>,
     pub data: Robot<T>,
     pub last_update: Instant,
 }
@@ -60,7 +60,7 @@ impl<T: Default> Default for TrackedRobot<T> {
 }
 
 struct TrackedBall {
-    pub packets: ConstGenericRingBuffer<CamBall, 50>,
+    pub packets: ConstGenericRingBuffer<CamBall, 64>,
     pub data: Ball,
     pub last_update: Instant,
 }
@@ -132,7 +132,7 @@ impl FilterComponent for FilterPipeline {
             if let Some(mut detection) = packet.detection {
                 let camera_id = detection.camera_id;
                 let frame_number = detection.frame_number;
-                let t_capture = match Utc.timestamp_millis_opt((detection.t_capture * 1000.0) as i64) {
+                let t_capture = match Utc.timestamp_opt((detection.t_capture) as i64, 0) {
                     LocalResult::Single(dt) => dt,
                     LocalResult::None => {
                         let now_utc = Utc::now();
@@ -145,7 +145,6 @@ impl FilterComponent for FilterPipeline {
                         dt_midpoint
                     }
                 };
-
                 let map_robot_packets = |r: SslDetectionRobot| if let Some(id) = r.robot_id {
                     Some(CamRobot {
                         id,
