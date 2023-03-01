@@ -1,15 +1,15 @@
+use chrono::{DateTime, Duration, LocalResult, NaiveDateTime, TimeZone, Utc};
 use clap::Args;
 use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, World};
+use log::{error, info};
 use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
 use nalgebra::{Point2, Point3};
 use ringbuffer::{ConstGenericRingBuffer, RingBuffer, RingBufferExt, RingBufferWrite};
 use std::collections::HashMap;
 use std::time::Instant;
-use chrono::{DateTime, Duration, LocalResult, NaiveDateTime, TimeZone, Utc};
-use log::error;
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -18,18 +18,18 @@ pub struct FilterConfig {}
 struct CamBall {
     pub position: Point3<f32>,
     pub camera_id: u32,
-    pub time: DateTime<Utc>,
+    pub t_capture: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
 }
 
 #[derive(Debug)]
 struct CamRobot {
-    pub id: usize,
+    pub id: u32,
     pub camera_id: u32,
     pub position: Point2<f32>,
     pub orientation: f32,
-    pub time: DateTime<Utc>,
+    pub t_capture: DateTime<Utc>,
     pub frame_number: u32,
     pub confidence: f32,
 }
@@ -46,7 +46,6 @@ struct CamGeometry {
     pub goal_width: f32,
     pub goal_depth: f32,
     // pub last_update: Instant,
-
 }
 
 struct Tracked<T, U> {
@@ -57,7 +56,7 @@ struct Tracked<T, U> {
 
 impl<T: Default, U> Default for Tracked<T, U> {
     fn default() -> Self {
-        Tracked {
+        Self {
             packets: ConstGenericRingBuffer::new(),
             last_update: Instant::now(),
             data: Default::default(),
@@ -185,7 +184,7 @@ impl FilterComponent for FilterPipeline {
                     camera_id,
                     frame_number,
                     position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
-                    time: t_capture,
+                    t_capture,
                     confidence: b.confidence
                 });
 
@@ -193,6 +192,7 @@ impl FilterComponent for FilterPipeline {
             }
 
             if let Some(mut geometry) = packet.geometry {
+
                 //dbg!(geometry.field);
             }
         });
