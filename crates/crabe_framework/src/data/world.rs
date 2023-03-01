@@ -3,7 +3,9 @@ use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+#[derive(Default)]
 pub struct AllyInfo;
+#[derive(Default)]
 pub struct EnemyInfo;
 
 #[derive(Default)]

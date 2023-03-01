@@ -95,6 +95,22 @@ impl FilterPipeline {
     }
 }
 
+fn track_robot<T: Default>(tracked_robot_map: &mut TrackedRobotMap<T>, id: u32, robot: CamRobot) {
+    let tracked_robot = tracked_robot_map.entry(id).or_insert_with(|| TrackedRobot {
+        packets: ConstGenericRingBuffer::new(),
+        last_update: Instant::now(),
+        data: Robot {
+            id,
+            position: Default::default(),
+            orientation: 0.0,
+            has_ball: false,
+            robot_info: T::default(),
+        },
+    });
+
+    tracked_robot.packets.push(robot);
+}
+
 impl FilterComponent for FilterPipeline {
     fn step(&mut self, mut data: InboundData, world: &mut World) -> Option<World> {
         data.vision_packet.drain(..).for_each(|packet| {
@@ -116,91 +132,70 @@ impl FilterComponent for FilterPipeline {
                         }
                     };
                 info!("t_capture: {}", t_capture);
-                /*
-                JUST FOR THE TEST ! TODO: Remove this line
-                println!("DateTime: {}", dt);
-                let now: DateTime<Utc> = Utc::now();
-                let duration = now.signed_duration_since(dt);
-                println!("Duration between dt1 and dt2: {}", duration.num_milliseconds());
-                */
 
                 detection.robots_blue.drain(..).for_each(|r| {
                     if let Some(id) = r.robot_id {
                         if self.yellow {
-                            self.filter_data
-                                .enemies
-                                .entry(id)
-                                .or_insert_with(|| TrackedRobot {
-                                    packets: ConstGenericRingBuffer::new(),
-                                    last_update: Instant::now(),
-                                    data: Robot {
-                                        id,
-                                        position: Default::default(),
-                                        orientation: 0.0,
-                                        has_ball: false,
-                                        robot_info: EnemyInfo {},
-                                    },
-                                });
+                            track_robot::<EnemyInfo>(
+                                &mut self.filter_data.enemies,
+                                id,
+                                CamRobot {
+                                    id,
+                                    camera_id,
+                                    position: Point2::new(r.x, r.y),
+                                    orientation: r.orientation.unwrap_or(0.0),
+                                    t_capture,
+                                    frame_number,
+                                    confidence: r.confidence,
+                                },
+                            );
                         } else {
-                            self.filter_data
-                                .allies
-                                .entry(id)
-                                .or_insert_with(|| TrackedRobot {
-                                    packets: ConstGenericRingBuffer::new(),
-                                    last_update: Instant::now(),
-                                    data: Robot {
-                                        id,
-                                        position: Default::default(),
-                                        orientation: 0.0,
-                                        has_ball: false,
-                                        robot_info: AllyInfo {},
-                                    },
-                                });
+                            track_robot::<AllyInfo>(
+                                &mut self.filter_data.allies,
+                                id,
+                                CamRobot {
+                                    id,
+                                    camera_id,
+                                    position: Point2::new(r.x, r.y),
+                                    orientation: r.orientation.unwrap_or(0.0),
+                                    t_capture,
+                                    frame_number,
+                                    confidence: r.confidence,
+                                },
+                            );
                         }
                     }
                 });
                 detection.robots_yellow.drain(..).for_each(|r| {
                     if let Some(id) = r.robot_id {
                         if self.yellow {
-                            self.filter_data
-                                .allies
-                                .entry(id)
-                                .or_insert_with(|| TrackedRobot {
-                                    packets: ConstGenericRingBuffer::new(),
-                                    last_update: Instant::now(),
-                                    data: Robot {
-                                        id,
-                                        position: Default::default(),
-                                        orientation: 0.0,
-                                        has_ball: false,
-                                        robot_info: AllyInfo {},
-                                    },
-                                });
-                        } else {
-                            let tracked_robot =
-                                self.filter_data.enemies.entry(id).or_insert_with(|| {
-                                    TrackedRobot {
-                                        packets: ConstGenericRingBuffer::new(),
-                                        last_update: Instant::now(),
-                                        data: Robot {
-                                            id,
-                                            position: Default::default(),
-                                            orientation: 0.0,
-                                            has_ball: false,
-                                            robot_info: EnemyInfo {},
-                                        },
-                                    }
-                                });
-
-                            tracked_robot.packets.push(CamRobot {
+                            track_robot::<AllyInfo>(
+                                &mut self.filter_data.allies,
                                 id,
-                                camera_id,
-                                position: Point2::new(r.x, r.y),
-                                orientation: 0.0,
-                                t_capture,
-                                frame_number,
-                                confidence: 0.0,
-                            })
+                                CamRobot {
+                                    id,
+                                    camera_id,
+                                    position: Point2::new(r.x, r.y),
+                                    orientation: r.orientation.unwrap_or(0.0),
+                                    t_capture,
+                                    frame_number,
+                                    confidence: r.confidence,
+                                },
+                            );
+                        } else {
+                            track_robot::<EnemyInfo>(
+                                &mut self.filter_data.enemies,
+                                id,
+                                CamRobot {
+                                    id,
+                                    camera_id,
+                                    position: Point2::new(r.x, r.y),
+                                    orientation: r.orientation.unwrap_or(0.0),
+                                    t_capture,
+                                    frame_number,
+                                    confidence: r.confidence,
+                                },
+                            );
                         }
                     }
                 });
