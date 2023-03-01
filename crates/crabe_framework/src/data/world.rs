@@ -22,11 +22,12 @@ pub struct Ball {
     pub position: Point3<f32>,
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Default)]
 pub enum TeamColor {
-    NEUTRAL,
-    BLUE,
-    YELLOW,
+    #[default]
+    Neutral,
+    Blue,
+    Yellow,
 }
 
 pub struct Team {
@@ -37,7 +38,7 @@ pub struct Team {
 impl Default for Team {
     fn default() -> Self {
         Self {
-            color: TeamColor::NEUTRAL,
+            color: TeamColor::Neutral,
             name: "UNKNOWN".to_string(),
         }
     }
@@ -47,7 +48,7 @@ impl Default for Team {
 pub struct GameState {
     pub ally: Team,
     pub enemy: Team,
-    pub blue_positive_half: bool,
+    pub positive_half: TeamColor,
 }
 
 pub type RobotMap<T> = HashMap<u8, Robot<T>>;
