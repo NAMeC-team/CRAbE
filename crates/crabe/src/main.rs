@@ -34,8 +34,8 @@ pub struct System {
 
 impl System {
     pub fn new(
-        input_component: Box<dyn InputComponent>,
-        filter_component: Box<dyn FilterComponent>,
+        input_component: impl InputComponent + 'static,
+        filter_component: impl FilterComponent + 'static,
     ) -> Self {
         let running = Arc::new(AtomicBool::new(true));
         let running_ctrlc = Arc::clone(&running);
@@ -46,8 +46,8 @@ impl System {
         .expect("Failed to set Ctrl-C handler");
 
         Self {
-            input_component,
-            filter_component,
+            input_component: Box::new(input_component),
+            filter_component: Box::new(filter_component),
             running,
         }
     }
@@ -84,8 +84,8 @@ fn main() {
     // OutputPipeline
 
     let mut system = System::new(
-        InputPipeline::with_config_boxed(cli.input_config, &cli.common),
-        FilterPipeline::with_config_boxed(cli.filter_config, &cli.common),
+        InputPipeline::with_config(cli.input_config, &cli.common),
+        FilterPipeline::with_config(cli.filter_config, &cli.common),
     );
     system.run(Duration::from_millis(16));
     system.close();

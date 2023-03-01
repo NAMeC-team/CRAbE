@@ -18,7 +18,7 @@ pub struct Vision {
 }
 
 impl Vision {
-    pub fn with_config_boxed(cli: VisionConfig) -> Box<Self> {
+    pub fn with_config(cli: VisionConfig) -> Self {
         let (tx_vision, rx_vision) = mpsc::channel::<SslWrapperPacket>();
         let mut vision = MulticastUDPReceiver::new(cli.vision_ip.as_str(), cli.vision_port)
             .expect("Failed to create vision receiver");
@@ -36,11 +36,11 @@ impl Vision {
             }
         });
 
-        Box::new(Self {
+        Self {
             rx_vision,
             handle: Some(handle),
             running,
-        })
+        }
     }
 }
 

@@ -18,7 +18,7 @@ pub struct GameController {
 }
 
 impl GameController {
-    pub fn with_config_boxed(cli: GameControllerConfig) -> Box<Self> {
+    pub fn with_config(cli: GameControllerConfig) -> Self {
         let (tx_gc, rx_gc) = mpsc::channel::<Referee>();
         let mut gc = MulticastUDPReceiver::new(cli.gc_ip.as_str(), cli.gc_port)
             .expect("Failed to create vision receiver");
@@ -35,11 +35,11 @@ impl GameController {
             }
         });
 
-        Box::new(Self {
+        Self {
             rx_gc,
             handle: Some(handle),
             running,
-        })
+        }
     }
 }
 

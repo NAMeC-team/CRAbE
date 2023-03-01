@@ -93,8 +93,8 @@ pub struct FilterPipeline {
 }
 
 impl FilterPipeline {
-    pub fn with_config_boxed(_config: FilterConfig, common_config: &CommonConfig) -> Box<Self> {
-        Box::new(Self {
+    pub fn with_config(_config: FilterConfig, common_config: &CommonConfig) -> Self {
+        Self {
             filters: vec![],
             filter_data: FilterData {
                 allies: Default::default(),
@@ -103,7 +103,7 @@ impl FilterPipeline {
                 geometry: Default::default(),
             },
             team_color: if common_config.yellow { TeamColor::Yellow } else { TeamColor::Blue },
-        })
+        }
     }
 }
 

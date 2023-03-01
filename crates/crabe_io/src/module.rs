@@ -30,15 +30,15 @@ pub struct InputPipeline {
 }
 
 impl InputPipeline {
-    pub fn with_config_boxed(config: InputConfig, _: &CommonConfig) -> Box<Self> {
+    pub fn with_config(config: InputConfig, _: &CommonConfig) -> Self {
         let mut tasks: Vec<Box<dyn ReceiverTask>> =
-            vec![Vision::with_config_boxed(config.vision_cfg)];
+            vec![Box::new(Vision::with_config(config.vision_cfg))];
 
         if config.gc {
-            tasks.push(GameController::with_config_boxed(config.gc_cfg));
+            tasks.push(Box::new(GameController::with_config(config.gc_cfg)));
         }
 
-        Box::from(Self { receivers: tasks })
+        Self { receivers: tasks }
     }
 }
 
