@@ -15,7 +15,7 @@ use std::time::Instant;
 pub struct FilterConfig {}
 
 #[derive(Debug)]
-struct CamBall {
+pub struct CamBall {
     pub position: Point3<f32>,
     pub camera_id: u32,
     pub t_capture: DateTime<Utc>,
@@ -35,7 +35,7 @@ struct CamRobot {
 }
 
 #[derive(Debug, Default)]
-struct CamGeometry {
+pub struct CamGeometry {
     pub field_length: f32,
     pub field_width: f32,
     pub goal_width: f32,
@@ -67,10 +67,10 @@ struct TrackedBall {
 
 impl Default for TrackedBall {
     fn default() -> Self {
-        TrackedBall {
+        Self {
             packets: ConstGenericRingBuffer::new(),
-            data: Ball::default(),
-            last_update: Instant::now()
+            last_update: Instant::now(),
+            data: Default::default(),
         }
     }
 }
