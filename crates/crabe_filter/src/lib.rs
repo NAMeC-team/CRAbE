@@ -13,6 +13,7 @@ use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
 use crate::filter::Filter;
 use crate::filter::passthrough::PassthroughFilter;
+use crate::post_filter::ball::BallFilter;
 use crate::post_filter::geometry::GeometryFilter;
 use crate::post_filter::PostFilter;
 use crate::post_filter::robot::RobotFilter;
@@ -41,7 +42,8 @@ impl FilterPipeline {
             ],
             post_filters: vec![
                 Box::new(RobotFilter),
-                Box::new(GeometryFilter)
+                Box::new(GeometryFilter),
+                Box::new(BallFilter)
             ],
             filter_data: FilterData {
                 allies: Default::default(),
