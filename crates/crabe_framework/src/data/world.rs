@@ -29,7 +29,7 @@ impl<T: Clone> Clone for Robot<T> {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Clone, Debug)]
 pub struct Ball {
     pub position: Point3<f32>,
 }
