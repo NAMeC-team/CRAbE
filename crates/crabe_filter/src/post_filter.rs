@@ -1,5 +1,5 @@
-mod geometry;
-mod robot;
+pub mod geometry;
+pub mod robot;
 
 use crabe_framework::data::world::World;
 use crate::data::FilterData;

@@ -5,7 +5,7 @@ use crabe_framework::data::world::{World};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
-struct GeometryFilter;
+pub struct GeometryFilter;
 
 impl PostFilter for GeometryFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {

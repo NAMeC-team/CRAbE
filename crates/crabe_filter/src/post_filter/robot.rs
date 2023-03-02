@@ -3,7 +3,7 @@ use crate::data::{FilterData, TrackedRobot};
 
 use crate::post_filter::PostFilter;
 
-struct RobotFilter;
+pub struct RobotFilter;
 
 fn insert_tracked<'a, T: Clone + 'a>(
     robot_map: &mut RobotMap<T>,

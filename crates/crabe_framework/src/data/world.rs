@@ -3,12 +3,12 @@ use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct AllyInfo;
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Debug)]
 pub struct EnemyInfo;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Robot<T> {
     pub id: u32,
     pub position: Point2<f32>,
@@ -29,7 +29,7 @@ impl<T: Clone> Clone for Robot<T> {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct Ball {
     pub position: Point3<f32>,
 }
@@ -42,6 +42,7 @@ pub enum TeamColor {
     Yellow,
 }
 
+#[derive(Debug)]
 pub struct Team {
     color: TeamColor,
     name: String,
@@ -56,7 +57,7 @@ impl Default for Team {
     }
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct GameState {
     pub ally: Team,
     pub enemy: Team,
@@ -65,7 +66,7 @@ pub struct GameState {
 
 pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct World {
     pub state: GameState,
     pub geometry: Geometry,
