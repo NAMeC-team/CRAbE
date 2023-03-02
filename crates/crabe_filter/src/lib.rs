@@ -1,6 +1,6 @@
 mod data;
 mod filters;
-mod pre_filters;
+mod pre_filter;
 mod constant;
 
 use crate::data::FilterData;
@@ -10,18 +10,10 @@ use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
+use crate::pre_filter::PreFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {}
-
-pub trait PreFilter {
-    fn step(
-        &mut self,
-        inbound_data: &InboundData,
-        team_color: &TeamColor,
-        filter_data: &mut FilterData,
-    );
-}
 
 pub trait Filter {
     fn step(&mut self, filter_data: &mut FilterData, world: &mut World);
