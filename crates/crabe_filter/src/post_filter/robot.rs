@@ -1,10 +1,10 @@
-use std::path::Iter;
-use crabe_framework::data::geometry::{Circle, Geometry};
-use crabe_framework::data::geometry::goal::Goal;
-use crabe_framework::data::geometry::penalty::Penalty;
+
+
+
+
 use crabe_framework::data::world::{RobotMap, World};
-use crate::data::{FilterData, TrackedRobot, TrackedRobotMap};
-use crate::Filter;
+use crate::data::{FilterData, TrackedRobot};
+
 use crate::post_filter::PostFilter;
 
 struct RobotFilter;
