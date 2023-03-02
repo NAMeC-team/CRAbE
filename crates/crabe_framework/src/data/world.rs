@@ -60,4 +60,5 @@ pub struct World {
     pub allies_bot: RobotMap<AllyInfo>,
     pub enemies_bot: RobotMap<EnemyInfo>,
     pub ball: Option<Ball>,
+    pub team_color: TeamColor
 }
