@@ -1,1 +1,1 @@
-pub const BUFFER_SIZE: usize = 64;
+pub const PACKET_BUFFER_SIZE: usize = 64;

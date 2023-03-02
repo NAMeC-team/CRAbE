@@ -4,7 +4,7 @@ use nalgebra::{Point2, Point3};
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
 use std::time::Instant;
-use constant::BUFFER_SIZE;
+use constant::PACKET_BUFFER_SIZE;
 use crate::constant;
 
 #[derive(Clone, Debug)]
@@ -49,7 +49,7 @@ pub struct FilterData {
 }
 
 pub struct TrackedRobot<T> {
-    pub packets: ConstGenericRingBuffer<CamRobot, BUFFER_SIZE>,
+    pub packets: ConstGenericRingBuffer<CamRobot, PACKET_BUFFER_SIZE>,
     pub data: Robot<T>,
     pub last_update: Instant,
 }
@@ -65,7 +65,7 @@ impl<T: Default> Default for TrackedRobot<T> {
 }
 
 pub struct TrackedBall {
-    pub packets: ConstGenericRingBuffer<CamBall, BUFFER_SIZE>,
+    pub packets: ConstGenericRingBuffer<CamBall, PACKET_BUFFER_SIZE>,
     pub data: Ball,
     pub last_update: Instant,
 }
