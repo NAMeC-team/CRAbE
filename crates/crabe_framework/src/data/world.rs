@@ -63,7 +63,7 @@ pub struct GameState {
     pub positive_half: TeamColor,
 }
 
-pub type RobotMap<T> = HashMap<u8, Robot<T>>;
+pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
 #[derive(Default)]
 pub struct World {
