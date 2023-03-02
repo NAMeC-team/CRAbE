@@ -88,7 +88,7 @@ mod detection {
         use crabe_protocol::protobuf::vision_packet::SslDetectionBall;
         use crate::data::{CamBall, FrameInfo, TrackedBall};
 
-        pub(super) struct BallDetectionInfo<'a> {
+        pub struct BallDetectionInfo<'a> {
             pub detected: &'a [SslDetectionBall],
             pub tracked: &'a mut TrackedBall,
         }
