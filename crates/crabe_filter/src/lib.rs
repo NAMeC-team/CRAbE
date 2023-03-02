@@ -1,7 +1,8 @@
 mod data;
-mod filters;
 mod pre_filter;
+mod post_filter;
 mod constant;
+mod filter;
 
 use crate::data::FilterData;
 
@@ -10,18 +11,17 @@ use crabe_framework::component::FilterComponent;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
+use crate::filter::Filter;
+use crate::post_filter::PostFilter;
 use crate::pre_filter::PreFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {}
 
-pub trait Filter {
-    fn step(&mut self, filter_data: &mut FilterData, world: &mut World);
-}
-
 pub struct FilterPipeline {
     pub pre_filters: Vec<Box<dyn PreFilter>>,
     pub filters: Vec<Box<dyn Filter>>,
+    pub post_filters: Vec<Box<dyn PostFilter>>,
     pub filter_data: FilterData,
     pub team_color: TeamColor,
 }
@@ -31,6 +31,7 @@ impl FilterPipeline {
         Self {
             pre_filters: vec![],
             filters: vec![],
+            post_filters: vec![],
             filter_data: FilterData {
                 allies: Default::default(),
                 enemies: Default::default(),
@@ -59,6 +60,10 @@ impl FilterComponent for FilterPipeline {
         self.filters
             .iter_mut()
             .for_each(|f| f.step(&mut self.filter_data, world));
+
+        self.post_filters
+            .iter_mut()
+            .for_each(|f| f.step(&self.filter_data, world));
     }
 
     fn close(&mut self) {}

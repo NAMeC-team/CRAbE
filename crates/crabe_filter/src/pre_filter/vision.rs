@@ -2,12 +2,12 @@ use crate::data::FilterData;
 use crate::PreFilter;
 
 use crabe_framework::data::receiver::InboundData;
-use crabe_framework::data::world::{TeamColor};
+use crabe_framework::data::world::TeamColor;
 
 mod detection {
     use chrono::{DateTime, LocalResult, TimeZone, Utc};
     use log::error;
-    use crabe_framework::data::world::{TeamColor};
+    use crabe_framework::data::world::TeamColor;
     use crabe_protocol::protobuf::vision_packet::SslDetectionFrame;
     use crate::data::{FilterData, FrameInfo};
 
@@ -16,7 +16,7 @@ mod detection {
         use ringbuffer::RingBufferWrite;
         use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, TeamColor};
         use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
-        use crate::data::{CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
+        use crate::data::{camera::CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
 
         pub struct RobotDetectionInfo<'a> {
             pub detected_blue: &'a [SslDetectionRobot],
@@ -86,7 +86,7 @@ mod detection {
     mod ball {
         use nalgebra::Point3;
         use crabe_protocol::protobuf::vision_packet::SslDetectionBall;
-        use crate::data::{CamBall, FrameInfo, TrackedBall};
+        use crate::data::{camera::CamBall, FrameInfo, TrackedBall};
 
         pub struct BallDetectionInfo<'a> {
             pub detected: &'a [SslDetectionBall],
@@ -151,7 +151,7 @@ mod detection {
 
 mod geometry {
     use crabe_protocol::protobuf::vision_packet::SslGeometryData;
-    use crate::data::{CamGeometry, FilterData};
+    use crate::data::{camera::CamGeometry, FilterData};
 
     pub fn handle_geometry(geometry: &SslGeometryData, filter_data: &mut FilterData) {
         let cam_geometry = CamGeometry {
