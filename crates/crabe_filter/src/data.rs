@@ -1,8 +1,7 @@
-mod camera;
+pub mod camera;
 
 use chrono::{DateTime, Utc};
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
-use nalgebra::{Point2, Point3};
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
 use std::time::Instant;

@@ -1,4 +1,3 @@
-use chrono::format::Item;
 use ringbuffer::RingBufferRead;
 use crabe_framework::data::world::{Robot, World};
 use crate::data::{FilterData, TrackedRobot};
@@ -7,7 +6,7 @@ use crate::filter::Filter;
 fn robot_passthrough<'a, T: 'a + Default>(
     robots: impl Iterator<Item=(&'a u32, &'a mut TrackedRobot<T>)>
 ) {
-    robots.for_each(|(id, r)| {
+    robots.for_each(|(_id, r)| {
         let last_packet = r.packets.drain().last();
         if let Some(packet) = last_packet {
             r.data = Robot {

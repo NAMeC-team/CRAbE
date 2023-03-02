@@ -1,7 +1,3 @@
-
-
-
-
 use crabe_framework::data::world::{RobotMap, World};
 use crate::data::{FilterData, TrackedRobot};
 
