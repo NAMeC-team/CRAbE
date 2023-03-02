@@ -3,9 +3,9 @@ use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct AllyInfo;
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct EnemyInfo;
 
 #[derive(Default)]
@@ -15,6 +15,18 @@ pub struct Robot<T> {
     pub orientation: f32,
     pub has_ball: bool,
     pub robot_info: T,
+}
+
+impl<T: Clone> Clone for Robot<T> {
+    fn clone(&self) -> Self {
+        Self {
+            id: self.id,
+            position: self.position,
+            orientation: self.orientation,
+            has_ball: self.has_ball,
+            robot_info: self.robot_info.clone()
+        }
+    }
 }
 
 #[derive(Default)]
