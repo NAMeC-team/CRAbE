@@ -14,6 +14,10 @@ mod detection {
     mod robot {
         use nalgebra::Point2;
         use ringbuffer::RingBufferWrite;
+        use uom::num_traits::Zero;
+        use uom::si::angle::{Angle, degree};
+        use uom::si::length::millimeter;
+        use uom::si::quantities::Length;
         use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, TeamColor};
         use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
         use crate::data::{camera::CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
@@ -48,8 +52,12 @@ mod detection {
                 Some(CamRobot {
                     id,
                     frame_info: frame.clone(),
-                    position: Point2::new(r.x, r.y),
-                    orientation: r.orientation.unwrap_or(0.),
+                    position: Point2::new(
+                        Length::new::<millimeter>(r.x),
+                        Length::new::<millimeter>(r.y)
+                    ),
+                    orientation: r.orientation.map(|o| Angle::new::<degree>(o))
+                        .unwrap_or(Angle::zero()),
                     confidence: r.confidence,
                 })
             } else {
@@ -85,6 +93,8 @@ mod detection {
 
     mod ball {
         use nalgebra::Point3;
+        use uom::si::length::millimeter;
+        use uom::si::quantities::Length;
         use crabe_protocol::protobuf::vision_packet::SslDetectionBall;
         use crate::data::{camera::CamBall, FrameInfo, TrackedBall};
 
@@ -96,7 +106,10 @@ mod detection {
         pub fn detect_balls(detection: &mut BallDetectionInfo, frame: &FrameInfo) {
             let ball_packets = detection.detected.iter().map(|b| CamBall {
                 frame_info: frame.clone(),
-                position: Point3::new(b.x, b.y, b.z.unwrap_or(0.0)),
+                position: Point3::new(
+                    Length::new::<millimeter>(b.x),
+                    Length::new::<millimeter>(b.y),
+                    Length::new::<millimeter>(b.z.unwrap_or(0.0))),
                 confidence: b.confidence,
             });
 
@@ -150,15 +163,17 @@ mod detection {
 }
 
 mod geometry {
+    use uom::si::f32::Length;
+    use uom::si::length::millimeter;
     use crabe_protocol::protobuf::vision_packet::SslGeometryData;
     use crate::data::{camera::CamGeometry, FilterData};
 
     pub fn handle_geometry(geometry: &SslGeometryData, filter_data: &mut FilterData) {
         let cam_geometry = CamGeometry {
-            field_length: geometry.field.field_length as f32,
-            field_width: geometry.field.field_width as f32,
-            goal_width: geometry.field.goal_width as f32,
-            goal_depth: geometry.field.goal_depth as f32,
+            field_length: Length::new::<millimeter>(geometry.field.field_length as f32),
+            field_width: Length::new::<millimeter>(geometry.field.field_width as f32),
+            goal_width: Length::new::<millimeter>(geometry.field.goal_width as f32),
+            goal_depth: Length::new::<millimeter>(geometry.field.goal_depth as f32),
         };
 
         filter_data.geometry = cam_geometry;

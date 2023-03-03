@@ -2,6 +2,9 @@ use crate::data::geometry::goal::Goal;
 use crate::data::geometry::penalty::Penalty;
 
 use nalgebra::Point2;
+use uom::num_traits::Zero;
+use uom::si::f32::{Angle, Length};
+use uom::si::length::meter;
 
 pub mod goal;
 pub mod penalty;
@@ -10,14 +13,14 @@ pub mod penalty;
 // TODO : Move this on another files.
 #[derive(Debug)]
 pub struct Circle {
-    pub center: Point2<f32>,
-    pub radius: f32,
+    pub center: Point2<Length>,
+    pub radius: Length,
 }
 
 #[derive(Debug)]
 pub struct Geometry {
-    pub field_width: f32,
-    pub field_length: f32,
+    pub field_width: Length,
+    pub field_length: Length,
     pub ally_goal: Goal,
     pub opponent_goal: Goal,
     pub ally_penalty: Penalty,
@@ -29,8 +32,8 @@ pub struct Geometry {
 impl Default for Geometry {
     fn default() -> Self {
         Self {
-            field_width: 9.0,
-            field_length: 6.0,
+            field_width: Length::new::<meter>(9.0),
+            field_length: Length::new::<meter>(6.0),
             ally_goal: Goal {
                 width: 0.0,
                 depth: 0.0,
@@ -49,7 +52,7 @@ impl Default for Geometry {
             },
             center: Circle {
                 center: Default::default(),
-                radius: 0.0,
+                radius: Length::zero(),
             },
         }
     }
