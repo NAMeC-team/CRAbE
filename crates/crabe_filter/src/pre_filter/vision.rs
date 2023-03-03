@@ -15,7 +15,7 @@ mod detection {
         use nalgebra::Point2;
         use ringbuffer::RingBufferWrite;
         use uom::num_traits::Zero;
-        use uom::si::angle::{Angle, degree};
+        use uom::si::angle::{Angle, radian};
         use uom::si::length::millimeter;
         use uom::si::quantities::Length;
         use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, TeamColor};
@@ -56,8 +56,7 @@ mod detection {
                         Length::new::<millimeter>(r.x),
                         Length::new::<millimeter>(r.y)
                     ),
-                    orientation: r.orientation.map(|o| Angle::new::<degree>(o))
-                        .unwrap_or(Angle::zero()),
+                    orientation: Angle::new::<radian>(r.orientation.unwrap_or(0.0)),
                     confidence: r.confidence,
                 })
             } else {
