@@ -1,3 +1,5 @@
+use std::net::Ipv4Addr;
+use std::str::FromStr;
 use crate::communication::MulticastUDPReceiver;
 use crate::league::vision::VisionConfig;
 use crate::module::ReceiverTask;
@@ -20,7 +22,8 @@ pub struct Vision {
 impl Vision {
     pub fn with_config(cli: VisionConfig) -> Self {
         let (tx_vision, rx_vision) = mpsc::channel::<SslWrapperPacket>();
-        let mut vision = MulticastUDPReceiver::new(cli.vision_ip.as_str(), cli.vision_port)
+        let ipv4 = Ipv4Addr::from_str(cli.vision_ip.as_str()).expect("Failed to create an ipv4 address with the ip");
+        let mut vision = MulticastUDPReceiver::new(ipv4, cli.vision_port)
             .expect("Failed to create vision receiver");
 
         let running = Arc::new(AtomicBool::new(true));

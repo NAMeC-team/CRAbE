@@ -7,5 +7,5 @@ pub struct GameControllerConfig {
     pub gc_ip: String,
 
     #[arg(long, default_value_t = 10020)]
-    pub gc_port: u32,
+    pub gc_port: u16,
 }

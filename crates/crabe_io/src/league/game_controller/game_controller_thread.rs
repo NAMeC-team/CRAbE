@@ -1,3 +1,5 @@
+use std::net::Ipv4Addr;
+use std::str::FromStr;
 use crate::communication::MulticastUDPReceiver;
 use crate::league::game_controller::GameControllerConfig;
 use crate::module::ReceiverTask;
@@ -20,7 +22,8 @@ pub struct GameController {
 impl GameController {
     pub fn with_config(cli: GameControllerConfig) -> Self {
         let (tx_gc, rx_gc) = mpsc::channel::<Referee>();
-        let mut gc = MulticastUDPReceiver::new(cli.gc_ip.as_str(), cli.gc_port)
+        let ipv4 = Ipv4Addr::from_str(cli.gc_ip.as_str()).expect("Failed to create an ipv4 address with the ip");
+        let mut gc = MulticastUDPReceiver::new(ipv4, cli.gc_port)
             .expect("Failed to create vision receiver");
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);
