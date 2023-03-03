@@ -3,7 +3,7 @@ use crate::data::geometry::penalty::Penalty;
 
 use nalgebra::Point2;
 use uom::num_traits::Zero;
-use uom::si::f32::{Length};
+use uom::si::f32::Length;
 use uom::si::length::meter;
 
 pub mod goal;

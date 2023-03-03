@@ -69,8 +69,6 @@ impl FilterComponent for FilterPipeline {
         self.post_filters
             .iter_mut()
             .for_each(|f| f.step(&self.filter_data, world));
-
-        dbg!(world);
     }
 
     fn close(&mut self) {}

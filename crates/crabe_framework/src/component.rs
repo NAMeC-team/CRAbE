@@ -3,13 +3,14 @@ use crate::data::receiver::InboundData;
 use crate::data::tool::{ToolsCommands, ToolsData};
 use crate::data::world::World;
 
+// TODO: Document
 pub trait InputComponent {
     fn step(&mut self, feedback: &mut FeedbackMap) -> InboundData;
     fn close(&mut self);
 }
 
 pub trait FilterComponent {
-    fn step(&mut self, data: InboundData, world: &mut World); // TODO: Remove this
+    fn step(&mut self, data: InboundData, world: &mut World);
     fn close(&mut self);
 }
 
