@@ -1,5 +1,4 @@
-use crate::constant::MAX_ID_ROBOTS;
-use crate::data::output::{Feedback, FeedbackMap};
+use crate::data::output::{FeedbackMap};
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use std::fmt::Debug;

@@ -1,6 +1,6 @@
+use crate::constant::MAX_ID_ROBOTS;
 use uom::si::f32::{ElectricPotential, Velocity};
 use uom::si::f64::AngularVelocity;
-use crate::constant::MAX_ID_ROBOTS;
 
 // TODO: Document
 pub type FeedbackMap = [Option<Feedback>; MAX_ID_ROBOTS];

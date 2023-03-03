@@ -61,7 +61,7 @@ impl System {
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.input_component.step(&mut feedback);
             let _world = self.filter_component.step(receive_data, &mut world); // TODO : Verify it's good ?
-            //dbg!(&world);
+                                                                               //dbg!(&world);
         }
     }
 

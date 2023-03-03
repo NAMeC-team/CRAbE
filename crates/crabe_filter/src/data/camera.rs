@@ -1,7 +1,6 @@
+use crate::data::FrameInfo;
 use nalgebra::{Point2, Point3};
 use uom::si::f32::{Angle, Length};
-use uom::typenum::Le;
-use crate::data::FrameInfo;
 
 #[derive(Debug)]
 pub struct CamBall {

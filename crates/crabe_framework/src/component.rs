@@ -1,4 +1,4 @@
-use crate::data::output::{Command, CommandMap, Feedback, FeedbackMap};
+use crate::data::output::{CommandMap, Feedback, FeedbackMap};
 use crate::data::receiver::InboundData;
 use crate::data::tool::{ToolsCommands, ToolsData};
 use crate::data::world::World;

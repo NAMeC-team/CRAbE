@@ -1,8 +1,7 @@
 use crate::constant::BUFFER_SIZE;
 use log::error;
 use std::io::Cursor;
-use std::net::{IpAddr, Ipv4Addr, SocketAddr, SocketAddrV4, UdpSocket};
-use std::str::FromStr;
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4, UdpSocket};
 
 /// A struct that provides bidirectional communication over UDP.
 pub struct UDPTransceiver {
@@ -40,7 +39,7 @@ impl UDPTransceiver {
     ///
     /// This example creates a new non-blocking `UDPTransceiver` that listens on the localhost IP address and port 10301, which is the default grSim control port for the blue team.
     pub fn new(ip: Ipv4Addr, port: u16) -> Result<Self, std::io::Error> {
-        let socket = UdpSocket::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(),0))?;
+        let socket = UdpSocket::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0))?;
         socket.set_nonblocking(true)?;
         socket.connect(SocketAddrV4::new(ip, port))?;
         let buffer = [0u8; BUFFER_SIZE];
