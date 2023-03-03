@@ -1,3 +1,5 @@
+use uom::num_traits::Zero;
+use uom::si::f32::Length;
 use crabe_framework::data::geometry::{Circle, Geometry};
 use crabe_framework::data::geometry::goal::Goal;
 use crabe_framework::data::geometry::penalty::Penalty;
@@ -17,7 +19,7 @@ impl PostFilter for GeometryFilter {
             opponent_goal: Goal { width: 0.0, depth: 0.0 },
             ally_penalty: Penalty { width: 0.0, depth: 0.0 },
             opponent_penalty: Penalty { width: 0.0, depth: 0.0 },
-            center: Circle { center: Default::default(), radius: 0.0 },
+            center: Circle { center: Default::default(), radius: Length::zero() },
         };
 
         world.geometry = geometry;
