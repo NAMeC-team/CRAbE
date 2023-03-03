@@ -1,10 +1,9 @@
-use std::error::Error;
-use flume::{Receiver, Sender, unbounded};
+use flume::{unbounded, Receiver, Sender};
 use futures_util::{SinkExt, StreamExt, TryFutureExt};
+use log::{error, info};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::net::SocketAddr;
-use log::{error, info, log};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::Runtime;
 use tokio::task::JoinSet;
@@ -36,10 +35,9 @@ impl<RX: Send + DeserializeOwned, TX: Send + Serialize> WebSocketTask<RX, TX> {
         addr: SocketAddr,
         rx: Receiver<TX>,
         tx: Sender<RX>,
-    ) -> Result<(), tungstenite::Error>{
+    ) -> Result<(), tungstenite::Error> {
         info!("Incoming TCP connection from: {}", addr);
-        let ws_stream = tokio_tungstenite::accept_async(raw_stream)
-            .await?;
+        let ws_stream = tokio_tungstenite::accept_async(raw_stream).await?;
         info!("WebSocket connection established: {}", addr);
 
         let (outgoing, incoming) = ws_stream.split();
@@ -66,8 +64,7 @@ impl<RX: Send + DeserializeOwned, TX: Send + Serialize> WebSocketTask<RX, TX> {
     }
 }
 
-impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static> WebSocketTask<RX, TX>
-{
+impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static> WebSocketTask<RX, TX> {
     fn run(&mut self, cancellation: Receiver<()>) {
         let future = async {
             let try_socket = TcpListener::bind(&self.addr).await;
@@ -76,8 +73,7 @@ impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static> WebS
             let receive = async {
                 let mut join_set = JoinSet::new();
                 while let Ok((stream, addr)) = listener.accept().await {
-                    join_set.spawn(
-                    Self::handle_connection(
+                    join_set.spawn(Self::handle_connection(
                         stream,
                         addr,
                         self.rx.clone(),
@@ -105,12 +101,14 @@ impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static> WebS
 
 pub struct WebSocketTransceiver<RX, TX> {
     rx: Receiver<RX>,
-    tx: Sender<TX>
+    tx: Sender<TX>,
 }
 
 impl<RX: Send, TX> WebSocketTransceiver<RX, TX> {
-    fn send(&mut self, msg: TX){
-        self.tx.send(msg).unwrap_or_else(|x| error!("Send error: #{x}"));
+    fn send(&mut self, msg: TX) {
+        self.tx
+            .send(msg)
+            .unwrap_or_else(|x| error!("Send error: #{x}"));
     }
 
     fn receive(&mut self) -> Option<RX> {
@@ -118,14 +116,17 @@ impl<RX: Send, TX> WebSocketTransceiver<RX, TX> {
     }
 
     fn new(rx: Receiver<RX>, tx: Sender<TX>) -> Self {
-        Self {
-            rx,
-            tx,
-        }
+        Self { rx, tx }
     }
 }
 
-pub fn new_websocket<RX: Send + DeserializeOwned, TX: Send + Serialize>(addr: SocketAddr) -> (WebSocketTask<RX, TX>, WebSocketTransceiver<RX, TX>){
+pub fn new_websocket<RX, TX>(
+    addr: SocketAddr,
+) -> (WebSocketTask<RX, TX>, WebSocketTransceiver<RX, TX>)
+where
+    RX: Send + DeserializeOwned,
+    TX: Send + Serialize,
+{
     let (task_tx, transceiver_rx) = unbounded();
     let (transceiver_tx, task_rx) = unbounded();
 
