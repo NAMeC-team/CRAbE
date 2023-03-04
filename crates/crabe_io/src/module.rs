@@ -3,7 +3,7 @@ use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
 use crabe_framework::component::InputComponent;
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::{Feedback, FeedbackMap};
+use crabe_framework::data::output::FeedbackMap;
 use crabe_framework::data::receiver::InboundData;
 
 #[derive(Args)]

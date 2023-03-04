@@ -1,4 +1,6 @@
 use crate::constant::MAX_ID_ROBOTS;
+use uom::si::f32::{ElectricPotential, Velocity};
+use uom::si::f64::AngularVelocity;
 
 // TODO: Document
 pub type FeedbackMap = [Option<Feedback>; MAX_ID_ROBOTS];
@@ -6,7 +8,7 @@ pub type FeedbackMap = [Option<Feedback>; MAX_ID_ROBOTS];
 #[derive(Debug)]
 pub struct Feedback {
     pub has_ball: bool,
-    pub voltage: u32,
+    pub voltage: ElectricPotential,
 }
 
 pub struct CommandMap {
@@ -20,15 +22,15 @@ pub enum Kick {
 
 pub struct Command {
     /// Velocity forward in m.s-1 (towards the dribbler)
-    pub forward_velocity: f32,
+    pub forward_velocity: Velocity,
     /// Velocity to the left in m.s-1
-    pub left_velocity: f32,
+    pub left_velocity: Velocity,
     /// Angular velocity rad.s-1 in (counter-clockwise)
-    pub angular_velocity: f32,
+    pub angular_velocity: AngularVelocity,
     /// Order to charge the capacitor of the robot
     pub charge: bool,
     /// Order to kick the ball, if None doesn't KICK
     pub kick: Option<Kick>,
     /// Dribbler speed in rounds per minute rpm
-    pub dribbler: f32,
+    pub dribbler: AngularVelocity,
 }

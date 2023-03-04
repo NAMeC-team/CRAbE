@@ -2,6 +2,7 @@ use crate::data::geometry::Geometry;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use uom::si::f32::{Angle, Length};
 
 #[derive(Clone, Default, Debug)]
 pub struct AllyInfo;
@@ -11,8 +12,8 @@ pub struct EnemyInfo;
 #[derive(Default, Debug)]
 pub struct Robot<T> {
     pub id: u32,
-    pub position: Point2<f32>,
-    pub orientation: f32,
+    pub position: Point2<Length>,
+    pub orientation: Angle,
     pub has_ball: bool,
     pub robot_info: T,
 }
@@ -24,14 +25,14 @@ impl<T: Clone> Clone for Robot<T> {
             position: self.position,
             orientation: self.orientation,
             has_ball: self.has_ball,
-            robot_info: self.robot_info.clone()
+            robot_info: self.robot_info.clone(),
         }
     }
 }
 
 #[derive(Default, Clone, Debug)]
 pub struct Ball {
-    pub position: Point3<f32>,
+    pub position: Point3<Length>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize, Default)]
@@ -73,5 +74,5 @@ pub struct World {
     pub allies_bot: RobotMap<AllyInfo>,
     pub enemies_bot: RobotMap<EnemyInfo>,
     pub ball: Option<Ball>,
-    pub team_color: TeamColor
+    pub team_color: TeamColor,
 }

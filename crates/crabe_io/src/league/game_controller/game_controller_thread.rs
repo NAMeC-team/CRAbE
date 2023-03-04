@@ -4,6 +4,8 @@ use crate::module::ReceiverTask;
 use crabe_framework::data::receiver::InboundData;
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use log::{error, info};
+use std::net::Ipv4Addr;
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Receiver;
 use std::sync::{mpsc, Arc};
@@ -20,8 +22,10 @@ pub struct GameController {
 impl GameController {
     pub fn with_config(cli: GameControllerConfig) -> Self {
         let (tx_gc, rx_gc) = mpsc::channel::<Referee>();
-        let mut gc = MulticastUDPReceiver::new(cli.gc_ip.as_str(), cli.gc_port)
-            .expect("Failed to create vision receiver");
+        let ipv4 = Ipv4Addr::from_str(cli.gc_ip.as_str())
+            .expect("Failed to create an ipv4 address with the ip");
+        let mut gc =
+            MulticastUDPReceiver::new(ipv4, cli.gc_port).expect("Failed to create vision receiver");
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);
 

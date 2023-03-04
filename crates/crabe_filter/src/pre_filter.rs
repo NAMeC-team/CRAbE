@@ -1,6 +1,6 @@
+use crate::data::FilterData;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::TeamColor;
-use crate::data::FilterData;
 
 pub mod vision;
 

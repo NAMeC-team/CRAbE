@@ -1,8 +1,7 @@
 use crate::constant::BUFFER_SIZE;
 use log::error;
 use std::io::Cursor;
-use std::net::{Ipv4Addr, UdpSocket};
-use std::str::FromStr;
+use std::net::{Ipv4Addr, SocketAddrV4, UdpSocket};
 
 /// A struct that handles a Multicast UDP Receiver.
 pub struct MulticastUDPReceiver {
@@ -31,18 +30,17 @@ impl MulticastUDPReceiver {
     /// # Examples
     ///
     /// ```
+    /// use std::net::Ipv4Addr;
     /// use crabe_io::communication::MulticastUDPReceiver;
     ///
-    /// let receiver = MulticastUDPReceiver::new("224.5.23.2", 10020).expect("Failed to create MulticastUDPReceiver");
+    /// let receiver = MulticastUDPReceiver::new(Ipv4Addr::new(224,5,23,2), 10020).expect("Failed to create MulticastUDPReceiver");
     /// ```
     ///
     /// This example creates a new `MulticastUDPReceiver` that listens on IP address 224.5.23.2 and port 10020, which is the default grSim vision address and port.
-    pub fn new(ip: &str, port: u32) -> Result<Self, Box<dyn std::error::Error>> {
-        let ipv4 = Ipv4Addr::from_str(ip)?;
+    pub fn new(ip: Ipv4Addr, port: u16) -> Result<Self, Box<dyn std::error::Error>> {
+        let socket = UdpSocket::bind(SocketAddrV4::new(ip, port))?;
 
-        let socket = UdpSocket::bind(format!("{}:{}", ip, port))?;
-
-        socket.join_multicast_v4(&ipv4, &Ipv4Addr::UNSPECIFIED)?;
+        socket.join_multicast_v4(&ip, &Ipv4Addr::UNSPECIFIED)?;
         socket.set_nonblocking(true)?;
 
         Ok(Self {

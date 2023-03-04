@@ -1,7 +1,6 @@
-use nalgebra::Point2;
-use crabe_framework::data::world::{Ball, World};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
+use crabe_framework::data::world::World;
 
 pub struct BallFilter;
 

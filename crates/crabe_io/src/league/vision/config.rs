@@ -7,5 +7,5 @@ pub struct VisionConfig {
     pub vision_ip: String,
 
     #[arg(long, default_value_t = 10020)]
-    pub vision_port: u32,
+    pub vision_port: u16,
 }
