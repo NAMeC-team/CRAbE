@@ -1,0 +1,12 @@
+[package]
+name = "crabe_tool"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crabe_framework = { path = "../crabe_framework" }
+crabe_io = { path = "../crabe_io" }
+serde = { version= "1.0.152", features = ["derive"] }
+serde_json = "1.0.93"
