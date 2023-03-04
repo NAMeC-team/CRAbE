@@ -5,19 +5,20 @@ use nalgebra::Point2;
 use uom::num_traits::Zero;
 use uom::si::f32::Length;
 use uom::si::length::meter;
+use serde::Serialize;
 
 pub mod goal;
 pub mod penalty;
 
 // TODO : Document
 // TODO : Move this on another files.
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct Circle {
     pub center: Point2<Length>,
     pub radius: Length,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct Geometry {
     pub field_width: Length,
     pub field_length: Length,

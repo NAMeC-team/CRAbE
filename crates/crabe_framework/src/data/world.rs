@@ -4,12 +4,12 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uom::si::f32::{Angle, Length};
 
-#[derive(Clone, Default, Debug)]
+#[derive(Serialize, Clone, Default, Debug)]
 pub struct AllyInfo;
-#[derive(Clone, Default, Debug)]
+#[derive(Serialize, Clone, Default, Debug)]
 pub struct EnemyInfo;
 
-#[derive(Default, Debug)]
+#[derive(Serialize, Default, Debug)]
 pub struct Robot<T> {
     pub id: u32,
     pub position: Point2<Length>,
@@ -30,7 +30,7 @@ impl<T: Clone> Clone for Robot<T> {
     }
 }
 
-#[derive(Default, Clone, Debug)]
+#[derive(Serialize, Default, Clone, Debug)]
 pub struct Ball {
     pub position: Point3<Length>,
 }
@@ -43,7 +43,7 @@ pub enum TeamColor {
     Yellow,
 }
 
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct Team {
     color: TeamColor,
     name: String,
@@ -58,7 +58,7 @@ impl Default for Team {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Serialize, Default, Debug)]
 pub struct GameState {
     pub ally: Team,
     pub enemy: Team,
@@ -67,7 +67,7 @@ pub struct GameState {
 
 pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
-#[derive(Default, Debug)]
+#[derive(Serialize, Default, Debug)]
 pub struct World {
     pub state: GameState,
     pub geometry: Geometry,
