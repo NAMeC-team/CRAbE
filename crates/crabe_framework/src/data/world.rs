@@ -66,7 +66,7 @@ pub struct GameState {
 
 pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
-#[derive(Default, Debug)]
+#[derive(Serialize, Default, Debug)]
 pub struct World {
     pub state: GameState,
     pub geometry: Geometry,
