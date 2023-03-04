@@ -1421,6 +1421,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e8f50eddd69f656ee545f7663ea5fefb7c789bc1a0d11124e049715f563a16a4"
 dependencies = [
  "num-traits",
+ "serde",
  "typenum",
 ]
 

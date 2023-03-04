@@ -1,6 +1,7 @@
+use serde::Serialize;
 // TODO : Document
 // TODO: This information doesn't represent the penalty
-#[derive(Debug)]
+#[derive(Serialize, Debug)]
 pub struct Penalty {
     pub width: f32,
     pub depth: f32,
