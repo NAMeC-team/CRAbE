@@ -2,21 +2,23 @@ use flume::{unbounded, Receiver, Sender};
 use futures_util::{SinkExt, StreamExt, TryFutureExt};
 use log::{error, info};
 use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
+use std::thread;
+use std::thread::JoinHandle;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::runtime::Runtime;
 use tokio::task::JoinSet;
 use tungstenite::Message;
 
-pub struct WebSocketTask<RX, TX> {
+pub struct WebSocketThread<RX, TX> {
     addr: SocketAddr,
     rx: Receiver<TX>,
     tx: Sender<RX>,
     runtime: Runtime,
 }
 
-impl<RX: Send + DeserializeOwned, TX: Send + Serialize> WebSocketTask<RX, TX> {
+impl<RX: Send + DeserializeOwned, TX: Send + Serialize> WebSocketThread<RX, TX> {
     fn new(addr: SocketAddr, rx: Receiver<TX>, tx: Sender<RX>) -> Self {
         let runtime = tokio::runtime::Builder::new_current_thread()
             .enable_all()
@@ -64,12 +66,14 @@ impl<RX: Send + DeserializeOwned, TX: Send + Serialize> WebSocketTask<RX, TX> {
     }
 }
 
-impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static> WebSocketTask<RX, TX> {
+impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static>
+    WebSocketThread<RX, TX>
+{
     fn run(&mut self, cancellation: Receiver<()>) {
         let future = async {
             let try_socket = TcpListener::bind(&self.addr).await;
             let listener = try_socket.expect("Failed to bind");
-            println!("Listening on: {}", self.addr);
+            info!("Listening on: {}", self.addr);
             let receive = async {
                 let mut join_set = JoinSet::new();
                 while let Ok((stream, addr)) = listener.accept().await {
@@ -102,35 +106,45 @@ impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static> WebS
 pub struct WebSocketTransceiver<RX, TX> {
     rx: Receiver<RX>,
     tx: Sender<TX>,
+    handle: JoinHandle<()>,
+    cancellation_tx: Sender<()>,
 }
 
-impl<RX: Send, TX> WebSocketTransceiver<RX, TX> {
-    fn send(&mut self, msg: TX) {
+impl<RX: DeserializeOwned + Send + 'static, TX: Serialize + Send + 'static>
+    WebSocketTransceiver<RX, TX>
+{
+    pub fn spawn(addr: SocketAddr) -> Self {
+        let (task_tx, transceiver_rx) = unbounded();
+        let (transceiver_tx, task_rx) = unbounded();
+        let (cancellation_tx, cancellation_rx) = unbounded();
+
+        let mut websocket_thread = WebSocketThread::new(addr, task_rx, task_tx);
+        let handle = thread::spawn(move || {
+            websocket_thread.run(cancellation_rx);
+        });
+
+        Self {
+            rx: transceiver_rx,
+            tx: transceiver_tx,
+            cancellation_tx,
+            handle,
+        }
+    }
+
+    pub fn send(&mut self, msg: TX) {
         self.tx
             .send(msg)
             .unwrap_or_else(|x| error!("Send error: #{x}"));
     }
 
-    fn receive(&mut self) -> Option<RX> {
+    pub fn receive(&mut self) -> Option<RX> {
         self.rx.recv().ok()
     }
 
-    fn new(rx: Receiver<RX>, tx: Sender<TX>) -> Self {
-        Self { rx, tx }
+    pub fn cancel(self) {
+        self.cancellation_tx
+            .send(())
+            .unwrap_or_else(|e| error!("Error sending cancellation"));
+        self.handle.join().unwrap_or_else(|e| error!("Join error"));
     }
-}
-
-pub fn new_websocket<RX, TX>(
-    addr: SocketAddr,
-) -> (WebSocketTask<RX, TX>, WebSocketTransceiver<RX, TX>)
-where
-    RX: Send + DeserializeOwned,
-    TX: Send + Serialize,
-{
-    let (task_tx, transceiver_rx) = unbounded();
-    let (transceiver_tx, task_rx) = unbounded();
-
-    let task = WebSocketTask::new(addr, task_rx, task_tx);
-    let transceiver = WebSocketTransceiver::new(transceiver_rx, transceiver_tx);
-    return (task, transceiver);
 }
