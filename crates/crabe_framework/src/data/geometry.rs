@@ -12,13 +12,13 @@ pub mod penalty;
 
 // TODO : Document
 // TODO : Move this on another files.
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Circle {
     pub center: Point2<Length>,
     pub radius: Length,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Geometry {
     pub field_width: Length,
     pub field_length: Length,

@@ -1,2 +1,2 @@
-pub struct ToolsData;
-pub struct ToolsCommands;
+pub struct ToolData;
+pub struct ToolCommands;

@@ -260,6 +260,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "crabe_tool"
+version = "0.1.0"
+dependencies = [
+ "crabe_framework",
+ "crabe_io",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "crypto-common"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -1,6 +1,6 @@
 use crate::data::output::{CommandMap, Feedback, FeedbackMap};
 use crate::data::receiver::InboundData;
-use crate::data::tool::{ToolsCommands, ToolsData};
+use crate::data::tool::{ToolCommands, ToolData};
 use crate::data::world::World;
 
 // TODO: Document
@@ -15,12 +15,12 @@ pub trait FilterComponent {
 }
 
 pub trait DecisionComponent {
-    fn step(&mut self, data: &World) -> (CommandMap, ToolsData);
+    fn step(&mut self, data: &World) -> (CommandMap, ToolData);
     fn close(&mut self);
 }
 
-pub trait ToolsComponent {
-    fn step(&mut self, world_data: &World, tools_data: &mut ToolsData) -> ToolsCommands;
+pub trait ToolComponent {
+    fn step(&mut self, world_data: &World, tools_data: &mut ToolData) -> ToolCommands;
     fn close(&mut self);
 }
 
@@ -29,12 +29,12 @@ pub trait GuardComponent {
         &mut self,
         world_data: &mut World,
         command: &mut CommandMap,
-        tools_commands: &mut ToolsCommands,
+        tools_commands: &mut ToolCommands,
     );
     fn close(&mut self);
 }
 
 pub trait OutputComponent {
-    fn step(&mut self, command: &mut CommandMap, tools_commands: &mut ToolsCommands) -> Feedback;
+    fn step(&mut self, command: &mut CommandMap, tools_commands: &mut ToolCommands) -> Feedback;
     fn close(&mut self);
 }

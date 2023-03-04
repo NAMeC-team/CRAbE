@@ -43,7 +43,7 @@ pub enum TeamColor {
     Yellow,
 }
 
-#[derive(Serialize, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Team {
     color: TeamColor,
     name: String,
@@ -58,7 +58,7 @@ impl Default for Team {
     }
 }
 
-#[derive(Serialize, Default, Debug)]
+#[derive(Serialize, Clone, Default, Debug)]
 pub struct GameState {
     pub ally: Team,
     pub enemy: Team,
@@ -67,7 +67,7 @@ pub struct GameState {
 
 pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
-#[derive(Serialize, Default, Debug)]
+#[derive(Serialize, Clone, Default, Debug)]
 pub struct World {
     pub state: GameState,
     pub geometry: Geometry,
