@@ -1,43 +1,45 @@
-use crate::communication::{UDPTransceiver};
+use crate::communication::UDPTransceiver;
 
 use crate::league::simulator::config::SimulatorConfig;
 
 use crabe_framework::data::output::{Command, CommandMap, Feedback, FeedbackMap, Kick};
 
-
-
 use crabe_protocol::protobuf::simulation_packet::{
     robot_move_command, MoveLocalVelocity, RobotCommand, RobotControl, RobotControlResponse,
     RobotMoveCommand,
 };
-use log::{debug};
+use log::debug;
 
-use std::net::{Ipv4Addr};
+use std::net::Ipv4Addr;
 
-
-
-
-
-
+use crabe_framework::config::CommonConfig;
+use crabe_framework::constant::MAX_ID_ROBOTS;
 use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
 use uom::si::velocity::meter_per_second;
-use crabe_framework::constant::MAX_ID_ROBOTS;
 
 use crate::pipeline::output::CommandSenderTask;
 
 pub struct Simulator {
-    socket: UDPTransceiver
+    socket: UDPTransceiver,
 }
 
 impl Simulator {
-    pub fn with_config(simulator_config: SimulatorConfig) -> Self {
-        let port = simulator_config.simulator_port;
-        let socket = UDPTransceiver::new(Ipv4Addr::LOCALHOST, port)
-            .expect("Failed to setup simulator");
-
-        Self {
-            socket,
+    pub fn with_config(simulator_cfg: SimulatorConfig, common_cfg: &CommonConfig) -> Self {
+        let port;
+        if let Some(sim_port) = simulator_cfg.simulator_port {
+            port = sim_port
+        } else {
+            if common_cfg.yellow {
+                port = 10301;
+            } else {
+                port = 10302;
+            }
         }
+
+        let socket =
+            UDPTransceiver::new(Ipv4Addr::LOCALHOST, port).expect("Failed to setup simulator");
+
+        Self { socket }
     }
 
     fn prepare_packet(&self, commands: impl Iterator<Item = (u32, Command)>) -> RobotControl {
@@ -70,7 +72,6 @@ impl Simulator {
 
         packet
     }
-
 
     fn fetch(&mut self) -> FeedbackMap {
         let mut feedback_map: FeedbackMap = Default::default();
