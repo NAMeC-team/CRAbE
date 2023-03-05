@@ -184,7 +184,6 @@ dependencies = [
  "crabe_framework",
  "crabe_io",
  "crabe_protocol",
- "crabe_tool",
  "ctrlc",
  "env_logger",
  "log",
@@ -258,16 +257,6 @@ dependencies = [
  "prost",
  "prost-build",
  "prost-types",
-]
-
-[[package]]
-name = "crabe_tool"
-version = "0.1.0"
-dependencies = [
- "crabe_framework",
- "crabe_io",
- "serde",
- "serde_json",
 ]
 
 [[package]]

@@ -11,7 +11,8 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use crabe_framework::data::tool::ToolData;
-use crabe_tool::CrabeTool;
+use crabe_io::tool::ToolConfig;
+use crabe_io::tool::ToolServer;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -27,6 +28,10 @@ pub struct Cli {
     #[command(flatten)]
     #[command(next_help_heading = "Filter")]
     pub filter_config: FilterConfig,
+
+    #[command(flatten)]
+    #[command(next_help_heading = "Filter")]
+    pub tool_config: ToolConfig,
 }
 
 pub struct System {
@@ -95,8 +100,9 @@ fn main() {
     let mut system = System::new(
         InputPipeline::with_config(cli.input_config, &cli.common),
         FilterPipeline::with_config(cli.filter_config, &cli.common),
-        CrabeTool::with_config(), // TODO: Config
+        ToolServer::with_config(cli.tool_config, &cli.common), // TODO: Config
     );
+
     system.run(Duration::from_millis(16));
     system.close();
 }

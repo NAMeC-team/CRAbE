@@ -17,4 +17,5 @@ pub mod league;
 
 // TODO : Document and rename for better clarity
 pub mod module;
+pub mod tool;
 // pub mod serial;
