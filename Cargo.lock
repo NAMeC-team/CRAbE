@@ -272,6 +272,7 @@ name = "crabe_math"
 version = "0.1.0"
 dependencies = [
  "nalgebra",
+ "serde",
  "uom",
 ]
 

@@ -2,8 +2,9 @@ use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 use crabe_framework::data::geometry::goal::Goal;
 use crabe_framework::data::geometry::penalty::Penalty;
-use crabe_framework::data::geometry::{Circle, Field, Geometry};
+use crabe_framework::data::geometry::{Field, Geometry};
 use crabe_framework::data::world::World;
+use crabe_math::shape::circle::Circle;
 use uom::num_traits::Zero;
 use uom::si::f32::Length;
 

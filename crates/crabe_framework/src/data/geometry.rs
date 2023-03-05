@@ -1,6 +1,7 @@
 use crate::data::geometry::goal::Goal;
 use crate::data::geometry::penalty::Penalty;
 
+use crabe_math::shape::circle::Circle;
 use nalgebra::Point2;
 use serde::Serialize;
 use uom::num_traits::Zero;
@@ -9,14 +10,6 @@ use uom::si::length::meter;
 
 pub mod goal;
 pub mod penalty;
-
-// TODO : Document
-// TODO : Move this on another files.
-#[derive(Serialize, Clone, Debug)]
-pub struct Circle {
-    pub center: Point2<Length>,
-    pub radius: Length,
-}
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Field {
