@@ -19,9 +19,15 @@ pub struct Circle {
 }
 
 #[derive(Serialize, Clone, Debug)]
+pub struct Field {
+    pub width: Length,
+    pub length: Length,
+}
+
+#[derive(Serialize, Clone, Debug)]
 pub struct Geometry {
-    pub field_width: Length,
-    pub field_length: Length,
+    pub boundary_width: Length,
+    pub field: Field,
     pub ally_goal: Goal,
     pub enemy_goal: Goal,
     pub ally_penalty: Penalty,
@@ -33,8 +39,11 @@ pub struct Geometry {
 impl Default for Geometry {
     fn default() -> Self {
         Self {
-            field_width: Length::new::<meter>(9.0),
-            field_length: Length::new::<meter>(6.0),
+            boundary_width: Default::default(),
+            field: Field {
+                width: Length::new::<meter>(9.0),
+                length: Length::new::<meter>(6.0),
+            },
             ally_goal: Goal {
                 width: 0.0,
                 depth: 0.0,

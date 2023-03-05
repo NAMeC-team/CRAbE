@@ -221,6 +221,7 @@ dependencies = [
  "chrono",
  "clap",
  "crabe_framework",
+ "crabe_math",
  "crabe_protocol",
  "log",
  "nalgebra",
@@ -233,6 +234,7 @@ name = "crabe_framework"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "crabe_math",
  "crabe_protocol",
  "nalgebra",
  "serde",
@@ -268,6 +270,9 @@ dependencies = [
 [[package]]
 name = "crabe_math"
 version = "0.1.0"
+dependencies = [
+ "nalgebra",
+]
 
 [[package]]
 name = "crabe_navigation"
