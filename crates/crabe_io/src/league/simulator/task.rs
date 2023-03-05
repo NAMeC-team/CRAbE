@@ -12,11 +12,11 @@ use log::debug;
 
 use std::net::Ipv4Addr;
 
+use crate::constant::{SIM_PORT_BLUE, SIM_PORT_YELLOW};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
 use uom::si::velocity::meter_per_second;
-use crate::constant::{SIM_PORT_BLUE, SIM_PORT_YELLOW};
 
 use crate::pipeline::output::CommandSenderTask;
 

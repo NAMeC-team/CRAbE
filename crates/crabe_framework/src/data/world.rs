@@ -1,10 +1,10 @@
+use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
 use clap::builder::Str;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uom::si::f32::{Angle, Length};
-use crate::config::CommonConfig;
 
 #[derive(Serialize, Clone, Default, Debug)]
 pub struct AllyInfo;
@@ -47,7 +47,7 @@ impl TeamColor {
     pub fn opposite(&self) -> Self {
         match self {
             TeamColor::Blue => TeamColor::Yellow,
-            TeamColor::Yellow => TeamColor::Blue
+            TeamColor::Yellow => TeamColor::Blue,
         }
     }
 }
@@ -60,10 +60,7 @@ pub struct Team {
 
 impl Team {
     pub fn with_color(color: TeamColor) -> Self {
-        Self {
-            color,
-            name: None
-        }
+        Self { color, name: None }
     }
 }
 
@@ -79,11 +76,10 @@ impl GameState {
         Self {
             ally: Team::with_color(team_color),
             enemy: Team::with_color(team_color.opposite()),
-            positive_half: team_color.opposite()
+            positive_half: team_color.opposite(),
         }
     }
 }
-
 
 pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
@@ -99,14 +95,18 @@ pub struct World {
 
 impl World {
     pub fn with_config(config: &CommonConfig) -> Self {
-        let team_color = if config.yellow { TeamColor::Yellow } else { TeamColor::Blue };
+        let team_color = if config.yellow {
+            TeamColor::Yellow
+        } else {
+            TeamColor::Blue
+        };
         Self {
             state: GameState::new(team_color),
             geometry: Default::default(),
             allies_bot: Default::default(),
             enemies_bot: Default::default(),
             ball: None,
-            team_color
+            team_color,
         }
     }
 }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use uom::si::f32::{ElectricPotential, Velocity};
 use uom::si::f32::AngularVelocity;
+use uom::si::f32::{ElectricPotential, Velocity};
 
 // TODO: Document
 pub type FeedbackMap = HashMap<u32, Feedback>;

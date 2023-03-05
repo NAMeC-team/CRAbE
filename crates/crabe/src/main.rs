@@ -1,19 +1,21 @@
 use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
-use crabe_framework::component::{Component, FilterComponent, InputComponent, OutputComponent, ToolComponent};
+use crabe_framework::component::{
+    Component, FilterComponent, InputComponent, OutputComponent, ToolComponent,
+};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::FeedbackMap;
+use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_io::pipeline::input::{InputConfig, InputPipeline};
+use crabe_io::pipeline::output::{OutputConfig, OutputPipeline};
+use crabe_io::tool::ToolConfig;
+use crabe_io::tool::ToolServer;
 use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
-use crabe_framework::data::tool::ToolData;
-use crabe_io::pipeline::output::{OutputConfig, OutputPipeline};
-use crabe_io::tool::ToolConfig;
-use crabe_io::tool::ToolServer;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -45,7 +47,7 @@ pub struct System {
     tool_component: Box<dyn ToolComponent>,
     output_component: Box<dyn OutputComponent>,
     running: Arc<AtomicBool>,
-    world: World
+    world: World,
 }
 
 impl System {
@@ -78,7 +80,6 @@ impl System {
     // TODO: Use refresh rate
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback: FeedbackMap = Default::default();
-
 
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.input_component.step(&mut feedback);
@@ -114,7 +115,7 @@ fn main() {
         InputPipeline::with_config(cli.input_config, &cli.common),
         FilterPipeline::with_config(cli.filter_config, &cli.common),
         ToolServer::with_config(cli.tool_config, &cli.common),
-        OutputPipeline::with_config(cli.output_config, &cli.common)
+        OutputPipeline::with_config(cli.output_config, &cli.common),
     );
 
     system.run(Duration::from_millis(16));

@@ -1,4 +1,5 @@
 use crate::communication::MulticastUDPReceiver;
+use crate::constant::{VISION_PORT_REAL, VISION_PORT_SIM};
 use crate::league::vision::VisionConfig;
 use crate::pipeline::input::ReceiverTask;
 use crabe_framework::config::CommonConfig;
@@ -12,7 +13,6 @@ use std::sync::mpsc::Receiver;
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::thread::JoinHandle;
-use crate::constant::{VISION_PORT_REAL, VISION_PORT_SIM};
 
 // TODO: Document
 pub struct Vision {
