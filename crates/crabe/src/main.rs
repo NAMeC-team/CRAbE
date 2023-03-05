@@ -45,11 +45,13 @@ pub struct System {
     tool_component: Box<dyn ToolComponent>,
     output_component: Box<dyn OutputComponent>,
     running: Arc<AtomicBool>,
+    world: World
 }
 
 impl System {
     // TODO: Builder
     pub fn new(
+        world: World,
         input_component: impl InputComponent + 'static,
         filter_component: impl FilterComponent + 'static,
         tool_component: impl ToolComponent + 'static,
@@ -69,6 +71,7 @@ impl System {
             tool_component: Box::new(tool_component),
             output_component: Box::new(output_component),
             running,
+            world,
         }
     }
 
@@ -76,14 +79,13 @@ impl System {
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback: FeedbackMap = Default::default();
 
-        let mut world: World = World::default();
 
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.input_component.step(&mut feedback);
-            self.filter_component.step(receive_data, &mut world);
+            self.filter_component.step(receive_data, &mut self.world);
             //dbg!(&world);
             let mut tool_data = ToolData {};
-            self.tool_component.step(&mut world, &mut tool_data);
+            self.tool_component.step(&mut self.world, &mut tool_data);
             thread::sleep(_refresh_rate);
         }
     }
@@ -107,9 +109,8 @@ fn main() {
     // GuardPipeline
     // OutputPipeline
 
-    let output: Box<dyn OutputComponent>;
-
     let mut system = System::new(
+        World::with_config(&cli.common),
         InputPipeline::with_config(cli.input_config, &cli.common),
         FilterPipeline::with_config(cli.filter_config, &cli.common),
         ToolServer::with_config(cli.tool_config, &cli.common),
