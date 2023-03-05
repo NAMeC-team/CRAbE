@@ -2,10 +2,10 @@ use crate::data::geometry::goal::Goal;
 use crate::data::geometry::penalty::Penalty;
 
 use nalgebra::Point2;
+use serde::Serialize;
 use uom::num_traits::Zero;
 use uom::si::f32::Length;
 use uom::si::length::meter;
-use serde::Serialize;
 
 pub mod goal;
 pub mod penalty;
@@ -23,9 +23,9 @@ pub struct Geometry {
     pub field_width: Length,
     pub field_length: Length,
     pub ally_goal: Goal,
-    pub opponent_goal: Goal,
+    pub enemy_goal: Goal,
     pub ally_penalty: Penalty,
-    pub opponent_penalty: Penalty,
+    pub enemy_penalty: Penalty,
     pub center: Circle,
 }
 
@@ -39,7 +39,7 @@ impl Default for Geometry {
                 width: 0.0,
                 depth: 0.0,
             },
-            opponent_goal: Goal {
+            enemy_goal: Goal {
                 width: 0.0,
                 depth: 0.0,
             },
@@ -47,7 +47,7 @@ impl Default for Geometry {
                 width: 0.0,
                 depth: 0.0,
             },
-            opponent_penalty: Penalty {
+            enemy_penalty: Penalty {
                 width: 0.0,
                 depth: 0.0,
             },

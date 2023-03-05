@@ -74,5 +74,4 @@ impl FilterComponent for FilterPipeline {
             .iter_mut()
             .for_each(|f| f.step(&self.filter_data, world));
     }
-
 }

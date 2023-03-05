@@ -2,7 +2,7 @@ use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{Component, FilterComponent, InputComponent, OutputComponent, ToolComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::{FeedbackMap};
+use crabe_framework::data::output::FeedbackMap;
 use crabe_framework::data::world::World;
 use crabe_io::module::{InputConfig, InputPipeline};
 use env_logger::Env;
@@ -79,7 +79,7 @@ impl System {
     }
 
     // TODO: Use refresh rate
-    pub fn run(&mut self, refresh_rate: Duration) {
+    pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback: FeedbackMap = Default::default();
 
         let mut world: World = World::default();
@@ -89,8 +89,8 @@ impl System {
             self.filter_component.step(receive_data, &mut world);
             //dbg!(&world);
             let mut tool_data = ToolData {};
-            let tool_commands = self.tool_component.step(&mut world, &mut tool_data);
-            //self.output_component.step(command_map, tool_commands);
+            self.tool_component.step(&mut world, &mut tool_data);
+            thread::sleep(_refresh_rate);
         }
     }
 
