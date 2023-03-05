@@ -7,7 +7,7 @@
 //!
 //! This crate produce some tools to debug I/O operations.
 
-/// The `communication` module provides a set of generic types and functions for network and usb communication.
+/// The `communication` module provides a set of generic types and functions for network and real communication.
 pub mod communication;
 /// This module provides constants related to the `crabe_io` package.
 pub mod constant;
@@ -15,7 +15,6 @@ pub mod constant;
 /// The `league` module provides tools for communicating with software used in the league, such as SSL Vision, Simulator, and Game Controller.
 pub mod league;
 
-// TODO : Document and rename for better clarity
-pub mod module;
 pub mod tool;
+pub mod pipeline;
 // pub mod serial;

@@ -57,5 +57,5 @@ pub trait GuardComponent: Component {
 }
 
 pub trait OutputComponent: Component {
-    fn step(&mut self, commands: CommandMap, tool_commands: Option<ToolCommands>) -> FeedbackMap;
+    fn step(&mut self, commands: CommandMap, tool_commands: ToolCommands) -> FeedbackMap;
 }

@@ -1,7 +1,7 @@
 use crate::communication::MulticastUDPReceiver;
 use crate::league::game_controller::GameControllerConfig;
 use crate::league::simulator::config::SimulatorConfig;
-use crate::module::ReceiverTask;
+use crate::pipeline::input::ReceiverTask;
 use crabe_framework::component::{Component, OutputComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::{Command, CommandMap, Feedback, FeedbackMap, Kick};
@@ -24,36 +24,30 @@ use std::thread::JoinHandle;
 use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
 use uom::si::velocity::meter_per_second;
 use crabe_framework::constant::MAX_ID_ROBOTS;
+use crate::constant::BUFFER_SIZE;
+use crate::pipeline::output::CommandSenderTask;
 
-const SIMULATOR_BUFFER_SIZE: usize = 4096;
-
-pub struct SimulatorOutput {
+pub struct Simulator {
     socket: UdpSocket,
-    buf: [u8; SIMULATOR_BUFFER_SIZE],
+    buf: [u8; BUFFER_SIZE],
 }
 
-impl SimulatorOutput {
-    pub fn with_config(simulator_config: SimulatorConfig, common_config: &CommonConfig) -> Self {
+impl Simulator {
+    pub fn with_config(simulator_config: SimulatorConfig) -> Self {
         let socket = UdpSocket::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0))
             .expect("Failed to bind the UDP Socket");
         socket
             .set_nonblocking(true)
             .expect("Failed to set socket to non-blocking mode");
 
-        let port;
-        if common_config.yellow {
-            port = simulator_config.yellow_port;
-        } else {
-            port = simulator_config.blue_port
-        }
-
+        let port = simulator_config.simulator_port;
         let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), port);
 
         socket.connect(addr).expect("connect function failed");
 
         Self {
             socket,
-            buf: [0u8; SIMULATOR_BUFFER_SIZE],
+            buf: [0u8; BUFFER_SIZE],
         }
     }
 
@@ -132,21 +126,19 @@ impl SimulatorOutput {
     }
 }
 
-impl Component for SimulatorOutput {
-    fn close(mut self) {
+impl CommandSenderTask for Simulator {
+    fn step(&mut self, commands: CommandMap) -> FeedbackMap {
+        let packet = self.prepare_packet(commands.into_iter());
+        self.send(packet);
+        return self.receive();
+    }
+
+    fn close(&mut self) {
         let mut commands: CommandMap = Default::default();
         for id in 0..MAX_ID_ROBOTS {
             commands.insert(id as u32, Default::default());
         }
 
-        self.step(commands, None);
-    }
-}
-
-impl OutputComponent for SimulatorOutput {
-    fn step(&mut self, commands: CommandMap, tool_commands: Option<ToolCommands>) -> FeedbackMap {
-        let packet = self.prepare_packet(commands.into_iter());
-        self.send(packet);
-        return self.receive();
+        self.step(commands);
     }
 }

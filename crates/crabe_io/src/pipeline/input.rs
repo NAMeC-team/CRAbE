@@ -55,3 +55,8 @@ impl InputComponent for InputPipeline {
         data
     }
 }
+
+#[derive(Args)]
+pub struct OutputPipeline {
+
+}

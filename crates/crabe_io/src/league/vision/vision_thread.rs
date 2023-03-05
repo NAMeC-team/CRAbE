@@ -1,6 +1,6 @@
 use crate::communication::MulticastUDPReceiver;
 use crate::league::vision::VisionConfig;
-use crate::module::ReceiverTask;
+use crate::pipeline::input::ReceiverTask;
 use crabe_framework::data::receiver::InboundData;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use log::{error, info};

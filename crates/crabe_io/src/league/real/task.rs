@@ -1,4 +1,4 @@
-use crate::league::usb::UsbConfig;
+use crate::league::real::RealConfig;
 use crabe_framework::component::{Component, OutputComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::constant::MAX_ID_ROBOTS;
@@ -12,18 +12,20 @@ use std::io::Write;
 use std::time::Duration;
 use uom::si::angular_velocity::radian_per_second;
 use uom::si::velocity::meter_per_second;
+use crate::communication::UsbTransceiver;
+use crate::pipeline::output::CommandSenderTask;
 
-pub struct UsbOutput {
-    port: Box<dyn SerialPort>,
+pub struct Real {
+    usb: UsbTransceiver
 }
 
-impl UsbOutput {
-    pub fn with_config(usb_config: UsbConfig, _common_config: &CommonConfig) -> Self {
+impl Real {
+    pub fn with_config(usb_config: RealConfig) -> Self {
+        let usb = UsbTransceiver::new(&usb_config.usb_port, usb_config.usb_baud)
+            .expect("Failed to create usb transceiver");
+
         Self {
-            port: serialport::new(usb_config.usb_port, usb_config.usb_baud)
-                .timeout(Duration::from_millis(1))
-                .open()
-                .expect("Failed to open port"),
+            usb
         }
     }
 
@@ -48,42 +50,23 @@ impl UsbOutput {
             dribbler: command.dribbler.is_sign_positive(),
         }
     }
-
-    fn send(&mut self, packet: IaToMainBoard) {
-        // TODO : Buffer on struct?
-        let mut buf = Vec::new();
-        buf.reserve(packet.encoded_len() + 1);
-        buf.push(packet.encoded_len() as u8);
-        packet.encode(&mut buf).unwrap();
-
-        match self.port.write(&buf[0..packet.encoded_len() + 1]) {
-            Ok(_v) => {
-                debug!("sent order: {:?}", packet);
-            }
-            Err(e) => {
-                error!("{}", e);
-            }
-        }
-    }
 }
 
-impl Component for UsbOutput {
-    fn close(mut self) {
+impl CommandSenderTask for Real {
+    fn step(&mut self, commands: CommandMap) -> FeedbackMap {
+        for (id, command) in commands.into_iter() {
+            let packet = self.prepare_packet(id, command);
+            self.usb.send(packet);
+        }
+        Default::default()
+    }
+
+    fn close(&mut self) {
         let mut commands: CommandMap = Default::default();
         for id in 0..MAX_ID_ROBOTS {
             commands.insert(id as u32, Default::default());
         }
 
-        self.step(commands, None);
-    }
-}
-
-impl OutputComponent for UsbOutput {
-    fn step(&mut self, commands: CommandMap, tool_commands: Option<ToolCommands>) -> FeedbackMap {
-        for (id, command) in commands.into_iter() {
-            let packet = self.prepare_packet(id, command);
-            self.send(packet);
-        }
-        Default::default()
+        self.step(commands);
     }
 }
