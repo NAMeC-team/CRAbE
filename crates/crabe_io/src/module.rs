@@ -1,7 +1,7 @@
 use crate::league::game_controller::{GameController, GameControllerConfig};
 use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
-use crabe_framework::component::InputComponent;
+use crabe_framework::component::{Component, InputComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::FeedbackMap;
 use crabe_framework::data::receiver::InboundData;
@@ -42,14 +42,18 @@ impl InputPipeline {
     }
 }
 
+impl Component for InputPipeline {
+    fn close(mut self) {
+        self.receivers.drain(..).for_each(|mut x| x.close());
+    }
+}
+
 impl InputComponent for InputPipeline {
     fn step(&mut self, _feedback: &mut FeedbackMap) -> InboundData {
         let mut data = InboundData::default();
         self.receivers.iter_mut().for_each(|x| x.fetch(&mut data));
         data
     }
-
-    fn close(&mut self) {
-        self.receivers.iter_mut().for_each(|x| x.close());
-    }
 }
+
+

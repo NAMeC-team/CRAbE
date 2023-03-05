@@ -1,6 +1,6 @@
 use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
-use crabe_framework::component::{FilterComponent, InputComponent, ToolComponent};
+use crabe_framework::component::{Component, FilterComponent, InputComponent, ToolComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::FeedbackMap;
 use crabe_framework::data::world::World;
@@ -79,9 +79,10 @@ impl System {
         }
     }
 
-    pub fn close(&mut self) {
-        self.input_component.close();
-        self.filter_component.close();
+    pub fn close(self) {
+        //self.input_component.close();
+        //self.filter_component.close();
+        self.tool_component.close();
     }
 }
 
