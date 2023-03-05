@@ -141,7 +141,7 @@ impl<RX: DeserializeOwned + Send + 'static, TX: Serialize + Send + 'static>
         self.rx.recv().ok()
     }
 
-    pub fn cancel(self) {
+    pub fn close(self) {
         self.cancellation_tx
             .send(())
             .unwrap_or_else(|e| error!("Error sending cancellation"));
