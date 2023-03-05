@@ -8,9 +8,9 @@ authors = ["NAMeC"]
 
 [dependencies]
 clap = { version = "4.1.8", features = ["derive"] }
-crabe_protocol = { path = "../crabe_protocol" }
 serde = { version= "1.0.152", features = ["derive"] }
 serde_json = "1.0.93"
-
 nalgebra = { version = "0.32.1", features = ["serde-serialize"] }
 uom = { version = "0.34.0", features = ["use_serde"] }
+crabe_protocol = { path = "../crabe_protocol" }
+crabe_math = { path = "../crabe_math" }

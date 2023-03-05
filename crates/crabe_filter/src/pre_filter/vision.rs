@@ -169,11 +169,14 @@ mod geometry {
     use uom::si::length::millimeter;
 
     pub fn handle_geometry(geometry: &SslGeometryData, filter_data: &mut FilterData) {
+        // dbg!(geometry);
         let cam_geometry = CamGeometry {
             field_length: Length::new::<millimeter>(geometry.field.field_length as f32),
             field_width: Length::new::<millimeter>(geometry.field.field_width as f32),
             goal_width: Length::new::<millimeter>(geometry.field.goal_width as f32),
             goal_depth: Length::new::<millimeter>(geometry.field.goal_depth as f32),
+            boundary_width: Length::new::<millimeter>(geometry.field.boundary_width as f32),
+            field_lines: vec![],
         };
 
         filter_data.geometry = cam_geometry;
