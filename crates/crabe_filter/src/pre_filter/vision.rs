@@ -33,9 +33,9 @@ mod detection {
             cam_robots: impl Iterator<Item = CamRobot>,
         ) {
             cam_robots.for_each(|r| {
-                let robot = robots.entry(r.id as u32).or_insert_with(|| TrackedRobot {
+                let robot = robots.entry(r.id).or_insert_with(|| TrackedRobot {
                     data: Robot {
-                        id: r.id as u32,
+                        id: r.id,
                         ..Default::default()
                     },
                     ..Default::default()
@@ -51,20 +51,16 @@ mod detection {
             team_color: &TeamColor,
         ) {
             let map_packet = |r: &SslDetectionRobot| {
-                if let Some(id) = r.robot_id {
-                    Some(CamRobot {
-                        id,
-                        frame_info: frame.clone(),
-                        position: Point2::new(
-                            Length::new::<millimeter>(r.x),
-                            Length::new::<millimeter>(r.y),
-                        ),
-                        orientation: Angle::new::<radian>(r.orientation.unwrap_or(0.0)),
-                        confidence: r.confidence,
-                    })
-                } else {
-                    None
-                }
+                r.robot_id.map(|id| CamRobot {
+                    id,
+                    frame_info: frame.clone(),
+                    position: Point2::new(
+                        Length::new::<millimeter>(r.x),
+                        Length::new::<millimeter>(r.y),
+                    ),
+                    orientation: Angle::new::<radian>(r.orientation.unwrap_or(0.0)),
+                    confidence: r.confidence,
+                })
             };
 
             let yellow = detection.detected_yellow.iter().filter_map(map_packet);
@@ -163,22 +159,93 @@ mod detection {
 }
 
 mod geometry {
+    use crate::data::camera::{CamFieldArc, CamFieldLine};
     use crate::data::{camera::CamGeometry, FilterData};
+    use crabe_math::shape::arc::Arc;
+    use crabe_math::shape::line::Line;
     use crabe_protocol::protobuf::vision_packet::SslGeometryData;
-    use uom::si::f32::Length;
+    use nalgebra::Point2;
+    use std::collections::HashMap;
+    use uom::si::angle::radian;
+    use uom::si::f32::{Angle, Length};
     use uom::si::length::millimeter;
 
     pub fn handle_geometry(geometry: &SslGeometryData, filter_data: &mut FilterData) {
-        // dbg!(geometry);
-        let cam_geometry = CamGeometry {
+        let mut cam_geometry = CamGeometry {
             field_length: Length::new::<millimeter>(geometry.field.field_length as f32),
             field_width: Length::new::<millimeter>(geometry.field.field_width as f32),
             goal_width: Length::new::<millimeter>(geometry.field.goal_width as f32),
             goal_depth: Length::new::<millimeter>(geometry.field.goal_depth as f32),
             boundary_width: Length::new::<millimeter>(geometry.field.boundary_width as f32),
-            field_lines: vec![],
-            field_arcs: vec![],
+            field_lines: HashMap::new(),
+            field_arcs: HashMap::new(),
+            penalty_area_depth: geometry
+                .field
+                .penalty_area_depth
+                .map(|v| Length::new::<millimeter>(v as f32)),
+            penalty_area_width: geometry
+                .field
+                .penalty_area_width
+                .map(|v| Length::new::<millimeter>(v as f32)),
+            center_circle_radius: geometry
+                .field
+                .center_circle_radius
+                .map(|v| Length::new::<millimeter>(v as f32)),
+            line_thickness: geometry
+                .field
+                .line_thickness
+                .map(|v| Length::new::<millimeter>(v as f32)),
+            goal_center_to_penalty_mark: geometry
+                .field
+                .goal_center_to_penalty_mark
+                .map(|v| Length::new::<millimeter>(v as f32)),
+            goal_height: geometry
+                .field
+                .goal_height
+                .map(|v| Length::new::<millimeter>(v as f32)),
+            ball_radius: geometry.field.ball_radius.map(Length::new::<millimeter>),
+            max_robot_radius: geometry
+                .field
+                .max_robot_radius
+                .map(Length::new::<millimeter>),
         };
+
+        geometry.field.field_lines.iter().for_each(|line| {
+            cam_geometry.field_lines.insert(
+                line.name.clone(),
+                CamFieldLine {
+                    thickness: line.thickness,
+                    line: Line {
+                        p1: Point2::new(
+                            Length::new::<millimeter>(line.p1.x),
+                            Length::new::<millimeter>(line.p1.y),
+                        ),
+                        p2: Point2::new(
+                            Length::new::<millimeter>(line.p2.x),
+                            Length::new::<millimeter>(line.p2.y),
+                        ),
+                    },
+                },
+            );
+        });
+
+        geometry.field.field_arcs.iter().for_each(|arc| {
+            cam_geometry.field_arcs.insert(
+                arc.name.clone(),
+                CamFieldArc {
+                    thickness: arc.thickness,
+                    arc: Arc {
+                        center: Point2::new(
+                            Length::new::<millimeter>(arc.center.x),
+                            Length::new::<millimeter>(arc.center.y),
+                        ),
+                        radius: Length::new::<millimeter>(arc.radius),
+                        start_angle: Angle::new::<radian>(arc.a1),
+                        end_angle: Angle::new::<radian>(arc.a2),
+                    },
+                },
+            );
+        });
 
         filter_data.geometry = cam_geometry;
     }

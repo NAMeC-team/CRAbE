@@ -2,6 +2,7 @@ use crate::data::FrameInfo;
 use crabe_math::shape::arc::Arc;
 use crabe_math::shape::line::Line;
 use nalgebra::{Point2, Point3};
+use std::collections::HashMap;
 use uom::si::f32::{Angle, Length};
 
 #[derive(Debug)]
@@ -39,6 +40,14 @@ pub struct CamGeometry {
     pub goal_width: Length,
     pub goal_depth: Length,
     pub boundary_width: Length,
-    pub field_lines: Vec<CamFieldLine>,
-    pub field_arcs: Vec<CamFieldArc>, // pub last_update: Instant,
+    pub field_lines: HashMap<String, CamFieldLine>,
+    pub field_arcs: HashMap<String, CamFieldArc>, // pub last_update: Instant,
+    pub penalty_area_depth: Option<Length>,
+    pub penalty_area_width: Option<Length>,
+    pub center_circle_radius: Option<Length>,
+    pub line_thickness: Option<Length>,
+    pub goal_center_to_penalty_mark: Option<Length>,
+    pub goal_height: Option<Length>,
+    pub ball_radius: Option<Length>,
+    pub max_robot_radius: Option<Length>,
 }
