@@ -13,8 +13,8 @@ pub trait ComponentBoxed {
 }
 
 impl<T> ComponentBoxed for T
-    where
-        T: Component,
+where
+    T: Component,
 {
     fn close_boxed(self: Box<Self>) {
         (*self).close()
@@ -22,8 +22,8 @@ impl<T> ComponentBoxed for T
 }
 
 impl<T> Component for Box<T>
-    where
-        T: ?Sized + Component,
+where
+    T: ?Sized + Component,
 {
     fn close(self) {
         self.close_boxed()

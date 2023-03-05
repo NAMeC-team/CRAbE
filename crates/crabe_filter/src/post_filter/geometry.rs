@@ -19,7 +19,7 @@ impl PostFilter for GeometryFilter {
                 width: 0.0,
                 depth: 0.0,
             },
-            opponent_goal: Goal {
+            enemy_goal: Goal {
                 width: 0.0,
                 depth: 0.0,
             },
@@ -27,7 +27,7 @@ impl PostFilter for GeometryFilter {
                 width: 0.0,
                 depth: 0.0,
             },
-            opponent_penalty: Penalty {
+            enemy_penalty: Penalty {
                 width: 0.0,
                 depth: 0.0,
             },

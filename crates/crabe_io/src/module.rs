@@ -55,5 +55,3 @@ impl InputComponent for InputPipeline {
         data
     }
 }
-
-

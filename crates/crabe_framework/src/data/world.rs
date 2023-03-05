@@ -1,4 +1,5 @@
 use crate::data::geometry::Geometry;
+use clap::builder::Str;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -46,14 +47,14 @@ pub enum TeamColor {
 #[derive(Serialize, Clone, Debug)]
 pub struct Team {
     color: TeamColor,
-    name: String,
+    name: Option<String>,
 }
 
 impl Default for Team {
     fn default() -> Self {
         Self {
             color: TeamColor::Neutral,
-            name: "UNKNOWN".to_string(),
+            name: None,
         }
     }
 }

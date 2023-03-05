@@ -1,15 +1,15 @@
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use crate::communication::WebSocketTransceiver;
+use crate::tool::config::ToolConfig;
 use crabe_framework::component::{Component, ToolComponent};
+use crabe_framework::config::CommonConfig;
 use crabe_framework::data::tool::{ToolCommands, ToolData};
 use crabe_framework::data::world::World;
 use serde::{Deserialize, Serialize};
-use crabe_framework::config::CommonConfig;
-use crate::communication::WebSocketTransceiver;
-use crate::tool::config::ToolConfig;
+use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
 
 #[derive(Serialize)]
 enum ToolMessage {
-    World(World)
+    World(World),
 }
 
 #[derive(Deserialize)]
@@ -22,10 +22,9 @@ pub struct ToolServer {
 impl ToolServer {
     pub fn with_config(tool_config: ToolConfig, _common_config: &CommonConfig) -> Self {
         Self {
-            websocket: WebSocketTransceiver::spawn(SocketAddrV4::new(
-                Ipv4Addr::LOCALHOST,
-                tool_config.tool_port,
-            ).into())
+            websocket: WebSocketTransceiver::spawn(
+                SocketAddrV4::new(Ipv4Addr::LOCALHOST, tool_config.tool_port).into(),
+            ),
         }
     }
 }
