@@ -16,6 +16,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
 use uom::si::velocity::meter_per_second;
+use crate::constant::{SIM_PORT_BLUE, SIM_PORT_YELLOW};
 
 use crate::pipeline::output::CommandSenderTask;
 
@@ -30,9 +31,9 @@ impl Simulator {
             port = sim_port
         } else {
             if common_cfg.yellow {
-                port = 10301;
+                port = SIM_PORT_YELLOW;
             } else {
-                port = 10302;
+                port = SIM_PORT_BLUE;
             }
         }
 

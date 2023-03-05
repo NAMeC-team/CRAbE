@@ -12,6 +12,7 @@ use std::sync::mpsc::Receiver;
 use std::sync::{mpsc, Arc};
 use std::thread;
 use std::thread::JoinHandle;
+use crate::constant::{VISION_PORT_REAL, VISION_PORT_SIM};
 
 // TODO: Document
 pub struct Vision {
@@ -26,9 +27,9 @@ impl Vision {
             port
         } else {
             if common_cfg.real {
-                10006
+                VISION_PORT_REAL
             } else {
-                10020
+                VISION_PORT_SIM
             }
         };
 
