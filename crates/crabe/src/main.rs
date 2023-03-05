@@ -80,8 +80,8 @@ impl System {
     }
 
     pub fn close(self) {
-        //self.input_component.close();
-        //self.filter_component.close();
+        self.input_component.close();
+        self.filter_component.close();
         self.tool_component.close();
     }
 }
