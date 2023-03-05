@@ -177,6 +177,7 @@ mod geometry {
             goal_depth: Length::new::<millimeter>(geometry.field.goal_depth as f32),
             boundary_width: Length::new::<millimeter>(geometry.field.boundary_width as f32),
             field_lines: vec![],
+            field_arcs: vec![],
         };
 
         filter_data.geometry = cam_geometry;

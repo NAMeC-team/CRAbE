@@ -1,4 +1,5 @@
 use crate::data::FrameInfo;
+use crabe_math::shape::arc::Arc;
 use crabe_math::shape::line::Line;
 use nalgebra::{Point2, Point3};
 use uom::si::f32::{Angle, Length};
@@ -25,6 +26,12 @@ pub struct CamFieldLine {
     pub line: Line,
 }
 
+#[derive(Debug)]
+pub struct CamFieldArc {
+    pub thickness: f32,
+    pub arc: Arc,
+}
+
 #[derive(Debug, Default)]
 pub struct CamGeometry {
     pub field_length: Length,
@@ -33,5 +40,5 @@ pub struct CamGeometry {
     pub goal_depth: Length,
     pub boundary_width: Length,
     pub field_lines: Vec<CamFieldLine>,
-    // pub last_update: Instant,
+    pub field_arcs: Vec<CamFieldArc>, // pub last_update: Instant,
 }
