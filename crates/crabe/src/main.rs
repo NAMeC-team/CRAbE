@@ -11,9 +11,6 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use crabe_framework::data::tool::ToolData;
-use crabe_io::league::simulator::task::Simulator;
-use crabe_io::league::simulator::config::SimulatorConfig;
-use crabe_io::league::real::{RealConfig, Real};
 use crabe_io::pipeline::output::{OutputConfig, OutputPipeline};
 use crabe_io::tool::ToolConfig;
 use crabe_io::tool::ToolServer;
@@ -36,10 +33,6 @@ pub struct Cli {
     #[command(flatten)]
     #[command(next_help_heading = "Tool")]
     pub tool_config: ToolConfig,
-
-    #[command(flatten)]
-    #[command(next_help_heading = "Simulator")]
-    pub simulator_config: SimulatorConfig,
 
     #[command(flatten)]
     #[command(next_help_heading = "Output")]

@@ -1,5 +1,4 @@
-use crate::config::CommonConfig;
-use crate::data::output::{CommandMap, Feedback, FeedbackMap};
+use crate::data::output::{CommandMap, FeedbackMap};
 use crate::data::receiver::InboundData;
 use crate::data::tool::{ToolCommands, ToolData};
 use crate::data::world::World;

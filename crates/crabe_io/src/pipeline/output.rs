@@ -1,17 +1,15 @@
-use std::io::Write;
-use std::process::Output;
-use std::time::Duration;
-use log::{debug, error};
-use prost::Message;
-use serialport::SerialPort;
-use uom::si::angular_velocity::radian_per_second;
-use uom::si::velocity::meter_per_second;
-use crabe_framework::component::{Component, ComponentBoxed, OutputComponent};
+
+
+
+
+
+
+use crabe_framework::component::{Component, OutputComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::constant::MAX_ID_ROBOTS;
-use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
+
+use crabe_framework::data::output::{CommandMap, FeedbackMap};
 use crabe_framework::data::tool::ToolCommands;
-use crabe_protocol::protobuf::robot_packet::IaToMainBoard;
+
 use crate::league::real::{Real, RealConfig};
 use clap::Args;
 use crate::league::simulator::config::SimulatorConfig;
@@ -59,7 +57,7 @@ impl Component for OutputPipeline {
 }
 
 impl OutputComponent for OutputPipeline {
-    fn step(&mut self, commands: CommandMap, tool_commands: ToolCommands) -> FeedbackMap {
+    fn step(&mut self, commands: CommandMap, _tool_commands: ToolCommands) -> FeedbackMap {
         self.command_task.step(commands)
     }
 }

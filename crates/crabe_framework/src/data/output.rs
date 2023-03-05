@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::constant::MAX_ID_ROBOTS;
+
 use uom::si::f32::{ElectricPotential, Velocity};
 use uom::si::f32::AngularVelocity;
 

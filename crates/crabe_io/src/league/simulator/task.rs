@@ -1,8 +1,6 @@
 use crate::communication::{UDPTransceiver};
 
 use crate::league::simulator::config::SimulatorConfig;
-use crate::pipeline::input::ReceiverTask;
-use crabe_framework::component::{OutputComponent};
 
 use crabe_framework::data::output::{Command, CommandMap, Feedback, FeedbackMap, Kick};
 
