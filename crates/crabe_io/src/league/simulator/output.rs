@@ -23,6 +23,7 @@ use std::thread;
 use std::thread::JoinHandle;
 use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
 use uom::si::velocity::meter_per_second;
+use crabe_framework::constant::MAX_ID_ROBOTS;
 
 const SIMULATOR_BUFFER_SIZE: usize = 4096;
 
@@ -132,7 +133,14 @@ impl SimulatorOutput {
 }
 
 impl Component for SimulatorOutput {
-    fn close(self) {}
+    fn close(mut self) {
+        let mut commands: CommandMap = Default::default();
+        for id in 0..MAX_ID_ROBOTS {
+            commands.insert(id as u32, Default::default());
+        }
+
+        self.step(commands, None);
+    }
 }
 
 impl OutputComponent for SimulatorOutput {

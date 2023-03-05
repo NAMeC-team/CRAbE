@@ -1,17 +1,17 @@
-use std::io::Write;
-use std::time::Duration;
-use log::{debug, error};
-use prost::Message;
-use serialport::SerialPort;
-use uom::si::angular_velocity::radian_per_second;
-use uom::si::velocity::meter_per_second;
+use crate::league::usb::UsbConfig;
 use crabe_framework::component::{Component, OutputComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
 use crabe_framework::data::tool::ToolCommands;
 use crabe_protocol::protobuf::robot_packet::IaToMainBoard;
-use crate::league::usb::UsbConfig;
+use log::{debug, error};
+use prost::Message;
+use serialport::SerialPort;
+use std::io::Write;
+use std::time::Duration;
+use uom::si::angular_velocity::radian_per_second;
+use uom::si::velocity::meter_per_second;
 
 pub struct UsbOutput {
     port: Box<dyn SerialPort>,
@@ -83,8 +83,6 @@ impl OutputComponent for UsbOutput {
         for (id, command) in commands.into_iter() {
             let packet = self.prepare_packet(id, command);
             self.send(packet);
-
-
         }
         Default::default()
     }
