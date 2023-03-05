@@ -4,6 +4,7 @@ use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use uom::si::f32::{Angle, Length};
+use crate::config::CommonConfig;
 
 #[derive(Serialize, Clone, Default, Debug)]
 pub struct AllyInfo;
@@ -36,12 +37,19 @@ pub struct Ball {
     pub position: Point3<Length>,
 }
 
-#[derive(Debug, Copy, Clone, Serialize, Deserialize, Default)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub enum TeamColor {
-    #[default]
-    Neutral,
     Blue,
     Yellow,
+}
+
+impl TeamColor {
+    pub fn opposite(&self) -> Self {
+        match self {
+            TeamColor::Blue => TeamColor::Yellow,
+            TeamColor::Yellow => TeamColor::Blue
+        }
+    }
 }
 
 #[derive(Serialize, Clone, Debug)]
@@ -50,25 +58,36 @@ pub struct Team {
     name: Option<String>,
 }
 
-impl Default for Team {
-    fn default() -> Self {
+impl Team {
+    pub fn with_color(color: TeamColor) -> Self {
         Self {
-            color: TeamColor::Neutral,
-            name: None,
+            color,
+            name: None
         }
     }
 }
 
-#[derive(Serialize, Clone, Default, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct GameState {
     pub ally: Team,
     pub enemy: Team,
     pub positive_half: TeamColor,
 }
 
+impl GameState {
+    pub fn new(team_color: TeamColor) -> Self {
+        Self {
+            ally: Team::with_color(team_color),
+            enemy: Team::with_color(team_color.opposite()),
+            positive_half: team_color.opposite() // TODO
+        }
+    }
+}
+
+
 pub type RobotMap<T> = HashMap<u32, Robot<T>>;
 
-#[derive(Serialize, Clone, Default, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct World {
     pub state: GameState,
     pub geometry: Geometry,
@@ -76,4 +95,18 @@ pub struct World {
     pub enemies_bot: RobotMap<EnemyInfo>,
     pub ball: Option<Ball>,
     pub team_color: TeamColor,
+}
+
+impl World {
+    pub fn with_config(config: &CommonConfig) -> Self {
+        let team_color = if config.yellow { TeamColor::Yellow } else { TeamColor::Blue };
+        Self {
+            state: GameState::new(team_color),
+            geometry: Default::default(),
+            allies_bot: Default::default(),
+            enemies_bot: Default::default(),
+            ball: None,
+            team_color
+        }
+    }
 }
