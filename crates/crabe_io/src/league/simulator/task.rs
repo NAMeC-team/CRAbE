@@ -1,53 +1,44 @@
-use crate::communication::MulticastUDPReceiver;
-use crate::league::game_controller::GameControllerConfig;
+use crate::communication::{UDPTransceiver};
+
 use crate::league::simulator::config::SimulatorConfig;
 use crate::pipeline::input::ReceiverTask;
-use crabe_framework::component::{Component, OutputComponent};
-use crabe_framework::config::CommonConfig;
+use crabe_framework::component::{OutputComponent};
+
 use crabe_framework::data::output::{Command, CommandMap, Feedback, FeedbackMap, Kick};
-use crabe_framework::data::receiver::InboundData;
-use crabe_framework::data::tool::ToolCommands;
-use crabe_protocol::protobuf::game_controller_packet::Referee;
+
+
+
 use crabe_protocol::protobuf::simulation_packet::{
     robot_move_command, MoveLocalVelocity, RobotCommand, RobotControl, RobotControlResponse,
     RobotMoveCommand,
 };
-use log::{debug, error, info};
-use prost::Message;
-use std::net::{Ipv4Addr, SocketAddr, UdpSocket};
-use std::str::FromStr;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::Receiver;
-use std::sync::{mpsc, Arc};
-use std::thread;
-use std::thread::JoinHandle;
+use log::{debug};
+
+use std::net::{Ipv4Addr};
+
+
+
+
+
+
 use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
 use uom::si::velocity::meter_per_second;
 use crabe_framework::constant::MAX_ID_ROBOTS;
-use crate::constant::BUFFER_SIZE;
+
 use crate::pipeline::output::CommandSenderTask;
 
 pub struct Simulator {
-    socket: UdpSocket,
-    buf: [u8; BUFFER_SIZE],
+    socket: UDPTransceiver
 }
 
 impl Simulator {
     pub fn with_config(simulator_config: SimulatorConfig) -> Self {
-        let socket = UdpSocket::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0))
-            .expect("Failed to bind the UDP Socket");
-        socket
-            .set_nonblocking(true)
-            .expect("Failed to set socket to non-blocking mode");
-
         let port = simulator_config.simulator_port;
-        let addr = SocketAddr::new(Ipv4Addr::LOCALHOST.into(), port);
-
-        socket.connect(addr).expect("connect function failed");
+        let socket = UDPTransceiver::new(Ipv4Addr::LOCALHOST, port)
+            .expect("Failed to setup simulator");
 
         Self {
             socket,
-            buf: [0u8; BUFFER_SIZE],
         }
     }
 
@@ -82,45 +73,25 @@ impl Simulator {
         packet
     }
 
-    fn send(&mut self, packet: RobotControl) {
-        let mut buf = Vec::new();
-        buf.reserve(packet.encoded_len());
-        packet.encode(&mut buf).unwrap();
-        self.socket.send(&buf[0..packet.encoded_len()]).map_or_else(
-            |e| error!("couldn't send data"),
-            |l| debug!("sent order: {:?}", packet),
-        );
-    }
 
-    fn receive(&mut self) -> FeedbackMap {
+    fn fetch(&mut self) -> FeedbackMap {
         let mut feedback_map: FeedbackMap = Default::default();
-        match self.socket.recv(&mut self.buf) {
-            Ok(p_size) => match RobotControlResponse::decode(&self.buf[0..p_size]) {
-                Ok(packet) => {
-                    for robot_feedback in packet.feedback {
-                        debug!(
-                            "assigned feedback {:?} to robot #{}",
-                            robot_feedback, robot_feedback.id
-                        );
+        if let Some(packet) = self.socket.receive::<RobotControlResponse>() {
+            for robot_feedback in packet.feedback {
+                debug!(
+                    "assigned feedback {:?} to robot #{}",
+                    robot_feedback, robot_feedback.id
+                );
 
-                        feedback_map.insert(
-                            robot_feedback.id,
-                            Feedback {
-                                has_ball: robot_feedback.dribbler_ball_contact(),
-                                voltage: Default::default(),
-                            },
-                        );
-                    }
-                }
-
-                Err(e) => {
-                    error!("error decoding packet: {:?}", e);
-                }
-            },
-            Err(e) => {
-                error!("couldn't recv from socket, err: {}", e);
+                feedback_map.insert(
+                    robot_feedback.id,
+                    Feedback {
+                        has_ball: robot_feedback.dribbler_ball_contact(),
+                        voltage: Default::default(),
+                    },
+                );
             }
-        };
+        }
 
         feedback_map
     }
@@ -129,8 +100,8 @@ impl Simulator {
 impl CommandSenderTask for Simulator {
     fn step(&mut self, commands: CommandMap) -> FeedbackMap {
         let packet = self.prepare_packet(commands.into_iter());
-        self.send(packet);
-        return self.receive();
+        self.socket.send(packet);
+        return self.fetch();
     }
 
     fn close(&mut self) {
