@@ -1,9 +1,10 @@
+use std::collections::HashMap;
 use crate::constant::MAX_ID_ROBOTS;
 use uom::si::f32::{ElectricPotential, Velocity};
-use uom::si::f64::AngularVelocity;
+use uom::si::f32::AngularVelocity;
 
 // TODO: Document
-pub type FeedbackMap = [Option<Feedback>; MAX_ID_ROBOTS];
+pub type FeedbackMap = HashMap<u32, Feedback>;
 
 #[derive(Debug)]
 pub struct Feedback {
@@ -11,9 +12,7 @@ pub struct Feedback {
     pub voltage: ElectricPotential,
 }
 
-pub struct CommandMap {
-    commands: [Option<Command>; MAX_ID_ROBOTS],
-}
+pub type CommandMap = HashMap<u32, Command>;
 
 pub enum Kick {
     StraightKick { power: f32 },
