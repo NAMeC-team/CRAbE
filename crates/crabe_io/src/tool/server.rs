@@ -1,5 +1,5 @@
 use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
-use crabe_framework::component::ToolComponent;
+use crabe_framework::component::{Component, ToolComponent};
 use crabe_framework::data::tool::{ToolCommands, ToolData};
 use crabe_framework::data::world::World;
 use serde::{Deserialize, Serialize};
@@ -30,13 +30,15 @@ impl ToolServer {
     }
 }
 
+impl Component for ToolServer {
+    fn close(self) {
+        self.websocket.close();
+    }
+}
+
 impl ToolComponent for ToolServer {
     fn step(&mut self, world_data: &World, tool_data: &mut ToolData) -> ToolCommands {
         self.websocket.send(ToolMessage::World(world_data.clone()));
         ToolCommands {}
-    }
-
-    fn close(&mut self) {
-        //self.websocket.close();
     }
 }

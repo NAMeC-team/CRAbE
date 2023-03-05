@@ -15,7 +15,7 @@ use crate::post_filter::PostFilter;
 use crate::pre_filter::vision::VisionFilter;
 use crate::pre_filter::PreFilter;
 use clap::Args;
-use crabe_framework::component::FilterComponent;
+use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::receiver::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
@@ -56,6 +56,10 @@ impl FilterPipeline {
     }
 }
 
+impl Component for FilterPipeline {
+    fn close(self) {}
+}
+
 impl FilterComponent for FilterPipeline {
     fn step(&mut self, inbound_data: InboundData, world: &mut World) {
         self.pre_filters
@@ -71,5 +75,4 @@ impl FilterComponent for FilterPipeline {
             .for_each(|f| f.step(&self.filter_data, world));
     }
 
-    fn close(&mut self) {}
 }

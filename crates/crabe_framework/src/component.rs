@@ -1,40 +1,61 @@
+use crate::config::CommonConfig;
 use crate::data::output::{CommandMap, Feedback, FeedbackMap};
 use crate::data::receiver::InboundData;
 use crate::data::tool::{ToolCommands, ToolData};
 use crate::data::world::World;
 
+pub trait Component: ComponentBoxed {
+    fn close(self);
+}
+
+pub trait ComponentBoxed {
+    fn close_boxed(self: Box<Self>);
+}
+
+impl<T> ComponentBoxed for T
+    where
+        T: Component,
+{
+    fn close_boxed(self: Box<Self>) {
+        (*self).close()
+    }
+}
+
+impl<T> Component for Box<T>
+    where
+        T: ?Sized + Component,
+{
+    fn close(self) {
+        self.close_boxed()
+    }
+}
+
 // TODO: Document
-pub trait InputComponent {
+pub trait InputComponent: Component {
     fn step(&mut self, feedback: &mut FeedbackMap) -> InboundData;
-    fn close(&mut self);
 }
 
-pub trait FilterComponent {
+pub trait FilterComponent: Component {
     fn step(&mut self, data: InboundData, world: &mut World);
-    fn close(&mut self);
 }
 
-pub trait DecisionComponent {
+pub trait DecisionComponent: Component {
     fn step(&mut self, data: &World) -> (CommandMap, ToolData);
-    fn close(&mut self);
 }
 
-pub trait ToolComponent {
+pub trait ToolComponent: Component {
     fn step(&mut self, world_data: &World, tools_data: &mut ToolData) -> ToolCommands;
-    fn close(&mut self);
 }
 
-pub trait GuardComponent {
+pub trait GuardComponent: Component {
     fn step(
         &mut self,
         world_data: &mut World,
         command: &mut CommandMap,
         tools_commands: &mut ToolCommands,
     );
-    fn close(&mut self);
 }
 
-pub trait OutputComponent {
+pub trait OutputComponent: Component {
     fn step(&mut self, command: &mut CommandMap, tools_commands: &mut ToolCommands) -> Feedback;
-    fn close(&mut self);
 }
