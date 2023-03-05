@@ -79,7 +79,7 @@ impl GameState {
         Self {
             ally: Team::with_color(team_color),
             enemy: Team::with_color(team_color.opposite()),
-            positive_half: team_color.opposite() // TODO
+            positive_half: team_color.opposite()
         }
     }
 }
