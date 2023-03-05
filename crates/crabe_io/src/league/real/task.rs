@@ -1,22 +1,18 @@
 use crate::league::real::RealConfig;
-use crabe_framework::component::{OutputComponent};
+use crabe_framework::component::OutputComponent;
 
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
 
 use crabe_protocol::protobuf::robot_packet::IaToMainBoard;
 
-
-
-
-
-use uom::si::angular_velocity::radian_per_second;
-use uom::si::velocity::meter_per_second;
 use crate::communication::UsbTransceiver;
 use crate::pipeline::output::CommandSenderTask;
+use uom::si::angular_velocity::radian_per_second;
+use uom::si::velocity::meter_per_second;
 
 pub struct Real {
-    usb: UsbTransceiver
+    usb: UsbTransceiver,
 }
 
 impl Real {
@@ -24,9 +20,7 @@ impl Real {
         let usb = UsbTransceiver::new(&usb_config.usb_port, usb_config.usb_baud)
             .expect("Failed to create usb transceiver");
 
-        Self {
-            usb
-        }
+        Self { usb }
     }
 
     fn prepare_packet(&mut self, id: u32, command: Command) -> IaToMainBoard {

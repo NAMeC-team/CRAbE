@@ -1,9 +1,3 @@
-
-
-
-
-
-
 use crabe_framework::component::{Component, OutputComponent};
 use crabe_framework::config::CommonConfig;
 
@@ -11,9 +5,9 @@ use crabe_framework::data::output::{CommandMap, FeedbackMap};
 use crabe_framework::data::tool::ToolCommands;
 
 use crate::league::real::{Real, RealConfig};
-use clap::Args;
 use crate::league::simulator::config::SimulatorConfig;
 use crate::league::simulator::task::Simulator;
+use clap::Args;
 
 #[derive(Args)]
 pub struct OutputConfig {
@@ -32,7 +26,7 @@ pub trait CommandSenderTask {
 }
 
 pub struct OutputPipeline {
-    command_task: Box<dyn CommandSenderTask>
+    command_task: Box<dyn CommandSenderTask>,
 }
 
 impl OutputPipeline {
@@ -41,12 +35,10 @@ impl OutputPipeline {
         if common_cfg.real {
             command_task = Box::new(Real::with_config(output_cfg.real_cfg));
         } else {
-            command_task = Box::new(Simulator::with_config(output_cfg.simulator_cfg));
+            command_task = Box::new(Simulator::with_config(output_cfg.simulator_cfg, common_cfg));
         }
 
-        OutputPipeline {
-            command_task
-        }
+        OutputPipeline { command_task }
     }
 }
 

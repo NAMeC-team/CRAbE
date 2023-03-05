@@ -15,6 +15,6 @@ pub mod constant;
 /// The `league` module provides tools for communicating with software used in the league, such as SSL Vision, Simulator, and Game Controller.
 pub mod league;
 
-pub mod tool;
 pub mod pipeline;
+pub mod tool;
 // pub mod serial;

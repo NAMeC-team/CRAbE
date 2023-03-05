@@ -9,4 +9,3 @@ pub use self::websocket_transceiver::WebSocketTransceiver;
 
 mod usb_transceiver;
 pub use self::usb_transceiver::UsbTransceiver;
-

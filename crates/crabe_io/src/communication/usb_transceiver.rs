@@ -1,7 +1,7 @@
-use std::time::Duration;
+use crate::constant::BUFFER_SIZE;
 use log::{debug, error};
 use serialport::SerialPort;
-use crate::constant::BUFFER_SIZE;
+use std::time::Duration;
 
 pub struct UsbTransceiver {
     port: Box<dyn SerialPort>,
@@ -16,12 +16,8 @@ impl UsbTransceiver {
 
         let buffer = [0u8; BUFFER_SIZE];
 
-        Ok(Self {
-            port,
-            buffer
-        })
+        Ok(Self { port, buffer })
     }
-
 
     pub fn send<T: prost::Message + Default>(&mut self, packet: T) {
         let mut buf = Vec::new();
