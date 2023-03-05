@@ -19,6 +19,7 @@ pub enum Kick {
     ChipKick { power: f32 },
 }
 
+#[derive(Default)]
 pub struct Command {
     /// Velocity forward in m.s-1 (towards the dribbler)
     pub forward_velocity: Velocity,

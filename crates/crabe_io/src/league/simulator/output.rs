@@ -26,12 +26,12 @@ use uom::si::velocity::meter_per_second;
 
 const SIMULATOR_BUFFER_SIZE: usize = 4096;
 
-pub struct Simulator {
+pub struct SimulatorOutput {
     socket: UdpSocket,
     buf: [u8; SIMULATOR_BUFFER_SIZE],
 }
 
-impl Simulator {
+impl SimulatorOutput {
     pub fn with_config(simulator_config: SimulatorConfig, common_config: &CommonConfig) -> Self {
         let socket = UdpSocket::bind(SocketAddr::new(Ipv4Addr::UNSPECIFIED.into(), 0))
             .expect("Failed to bind the UDP Socket");
@@ -131,12 +131,12 @@ impl Simulator {
     }
 }
 
-impl Component for Simulator {
+impl Component for SimulatorOutput {
     fn close(self) {}
 }
 
-impl OutputComponent for Simulator {
-    fn step(&mut self, commands: CommandMap, tool_commands: ToolCommands) -> FeedbackMap {
+impl OutputComponent for SimulatorOutput {
+    fn step(&mut self, commands: CommandMap, tool_commands: Option<ToolCommands>) -> FeedbackMap {
         let packet = self.prepare_packet(commands.into_iter());
         self.send(packet);
         return self.receive();

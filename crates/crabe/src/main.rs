@@ -2,7 +2,7 @@ use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{Component, FilterComponent, InputComponent, OutputComponent, ToolComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::FeedbackMap;
+use crabe_framework::data::output::{FeedbackMap};
 use crabe_framework::data::world::World;
 use crabe_io::module::{InputConfig, InputPipeline};
 use env_logger::Env;
@@ -11,8 +11,9 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use crabe_framework::data::tool::ToolData;
-use crabe_io::league::simulator::component::Simulator;
+use crabe_io::league::simulator::output::SimulatorOutput;
 use crabe_io::league::simulator::config::SimulatorConfig;
+use crabe_io::league::usb::{UsbConfig, UsbOutput};
 use crabe_io::tool::ToolConfig;
 use crabe_io::tool::ToolServer;
 
@@ -38,6 +39,10 @@ pub struct Cli {
     #[command(flatten)]
     #[command(next_help_heading = "Simulator")]
     pub simulator_config: SimulatorConfig,
+
+    #[command(flatten)]
+    #[command(next_help_heading = "Usb")]
+    pub usb_config: UsbConfig,
 }
 
 pub struct System {
@@ -49,11 +54,12 @@ pub struct System {
 }
 
 impl System {
+    // TODO: Builder
     pub fn new(
         input_component: impl InputComponent + 'static,
         filter_component: impl FilterComponent + 'static,
         tool_component: impl ToolComponent + 'static,
-        output_component: impl OutputComponent + 'static
+        output_component: Box<dyn OutputComponent>,
     ) -> Self {
         let running = Arc::new(AtomicBool::new(true));
         let running_ctrlc = Arc::clone(&running);
@@ -67,7 +73,7 @@ impl System {
             input_component: Box::new(input_component),
             filter_component: Box::new(filter_component),
             tool_component: Box::new(tool_component),
-            output_component: Box::new(output_component),
+            output_component,
             running,
         }
     }
@@ -83,8 +89,8 @@ impl System {
             self.filter_component.step(receive_data, &mut world);
             //dbg!(&world);
             let mut tool_data = ToolData {};
-            self.tool_component.step(&mut world, &mut tool_data);
-            thread::sleep(refresh_rate);
+            let tool_commands = self.tool_component.step(&mut world, &mut tool_data);
+            //self.output_component.step(command_map, tool_commands);
         }
     }
 
@@ -107,12 +113,12 @@ fn main() {
     // GuardPipeline
     // OutputPipeline
 
-    let output;
-    //if cli.common.real {
-
-    //} else {
-        output = Simulator::with_config(cli.simulator_config, &cli.common);
-    //}
+    let output: Box<dyn OutputComponent>;
+    if cli.common.real {
+        output = Box::new(UsbOutput::with_config(cli.usb_config, &cli.common));
+    } else {
+        output = Box::new(SimulatorOutput::with_config(cli.simulator_config, &cli.common));
+    }
 
     let mut system = System::new(
         InputPipeline::with_config(cli.input_config, &cli.common),
