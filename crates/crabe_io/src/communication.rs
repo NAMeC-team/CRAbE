@@ -6,3 +6,7 @@ pub use self::udp_transceiver::UDPTransceiver;
 
 mod websocket_transceiver;
 pub use self::websocket_transceiver::WebSocketTransceiver;
+
+mod usb_transceiver;
+pub use self::usb_transceiver::UsbTransceiver;
+
