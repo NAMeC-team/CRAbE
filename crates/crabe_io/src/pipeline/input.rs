@@ -30,12 +30,14 @@ pub struct InputPipeline {
 }
 
 impl InputPipeline {
-    pub fn with_config(config: InputConfig, _: &CommonConfig) -> Self {
-        let mut tasks: Vec<Box<dyn ReceiverTask>> =
-            vec![Box::new(Vision::with_config(config.vision_cfg))];
+    pub fn with_config(input_cfg: InputConfig, common_cfg: &CommonConfig) -> Self {
+        let mut tasks: Vec<Box<dyn ReceiverTask>> = vec![Box::new(Vision::with_config(
+            input_cfg.vision_cfg,
+            common_cfg,
+        ))];
 
-        if config.gc {
-            tasks.push(Box::new(GameController::with_config(config.gc_cfg)));
+        if input_cfg.gc {
+            tasks.push(Box::new(GameController::with_config(input_cfg.gc_cfg)));
         }
 
         Self { receivers: tasks }
@@ -55,3 +57,6 @@ impl InputComponent for InputPipeline {
         data
     }
 }
+
+#[derive(Args)]
+pub struct OutputPipeline {}

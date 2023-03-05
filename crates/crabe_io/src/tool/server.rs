@@ -5,7 +5,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::tool::{ToolCommands, ToolData};
 use crabe_framework::data::world::World;
 use serde::{Deserialize, Serialize};
-use std::net::{Ipv4Addr, SocketAddr, SocketAddrV4};
+use std::net::{Ipv4Addr, SocketAddrV4};
 
 #[derive(Serialize)]
 enum ToolMessage {
