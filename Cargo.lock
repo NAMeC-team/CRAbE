@@ -184,6 +184,7 @@ dependencies = [
  "crabe_framework",
  "crabe_io",
  "crabe_protocol",
+ "crabe_tool",
  "ctrlc",
  "env_logger",
  "log",

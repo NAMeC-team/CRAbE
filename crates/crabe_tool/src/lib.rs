@@ -15,7 +15,7 @@ enum CrabeToolRequest {
 
 }
 
-struct CrabeTool {
+pub struct CrabeTool {
     websocket: WebSocketTransceiver<CrabeToolRequest, CrabeToolMessage>
 }
 
@@ -31,8 +31,7 @@ impl CrabeTool {
 impl ToolComponent for CrabeTool {
     fn step(&mut self, world_data: &World, tool_data: &mut ToolData) -> ToolCommands {
         self.websocket.send(CrabeToolMessage::World(world_data.clone()));
-
-        todo!()
+        ToolCommands{}
     }
 
     fn close(&mut self) {
