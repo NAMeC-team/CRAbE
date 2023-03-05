@@ -23,13 +23,13 @@ pub struct CamRobot {
 
 #[derive(Debug)]
 pub struct CamFieldLine {
-    pub thickness: f32,
+    pub thickness: Length,
     pub line: Line,
 }
 
 #[derive(Debug)]
 pub struct CamFieldArc {
-    pub thickness: f32,
+    pub thickness: Length,
     pub arc: Arc,
 }
 

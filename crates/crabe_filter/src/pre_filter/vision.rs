@@ -214,7 +214,7 @@ mod geometry {
             cam_geometry.field_lines.insert(
                 line.name.clone(),
                 CamFieldLine {
-                    thickness: line.thickness,
+                    thickness: Length::new::<millimeter>(line.thickness),
                     line: Line {
                         p1: Point2::new(
                             Length::new::<millimeter>(line.p1.x),
@@ -233,7 +233,7 @@ mod geometry {
             cam_geometry.field_arcs.insert(
                 arc.name.clone(),
                 CamFieldArc {
-                    thickness: arc.thickness,
+                    thickness: Length::new::<millimeter>(arc.thickness),
                     arc: Arc {
                         center: Point2::new(
                             Length::new::<millimeter>(arc.center.x),
