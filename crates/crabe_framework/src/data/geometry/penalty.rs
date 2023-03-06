@@ -7,7 +7,7 @@ use uom::si::f32::Length;
 pub struct Penalty {
     pub width: Length,
     pub depth: Length,
-    pub left_position: Point2<Length>,
+    pub top_left_position: Point2<Length>,
 }
 
 // TODO : Implement some helper methods

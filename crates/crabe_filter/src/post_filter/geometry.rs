@@ -34,29 +34,30 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
         .field_lines
         .get("LeftFieldLeftPenaltyStretch")
         .map(|line| {
-            dbg!(line.line.p1.x - line.line.p2.x);
-            dbg!(line.line.p1.x);
-            dbg!(line.line.p2.x);
+            let width = 2.0 * line.line.p1.y.abs();
             Penalty {
-                width: 2.0 * line.line.p1.y.abs(),
+                width,
                 depth: (line.line.p1.x - line.line.p2.x).abs(),
-                left_position: Point2::new(
-                    factor * cam_geometry.field_length,
-                    factor * cam_geometry.goal_width,
+                top_left_position: Point2::new(
+                    factor * (cam_geometry.field_length / 2.0),
+                    factor * (width / 2.0),
                 ),
             }
         })
-        .unwrap_or_else(|| Penalty {
-            width: cam_geometry
+        .unwrap_or_else(|| {
+            let width = cam_geometry
                 .penalty_area_width
-                .unwrap_or(Length::new::<meter>(2.0)),
-            depth: cam_geometry
-                .penalty_area_depth
-                .unwrap_or(Length::new::<meter>(1.0)),
-            left_position: Point2::new(
-                factor * cam_geometry.field_length,
-                factor * cam_geometry.goal_width,
-            ),
+                .unwrap_or(Length::new::<meter>(2.0));
+            Penalty {
+                width,
+                depth: cam_geometry
+                    .penalty_area_depth
+                    .unwrap_or(Length::new::<meter>(1.0)),
+                top_left_position: Point2::new(
+                    factor * (cam_geometry.field_length / 2.0),
+                    factor * (width / 2.0),
+                ),
+            }
         })
 }
 
@@ -65,9 +66,9 @@ fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
     Goal {
         width: cam_geometry.goal_width,
         depth: cam_geometry.goal_depth,
-        left_position: Point2::new(
-            factor * cam_geometry.field_length,
-            factor * cam_geometry.goal_width,
+        top_left_position: Point2::new(
+            factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
+            factor * (cam_geometry.goal_width / 2.0),
         ),
     }
 }
