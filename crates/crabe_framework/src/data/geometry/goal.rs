@@ -1,10 +1,13 @@
+use nalgebra::Point2;
 use serde::Serialize;
+use uom::si::f32::Length;
+
 // TODO : Document
-// TODO: This information doesn't represent the goal
 #[derive(Serialize, Clone, Debug)]
 pub struct Goal {
-    pub width: f32,
-    pub depth: f32,
+    pub width: Length,
+    pub depth: Length,
+    pub left_position: Point2<Length>,
 }
 
 // TODO : Implement some helper methods

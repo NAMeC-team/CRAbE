@@ -6,7 +6,7 @@ use crabe_framework::data::geometry::penalty::Penalty;
 use crabe_framework::data::geometry::{Field, Geometry};
 use crabe_framework::data::world::World;
 use crabe_math::shape::circle::Circle;
-use uom::num_traits::Zero;
+use nalgebra::Point2;
 use uom::si::f32::Length;
 use uom::si::length::meter;
 
@@ -28,6 +28,50 @@ fn geometry_to_center(cam_geometry: &CamGeometry) -> Circle {
         })
 }
 
+fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
+    let factor = if positive { 1.0 } else { -1.0 };
+    cam_geometry
+        .field_lines
+        .get("LeftFieldLeftPenaltyStretch")
+        .map(|line| {
+            dbg!(line.line.p1.x - line.line.p2.x);
+            dbg!(line.line.p1.x);
+            dbg!(line.line.p2.x);
+            Penalty {
+                width: 2.0 * line.line.p1.y.abs(),
+                depth: (line.line.p1.x - line.line.p2.x).abs(),
+                left_position: Point2::new(
+                    factor * cam_geometry.field_length,
+                    factor * cam_geometry.goal_width,
+                ),
+            }
+        })
+        .unwrap_or_else(|| Penalty {
+            width: cam_geometry
+                .penalty_area_width
+                .unwrap_or(Length::new::<meter>(2.0)),
+            depth: cam_geometry
+                .penalty_area_depth
+                .unwrap_or(Length::new::<meter>(1.0)),
+            left_position: Point2::new(
+                factor * cam_geometry.field_length,
+                factor * cam_geometry.goal_width,
+            ),
+        })
+}
+
+fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
+    let factor = if positive { 1.0 } else { -1.0 };
+    Goal {
+        width: cam_geometry.goal_width,
+        depth: cam_geometry.goal_depth,
+        left_position: Point2::new(
+            factor * cam_geometry.field_length,
+            factor * cam_geometry.goal_width,
+        ),
+    }
+}
+
 impl PostFilter for GeometryFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         let cam_geometry = &filter_data.geometry;
@@ -38,26 +82,12 @@ impl PostFilter for GeometryFilter {
                 width: cam_geometry.field_width,
                 length: cam_geometry.field_length,
             },
-            ally_goal: Goal {
-                width: 0.0,
-                depth: 0.0,
-            },
-            enemy_goal: Goal {
-                width: 0.0,
-                depth: 0.0,
-            },
-            ally_penalty: Penalty {
-                width: 0.0,
-                depth: 0.0,
-            },
-            enemy_penalty: Penalty {
-                width: 0.0,
-                depth: 0.0,
-            },
+            ally_goal: geometry_to_goal(cam_geometry, false),
+            enemy_goal: geometry_to_goal(cam_geometry, true),
+            ally_penalty: geometry_to_penalty(cam_geometry, false),
+            enemy_penalty: geometry_to_penalty(cam_geometry, true),
             center: geometry_to_center(cam_geometry),
         };
-        // dbg!(&cam_geometry);
-        // dbg!(&geometry);
 
         world.geometry = geometry;
     }

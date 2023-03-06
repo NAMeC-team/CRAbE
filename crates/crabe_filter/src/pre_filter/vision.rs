@@ -18,7 +18,7 @@ mod detection {
         use nalgebra::Point2;
         use ringbuffer::RingBufferWrite;
         use uom::si::angle::{radian, Angle};
-        use uom::si::length::millimeter;
+        use uom::si::length::meter;
         use uom::si::quantities::Length;
 
         pub struct RobotDetectionInfo<'a> {
@@ -55,8 +55,8 @@ mod detection {
                     id,
                     frame_info: frame.clone(),
                     position: Point2::new(
-                        Length::new::<millimeter>(r.x),
-                        Length::new::<millimeter>(r.y),
+                        Length::new::<meter>(r.x / 1000.0),
+                        Length::new::<meter>(r.y / 1000.0),
                     ),
                     orientation: Angle::new::<radian>(r.orientation.unwrap_or(0.0)),
                     confidence: r.confidence,
@@ -90,7 +90,7 @@ mod detection {
         use crate::data::{camera::CamBall, FrameInfo, TrackedBall};
         use crabe_protocol::protobuf::vision_packet::SslDetectionBall;
         use nalgebra::Point3;
-        use uom::si::length::millimeter;
+        use uom::si::length::meter;
         use uom::si::quantities::Length;
 
         pub struct BallDetectionInfo<'a> {
@@ -102,9 +102,9 @@ mod detection {
             let ball_packets = detection.detected.iter().map(|b| CamBall {
                 frame_info: frame.clone(),
                 position: Point3::new(
-                    Length::new::<millimeter>(b.x),
-                    Length::new::<millimeter>(b.y),
-                    Length::new::<millimeter>(b.z.unwrap_or(0.0)),
+                    Length::new::<meter>(b.x / 1000.0),
+                    Length::new::<meter>(b.y / 1000.0),
+                    Length::new::<meter>(b.z.unwrap_or(0.0) / 1000.0),
                 ),
                 confidence: b.confidence,
             });
@@ -168,61 +168,64 @@ mod geometry {
     use std::collections::HashMap;
     use uom::si::angle::radian;
     use uom::si::f32::{Angle, Length};
-    use uom::si::length::millimeter;
+    use uom::si::length::meter;
 
     pub fn handle_geometry(geometry: &SslGeometryData, filter_data: &mut FilterData) {
         let mut cam_geometry = CamGeometry {
-            field_length: Length::new::<millimeter>(geometry.field.field_length as f32),
-            field_width: Length::new::<millimeter>(geometry.field.field_width as f32),
-            goal_width: Length::new::<millimeter>(geometry.field.goal_width as f32),
-            goal_depth: Length::new::<millimeter>(geometry.field.goal_depth as f32),
-            boundary_width: Length::new::<millimeter>(geometry.field.boundary_width as f32),
+            field_length: Length::new::<meter>(geometry.field.field_length as f32 / 1000.0),
+            field_width: Length::new::<meter>(geometry.field.field_width as f32 / 1000.0),
+            goal_width: Length::new::<meter>(geometry.field.goal_width as f32 / 1000.0),
+            goal_depth: Length::new::<meter>(geometry.field.goal_depth as f32 / 1000.0),
+            boundary_width: Length::new::<meter>(geometry.field.boundary_width as f32 / 1000.0),
             field_lines: HashMap::new(),
             field_arcs: HashMap::new(),
             penalty_area_depth: geometry
                 .field
                 .penalty_area_depth
-                .map(|v| Length::new::<millimeter>(v as f32)),
+                .map(|v| Length::new::<meter>(v as f32 / 1000.0)),
             penalty_area_width: geometry
                 .field
                 .penalty_area_width
-                .map(|v| Length::new::<millimeter>(v as f32)),
+                .map(|v| Length::new::<meter>(v as f32 / 1000.0)),
             center_circle_radius: geometry
                 .field
                 .center_circle_radius
-                .map(|v| Length::new::<millimeter>(v as f32)),
+                .map(|v| Length::new::<meter>(v as f32 / 1000.0)),
             line_thickness: geometry
                 .field
                 .line_thickness
-                .map(|v| Length::new::<millimeter>(v as f32)),
+                .map(|v| Length::new::<meter>(v as f32 / 1000.0)),
             goal_center_to_penalty_mark: geometry
                 .field
                 .goal_center_to_penalty_mark
-                .map(|v| Length::new::<millimeter>(v as f32)),
+                .map(|v| Length::new::<meter>(v as f32 / 1000.0)),
             goal_height: geometry
                 .field
                 .goal_height
-                .map(|v| Length::new::<millimeter>(v as f32)),
-            ball_radius: geometry.field.ball_radius.map(Length::new::<millimeter>),
+                .map(|v| Length::new::<meter>(v as f32 / 1000.0)),
+            ball_radius: geometry
+                .field
+                .ball_radius
+                .map(|v| Length::new::<meter>(v / 1000.0)),
             max_robot_radius: geometry
                 .field
                 .max_robot_radius
-                .map(Length::new::<millimeter>),
+                .map(|v| Length::new::<meter>(v / 1000.0)),
         };
 
         geometry.field.field_lines.iter().for_each(|line| {
             cam_geometry.field_lines.insert(
                 line.name.clone(),
                 CamFieldLine {
-                    thickness: Length::new::<millimeter>(line.thickness),
+                    thickness: Length::new::<meter>(line.thickness / 1000.0),
                     line: Line {
                         p1: Point2::new(
-                            Length::new::<millimeter>(line.p1.x),
-                            Length::new::<millimeter>(line.p1.y),
+                            Length::new::<meter>(line.p1.x / 1000.0),
+                            Length::new::<meter>(line.p1.y / 1000.0),
                         ),
                         p2: Point2::new(
-                            Length::new::<millimeter>(line.p2.x),
-                            Length::new::<millimeter>(line.p2.y),
+                            Length::new::<meter>(line.p2.x / 1000.0),
+                            Length::new::<meter>(line.p2.y / 1000.0),
                         ),
                     },
                 },
@@ -233,13 +236,13 @@ mod geometry {
             cam_geometry.field_arcs.insert(
                 arc.name.clone(),
                 CamFieldArc {
-                    thickness: Length::new::<millimeter>(arc.thickness),
+                    thickness: Length::new::<meter>(arc.thickness / 1000.0),
                     arc: Arc {
                         center: Point2::new(
-                            Length::new::<millimeter>(arc.center.x),
-                            Length::new::<millimeter>(arc.center.y),
+                            Length::new::<meter>(arc.center.x / 1000.0),
+                            Length::new::<meter>(arc.center.y / 1000.0),
                         ),
-                        radius: Length::new::<millimeter>(arc.radius),
+                        radius: Length::new::<meter>(arc.radius / 1000.0),
                         start_angle: Angle::new::<radian>(arc.a1),
                         end_angle: Angle::new::<radian>(arc.a2),
                     },

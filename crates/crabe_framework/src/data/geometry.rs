@@ -38,20 +38,24 @@ impl Default for Geometry {
                 length: Length::new::<meter>(6.0),
             },
             ally_goal: Goal {
-                width: 0.0,
-                depth: 0.0,
+                width: Length::new::<meter>(0.0),
+                depth: Length::new::<meter>(0.0),
+                left_position: Default::default(),
             },
             enemy_goal: Goal {
-                width: 0.0,
-                depth: 0.0,
+                width: Length::new::<meter>(0.0),
+                depth: Length::new::<meter>(0.0),
+                left_position: Default::default(),
             },
             ally_penalty: Penalty {
-                width: 0.0,
-                depth: 0.0,
+                width: Length::new::<meter>(0.0),
+                depth: Length::new::<meter>(0.0),
+                left_position: Default::default(),
             },
             enemy_penalty: Penalty {
-                width: 0.0,
-                depth: 0.0,
+                width: Length::new::<meter>(0.0),
+                depth: Length::new::<meter>(0.0),
+                left_position: Default::default(),
             },
             center: Circle {
                 center: Default::default(),
