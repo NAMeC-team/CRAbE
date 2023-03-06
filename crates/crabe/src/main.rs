@@ -1,12 +1,11 @@
 use clap::Parser;
 use crabe_filter::{FilterConfig, FilterPipeline};
-use crabe_framework::component::{
-    Component, FilterComponent, InputComponent, OutputComponent, ToolComponent,
-};
+use crabe_framework::component::{Component, DecisionComponent, FilterComponent, InputComponent, OutputComponent, ToolComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::FeedbackMap;
-use crabe_framework::data::tool::ToolData;
+use crabe_framework::data::tool::{ToolCommands, ToolData};
 use crabe_framework::data::world::World;
+use crabe_ai::pipeline::{DecisionConfig, DecisionPipeline};
 use crabe_io::pipeline::input::{InputConfig, InputPipeline};
 use crabe_io::pipeline::output::{OutputConfig, OutputPipeline};
 use crabe_io::tool::ToolConfig;
@@ -33,6 +32,10 @@ pub struct Cli {
     pub filter_config: FilterConfig,
 
     #[command(flatten)]
+    #[command(next_help_heading = "Decision")]
+    pub decision_config: DecisionConfig,
+
+    #[command(flatten)]
     #[command(next_help_heading = "Tool")]
     pub tool_config: ToolConfig,
 
@@ -44,6 +47,7 @@ pub struct Cli {
 pub struct System {
     input_component: Box<dyn InputComponent>,
     filter_component: Box<dyn FilterComponent>,
+    decision_component: Box<dyn DecisionComponent>,
     tool_component: Box<dyn ToolComponent>,
     output_component: Box<dyn OutputComponent>,
     running: Arc<AtomicBool>,
@@ -56,6 +60,7 @@ impl System {
         world: World,
         input_component: impl InputComponent + 'static,
         filter_component: impl FilterComponent + 'static,
+        decision_component: impl DecisionComponent + 'static,
         tool_component: impl ToolComponent + 'static,
         output_component: impl OutputComponent + 'static,
     ) -> Self {
@@ -70,6 +75,7 @@ impl System {
         Self {
             input_component: Box::new(input_component),
             filter_component: Box::new(filter_component),
+            decision_component: Box::new(decision_component),
             tool_component: Box::new(tool_component),
             output_component: Box::new(output_component),
             running,
@@ -85,8 +91,9 @@ impl System {
             let receive_data = self.input_component.step(&mut feedback);
             self.filter_component.step(receive_data, &mut self.world);
             //dbg!(&world);
-            let mut tool_data = ToolData {};
+            let (command_map, mut tool_data) = self.decision_component.step(&self.world);
             self.tool_component.step(&mut self.world, &mut tool_data);
+            feedback = self.output_component.step(command_map, ToolCommands);
             thread::sleep(_refresh_rate);
         }
     }
@@ -114,6 +121,7 @@ fn main() {
         World::with_config(&cli.common),
         InputPipeline::with_config(cli.input_config, &cli.common),
         FilterPipeline::with_config(cli.filter_config, &cli.common),
+        DecisionPipeline::with_config(cli.decision_config, &cli.common),
         ToolServer::with_config(cli.tool_config, &cli.common),
         OutputPipeline::with_config(cli.output_config, &cli.common),
     );

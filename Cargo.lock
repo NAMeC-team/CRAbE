@@ -201,6 +201,7 @@ name = "crabe"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "crabe_ai",
  "crabe_filter",
  "crabe_framework",
  "crabe_io",
@@ -213,6 +214,13 @@ dependencies = [
 [[package]]
 name = "crabe_ai"
 version = "0.1.0"
+dependencies = [
+ "clap",
+ "crabe_framework",
+ "crabe_protocol",
+ "log",
+ "uom",
+]
 
 [[package]]
 name = "crabe_filter"
