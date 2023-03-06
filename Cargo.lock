@@ -226,7 +226,6 @@ dependencies = [
  "log",
  "nalgebra",
  "ringbuffer",
- "uom",
 ]
 
 [[package]]
@@ -239,7 +238,6 @@ dependencies = [
  "nalgebra",
  "serde",
  "serde_json",
- "uom",
 ]
 
 [[package]]
@@ -264,7 +262,6 @@ dependencies = [
  "tokio",
  "tokio-tungstenite",
  "tungstenite",
- "uom",
 ]
 
 [[package]]
@@ -273,7 +270,6 @@ version = "0.1.0"
 dependencies = [
  "nalgebra",
  "serde",
- "uom",
 ]
 
 [[package]]
@@ -1525,17 +1521,6 @@ name = "unicode-width"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c0edd1e5b14653f783770bce4a4dabb4a5108a5370a5f5d8cfe8710c361f6c8b"
-
-[[package]]
-name = "uom"
-version = "0.34.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8f50eddd69f656ee545f7663ea5fefb7c789bc1a0d11124e049715f563a16a4"
-dependencies = [
- "num-traits",
- "serde",
- "typenum",
-]
 
 [[package]]
 name = "url"

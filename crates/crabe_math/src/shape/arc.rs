@@ -1,16 +1,14 @@
 use nalgebra::Point2;
-use uom::si::f32::Angle;
-use uom::si::f32::Length;
 
-/// An arc in 2D space defined by a center, a radius, and two angles.
+/// An arc in 2D space defined by a center, a radius in meters, and two angles in radians.
 #[derive(Debug)]
 pub struct Arc {
-    /// The center point of the arc.
-    pub center: Point2<Length>,
-    /// The radius of the arc.
-    pub radius: Length,
+    /// The center point of the arc in meters.
+    pub center: Point2<f32>,
+    /// The radius of the arc in meters.
+    pub radius: f32,
     /// The starting angle of the arc in radians.
-    pub start_angle: Angle,
+    pub start_angle: f32,
     /// The ending angle of the arc in radians.
-    pub end_angle: Angle,
+    pub end_angle: f32,
 }

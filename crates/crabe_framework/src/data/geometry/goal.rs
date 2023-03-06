@@ -1,13 +1,12 @@
 use nalgebra::Point2;
 use serde::Serialize;
-use uom::si::f32::Length;
 
 // TODO : Document
 #[derive(Serialize, Clone, Debug)]
 pub struct Goal {
-    pub width: Length,
-    pub depth: Length,
-    pub top_left_position: Point2<Length>,
+    pub width: f32,
+    pub depth: f32,
+    pub top_left_position: Point2<f32>,
 }
 
 // TODO : Implement some helper methods

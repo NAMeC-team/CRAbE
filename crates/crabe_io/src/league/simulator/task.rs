@@ -15,8 +15,6 @@ use std::net::Ipv4Addr;
 use crate::constant::{SIM_PORT_BLUE, SIM_PORT_YELLOW};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::constant::MAX_ID_ROBOTS;
-use uom::si::angular_velocity::{radian_per_second, revolution_per_minute};
-use uom::si::velocity::meter_per_second;
 
 use crate::pipeline::output::CommandSenderTask;
 
@@ -58,15 +56,15 @@ impl Simulator {
                 move_command: Some(RobotMoveCommand {
                     command: Some(robot_move_command::Command::LocalVelocity {
                         0: MoveLocalVelocity {
-                            forward: command.forward_velocity.get::<meter_per_second>(),
-                            left: command.left_velocity.get::<meter_per_second>(),
-                            angular: command.angular_velocity.get::<radian_per_second>(),
+                            forward: command.forward_velocity,
+                            left: command.left_velocity,
+                            angular: command.angular_velocity,
                         },
                     }),
                 }),
                 kick_speed: Some(kick_speed),
                 kick_angle: Some(kick_angle),
-                dribbler_speed: Some(command.dribbler.get::<revolution_per_minute>()),
+                dribbler_speed: Some(command.dribbler),
             };
             packet.robot_commands.push(robot_command);
         }
