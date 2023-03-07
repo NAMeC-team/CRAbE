@@ -17,6 +17,7 @@ pub struct Robot<T> {
     pub orientation: f64,
     pub has_ball: bool,
     pub robot_info: T,
+    pub velocity: f64
 }
 
 impl<T: Clone> Clone for Robot<T> {
@@ -27,6 +28,7 @@ impl<T: Clone> Clone for Robot<T> {
             orientation: self.orientation,
             has_ball: self.has_ball,
             robot_info: self.robot_info.clone(),
+            velocity: self.velocity
         }
     }
 }

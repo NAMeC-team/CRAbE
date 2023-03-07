@@ -1,4 +1,5 @@
 pub mod passthrough;
+mod velocity;
 
 use crate::data::FilterData;
 use crabe_framework::data::world::World;
