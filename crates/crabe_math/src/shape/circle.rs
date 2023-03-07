@@ -5,7 +5,7 @@ use serde::Serialize;
 #[derive(Serialize, Clone, Debug)]
 pub struct Circle {
     /// The center point of the circle in meters.
-    pub center: Point2<f32>,
+    pub center: Point2<f64>,
     /// The radius of the circle in meters.
-    pub radius: f32,
+    pub radius: f64,
 }

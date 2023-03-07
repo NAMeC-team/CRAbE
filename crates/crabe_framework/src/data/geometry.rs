@@ -10,13 +10,13 @@ pub mod penalty;
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Field {
-    pub width: f32,
-    pub length: f32,
+    pub width: f64,
+    pub length: f64,
 }
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Geometry {
-    pub boundary_width: f32,
+    pub boundary_width: f64,
     pub field: Field,
     pub ally_goal: Goal,
     pub enemy_goal: Goal,

@@ -13,8 +13,8 @@ pub struct EnemyInfo;
 #[derive(Serialize, Default, Debug)]
 pub struct Robot<T> {
     pub id: u32,
-    pub position: Point2<f32>,
-    pub orientation: f32,
+    pub position: Point2<f64>,
+    pub orientation: f64,
     pub has_ball: bool,
     pub robot_info: T,
 }
@@ -33,7 +33,7 @@ impl<T: Clone> Clone for Robot<T> {
 
 #[derive(Serialize, Default, Clone, Debug)]
 pub struct Ball {
-    pub position: Point3<f32>,
+    pub position: Point3<f64>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]

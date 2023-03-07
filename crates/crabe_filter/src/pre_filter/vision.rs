@@ -52,11 +52,11 @@ mod detection {
                     id,
                     frame_info: frame.clone(),
                     position: Point2::new(
-                        r.x / 1000.0,
-                        r.y / 1000.0,
+                        r.x as f64/ 1000.0,
+                        r.y as f64 / 1000.0,
                     ),
-                    orientation: r.orientation.unwrap_or(0.0),
-                    confidence: r.confidence,
+                    orientation: r.orientation.unwrap_or(0.0) as f64,
+                    confidence: r.confidence as f64,
                 })
             };
 
@@ -97,11 +97,11 @@ mod detection {
             let ball_packets = detection.detected.iter().map(|b| CamBall {
                 frame_info: frame.clone(),
                 position: Point3::new(
-                    b.x / 1000.0,
-                    b.y / 1000.0,
-                    b.z.unwrap_or(0.0) / 1000.0,
+                    b.x as f64/ 1000.0,
+                    b.y as f64 / 1000.0,
+                    b.z.unwrap_or(0.0) as f64 / 1000.0,
                 ),
-                confidence: b.confidence,
+                confidence: b.confidence as f64,
             });
 
             detection.tracked.packets.extend(ball_packets);
@@ -164,60 +164,60 @@ mod geometry {
 
     pub fn handle_geometry(geometry: &SslGeometryData, filter_data: &mut FilterData) {
         let mut cam_geometry = CamGeometry {
-            field_length: geometry.field.field_length as f32 / 1000.0,
-            field_width: geometry.field.field_width as f32 / 1000.0,
-            goal_width: geometry.field.goal_width as f32 / 1000.0,
-            goal_depth: geometry.field.goal_depth as f32 / 1000.0,
-            boundary_width: geometry.field.boundary_width as f32 / 1000.0,
+            field_length: geometry.field.field_length as f64 / 1000.0,
+            field_width: geometry.field.field_width as f64 / 1000.0,
+            goal_width: geometry.field.goal_width as f64 / 1000.0,
+            goal_depth: geometry.field.goal_depth as f64 / 1000.0,
+            boundary_width: geometry.field.boundary_width as f64 / 1000.0,
             field_lines: HashMap::new(),
             field_arcs: HashMap::new(),
             penalty_area_depth: geometry
                 .field
                 .penalty_area_depth
-                .map(|v| v as f32 / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             penalty_area_width: geometry
                 .field
                 .penalty_area_width
-                .map(|v| v as f32 / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             center_circle_radius: geometry
                 .field
                 .center_circle_radius
-                .map(|v| v as f32 / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             line_thickness: geometry
                 .field
                 .line_thickness
-                .map(|v| v as f32 / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             goal_center_to_penalty_mark: geometry
                 .field
                 .goal_center_to_penalty_mark
-                .map(|v| v as f32 / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             goal_height: geometry
                 .field
                 .goal_height
-                .map(|v| v as f32 / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             ball_radius: geometry
                 .field
                 .ball_radius
-                .map(|v| v / 1000.0),
+                .map(|v| v as f64 / 1000.0),
             max_robot_radius: geometry
                 .field
                 .max_robot_radius
-                .map(|v| v / 1000.0),
+                .map(|v| v as f64 / 1000.0),
         };
 
         geometry.field.field_lines.iter().for_each(|line| {
             cam_geometry.field_lines.insert(
                 line.name.clone(),
                 CamFieldLine {
-                    thickness: line.thickness / 1000.0,
+                    thickness: line.thickness as f64 / 1000.0,
                     line: Line {
                         p1: Point2::new(
-                            line.p1.x / 1000.0,
-                            line.p1.y / 1000.0,
+                            line.p1.x as f64 / 1000.0,
+                            line.p1.y as f64 / 1000.0,
                         ),
                         p2: Point2::new(
-                            line.p2.x / 1000.0,
-                            line.p2.y / 1000.0,
+                            line.p2.x as f64 / 1000.0,
+                            line.p2.y as f64 / 1000.0,
                         ),
                     },
                 },
@@ -228,15 +228,15 @@ mod geometry {
             cam_geometry.field_arcs.insert(
                 arc.name.clone(),
                 CamFieldArc {
-                    thickness: arc.thickness / 1000.0,
+                    thickness: arc.thickness as f64 / 1000.0,
                     arc: Arc {
                         center: Point2::new(
-                            arc.center.x  / 1000.0,
-                            arc.center.y  / 1000.0,
+                            arc.center.x  as f64 / 1000.0,
+                            arc.center.y as f64  / 1000.0,
                         ),
-                        radius: arc.radius / 1000.0,
-                        start_angle: arc.a1,
-                        end_angle: arc.a2,
+                        radius: arc.radius as f64 / 1000.0,
+                        start_angle: arc.a1 as f64,
+                        end_angle: arc.a2 as f64,
                     },
                 },
             );

@@ -4,7 +4,7 @@ use nalgebra::Point2;
 #[derive(Debug)]
 pub struct Line {
     /// The first point of the line segment with position in meters.
-    pub p1: Point2<f32>,
+    pub p1: Point2<f64>,
     /// The second point of the line segment with position in meters.
-    pub p2: Point2<f32>,
+    pub p2: Point2<f64>,
 }
