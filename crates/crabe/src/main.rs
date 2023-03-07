@@ -1,11 +1,13 @@
 use clap::Parser;
+use crabe_ai::pipeline::{DecisionConfig, DecisionPipeline};
 use crabe_filter::{FilterConfig, FilterPipeline};
-use crabe_framework::component::{Component, DecisionComponent, FilterComponent, InputComponent, OutputComponent, ToolComponent};
+use crabe_framework::component::{
+    Component, DecisionComponent, FilterComponent, InputComponent, OutputComponent, ToolComponent,
+};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::FeedbackMap;
 use crabe_framework::data::tool::{ToolCommands, ToolData};
 use crabe_framework::data::world::World;
-use crabe_ai::pipeline::{DecisionConfig, DecisionPipeline};
 use crabe_io::pipeline::input::{InputConfig, InputPipeline};
 use crabe_io::pipeline::output::{OutputConfig, OutputPipeline};
 use crabe_io::tool::ToolConfig;
@@ -108,7 +110,7 @@ impl System {
 fn main() {
     let cli = Cli::parse();
     let env = Env::default()
-        .filter_or("CRABE_LOG_LEVEL", "debug")
+        .filter_or("CRABE_LOG_LEVEL", "log")
         .write_style_or("CRABE_LOG_STYLE", "always");
     env_logger::init_from_env(env);
 

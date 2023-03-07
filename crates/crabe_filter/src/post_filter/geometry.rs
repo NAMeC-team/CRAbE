@@ -20,9 +20,7 @@ fn geometry_to_center(cam_geometry: &CamGeometry) -> Circle {
         })
         .unwrap_or_else(|| Circle {
             center: Default::default(),
-            radius: cam_geometry
-                .center_circle_radius
-                .unwrap_or(0.5),
+            radius: cam_geometry.center_circle_radius.unwrap_or(0.5),
         })
 }
 
@@ -43,14 +41,10 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
             }
         })
         .unwrap_or_else(|| {
-            let width = cam_geometry
-                .penalty_area_width
-                .unwrap_or(2.0);
+            let width = cam_geometry.penalty_area_width.unwrap_or(2.0);
             Penalty {
                 width,
-                depth: cam_geometry
-                    .penalty_area_depth
-                    .unwrap_or(1.0),
+                depth: cam_geometry.penalty_area_depth.unwrap_or(1.0),
                 top_left_position: Point2::new(
                     factor * (cam_geometry.field_length / 2.0),
                     factor * (width / 2.0),
