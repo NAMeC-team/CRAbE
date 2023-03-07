@@ -204,6 +204,7 @@ dependencies = [
  "crabe_ai",
  "crabe_filter",
  "crabe_framework",
+ "crabe_guard",
  "crabe_io",
  "crabe_protocol",
  "ctrlc",
@@ -250,6 +251,11 @@ dependencies = [
 [[package]]
 name = "crabe_guard"
 version = "0.1.0"
+dependencies = [
+ "clap",
+ "crabe_framework",
+ "log",
+]
 
 [[package]]
 name = "crabe_io"

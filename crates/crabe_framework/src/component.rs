@@ -47,12 +47,7 @@ pub trait ToolComponent: Component {
 }
 
 pub trait GuardComponent: Component {
-    fn step(
-        &mut self,
-        world_data: &mut World,
-        command: &mut CommandMap,
-        tools_commands: &mut ToolCommands,
-    );
+    fn step(&mut self, world: &World, command: &mut CommandMap, tools_commands: &mut ToolCommands);
 }
 
 pub trait OutputComponent: Component {
