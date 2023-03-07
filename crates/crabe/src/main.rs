@@ -121,7 +121,7 @@ impl System {
 fn main() {
     let cli = Cli::parse();
     let env = Env::default()
-        .filter_or("CRABE_LOG_LEVEL", "log")
+        .filter_or("CRABE_LOG_LEVEL", "info")
         .write_style_or("CRABE_LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
