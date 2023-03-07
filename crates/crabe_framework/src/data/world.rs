@@ -4,7 +4,6 @@ use clap::builder::Str;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use uom::si::f32::{Angle, Length};
 
 #[derive(Serialize, Clone, Default, Debug)]
 pub struct AllyInfo;
@@ -14,8 +13,8 @@ pub struct EnemyInfo;
 #[derive(Serialize, Default, Debug)]
 pub struct Robot<T> {
     pub id: u32,
-    pub position: Point2<Length>,
-    pub orientation: Angle,
+    pub position: Point2<f64>,
+    pub orientation: f64,
     pub has_ball: bool,
     pub robot_info: T,
 }
@@ -34,7 +33,7 @@ impl<T: Clone> Clone for Robot<T> {
 
 #[derive(Serialize, Default, Clone, Debug)]
 pub struct Ball {
-    pub position: Point3<Length>,
+    pub position: Point3<f64>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]

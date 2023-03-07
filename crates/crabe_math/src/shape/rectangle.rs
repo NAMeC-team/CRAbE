@@ -1,8 +1,7 @@
 use nalgebra::Point2;
-use uom::si::f32::Length;
 
 pub struct Rectangle {
-    pub width: Length,
-    pub depth: Length,
-    pub left_position: Point2<Length>,
+    pub width: f64,
+    pub depth: f64,
+    pub left_position: Point2<f64>,
 }

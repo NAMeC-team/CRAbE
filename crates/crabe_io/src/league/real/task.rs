@@ -8,8 +8,6 @@ use crabe_protocol::protobuf::robot_packet::IaToMainBoard;
 
 use crate::communication::UsbTransceiver;
 use crate::pipeline::output::CommandSenderTask;
-use uom::si::angular_velocity::radian_per_second;
-use uom::si::velocity::meter_per_second;
 
 pub struct Real {
     usb: UsbTransceiver,
@@ -34,9 +32,9 @@ impl Real {
 
         IaToMainBoard {
             robot_id: id,
-            normal_speed: command.forward_velocity.get::<meter_per_second>(),
-            tangential_speed: command.left_velocity.get::<meter_per_second>(),
-            angular_speed: command.angular_velocity.get::<radian_per_second>(),
+            normal_speed: command.forward_velocity,
+            tangential_speed: command.left_velocity,
+            angular_speed: command.angular_velocity,
             motor_break: false,
             kicker_cmd,
             kick_power,
