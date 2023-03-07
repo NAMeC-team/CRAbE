@@ -1,3 +1,4 @@
+use crate::action::ActionWrapper;
 use clap::Args;
 use crabe_framework::component::{Component, DecisionComponent};
 use crabe_framework::config::CommonConfig;
@@ -9,11 +10,15 @@ use crabe_framework::data::world::World;
 #[derive(Args)]
 pub struct DecisionConfig {}
 
-pub struct DecisionPipeline {}
+pub struct DecisionPipeline {
+    action_wrapper: ActionWrapper,
+}
 
 impl DecisionPipeline {
     pub fn with_config(input_cfg: DecisionConfig, common_cfg: &CommonConfig) -> Self {
-        Self {}
+        Self {
+            action_wrapper: ActionWrapper::default(),
+        }
     }
 }
 

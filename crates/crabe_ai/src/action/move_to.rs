@@ -1,7 +1,7 @@
 use crate::action::{Action, State};
 use crabe_framework::data::output::Command;
 
-struct MoveTo {
+pub struct MoveTo {
     state: State,
 }
 

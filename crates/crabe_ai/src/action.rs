@@ -1,7 +1,7 @@
 pub mod move_to;
 pub mod sequencer;
 
-use crabe_framework::data::output::Command;
+use crabe_framework::data::output::{Command, CommandMap};
 
 #[derive(Clone)]
 pub enum State {
@@ -16,4 +16,23 @@ pub trait Action {
 
     fn compute_order(&mut self) -> Command;
     fn cancel(&mut self);
+}
+
+#[derive(Default)]
+pub struct ActionWrapper {
+    actions: Vec<Box<dyn Action>>,
+}
+
+impl ActionWrapper {
+    pub fn push(&mut self, _action: Box<dyn Action>) {
+        todo!()
+    }
+
+    pub fn set(&mut self, _action: Box<dyn Action>) {
+        todo!()
+    }
+
+    pub fn compute(&mut self) -> CommandMap {
+        todo!()
+    }
 }
