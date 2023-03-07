@@ -6,8 +6,8 @@ struct MoveTo {
 }
 
 impl Action for MoveTo {
-    fn name() -> &'static str {
-        "MoveTo"
+    fn name(&self) -> String {
+        String::from("MoveTo")
     }
 
     fn state(&mut self) -> State {

@@ -1,4 +1,5 @@
 pub mod move_to;
+pub mod sequencer;
 
 use crabe_framework::data::output::Command;
 
@@ -10,7 +11,7 @@ pub enum State {
 }
 
 pub trait Action {
-    fn name() -> &'static str;
+    fn name(&self) -> String;
     fn state(&mut self) -> State;
 
     fn compute_order(&mut self) -> Command;
