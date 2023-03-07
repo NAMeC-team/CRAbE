@@ -23,7 +23,6 @@ impl Component for DecisionPipeline {
 
 impl DecisionComponent for DecisionPipeline {
     fn step(&mut self, data: &World) -> (CommandMap, ToolData) {
-        dbg!(data);
         let mut command_map = CommandMap::new();
         command_map.insert(
             0,

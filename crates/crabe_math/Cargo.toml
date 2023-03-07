@@ -7,5 +7,5 @@ authors = ["NAMeC"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nalgebra = { version = "0.32.1", features = ["serde-serialize"] }
+nalgebra = { version = "0.32.2", features = ["serde-serialize"] }
 serde = { version= "1.0.152", features = ["derive"] }
