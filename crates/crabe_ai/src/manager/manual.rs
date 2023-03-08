@@ -14,7 +14,7 @@ pub struct Manual {
 impl Manual {
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Square::default())],
+            strategies: vec![Box::<Square>::default()],
         }
     }
 }

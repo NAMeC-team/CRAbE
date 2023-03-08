@@ -1,12 +1,12 @@
 use crate::action::state::State;
-use crate::action::Action;
+use crate::action::{Action, Actions};
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 
 pub struct Sequencer {
     state: State,
-    pub actions: Vec<Box<dyn Action>>,
+    pub actions: Vec<Actions>,
 }
 
 impl Default for Sequencer {
@@ -19,17 +19,22 @@ impl Default for Sequencer {
 }
 
 impl Sequencer {
-    pub fn push(&mut self, action: Box<dyn Action>) {
+    pub fn new(action: Actions) -> Self {
+        Self {
+            state: State::Running,
+            actions: vec![action],
+        }
+    }
+
+    pub fn push(&mut self, action: Actions) {
         self.actions.push(action);
         self.state = match self.state {
             State::Running | State::Done => State::Running,
             State::Failed => State::Failed,
         };
     }
-}
 
-impl Action for Sequencer {
-    fn name(&self) -> String {
+    pub fn name(&self) -> String {
         self.actions
             .iter()
             .map(|action| action.name())
@@ -37,11 +42,7 @@ impl Action for Sequencer {
             .join(", ")
     }
 
-    fn state(&mut self) -> State {
-        self.state.clone()
-    }
-
-    fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command {
+    pub fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command {
         if self.state == State::Failed || self.actions.is_empty() {
             return Command::default();
         }
@@ -69,7 +70,7 @@ impl Action for Sequencer {
         }
     }
 
-    fn cancel(&mut self) {
+    pub fn cancel(&mut self) {
         self.actions.iter_mut().for_each(|action| action.cancel());
     }
 }

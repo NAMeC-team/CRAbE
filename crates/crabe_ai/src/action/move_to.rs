@@ -1,11 +1,12 @@
 use crate::action::state::State;
-use crate::action::Action;
+use crate::action::{Action, Actions};
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
 use nalgebra::{Isometry2, Point2, Vector2, Vector3};
 use std::f64::consts::PI;
 
+#[derive(Clone)]
 pub struct MoveTo {
     state: State,
     target: Point2<f64>,
@@ -59,7 +60,7 @@ impl Action for MoveTo {
             if arrived {
                 self.state = State::Done;
             }
-            const GOTO_SPEED: f64 = 3.0;
+            const GOTO_SPEED: f64 = 1.5;
             const GOTO_ROTATION: f64 = 1.5;
 
             let order = Vector3::new(
@@ -82,4 +83,8 @@ impl Action for MoveTo {
     }
 
     fn cancel(&mut self) {}
+
+    fn from_action(&mut self) -> Actions {
+        Actions::MoveTo(self.clone())
+    }
 }

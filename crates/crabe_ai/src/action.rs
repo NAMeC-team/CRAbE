@@ -9,7 +9,6 @@ use crabe_framework::data::world::World;
 use enum_dispatch::enum_dispatch;
 use state::State;
 use std::collections::HashMap;
-use std::ops::DerefMut;
 
 #[enum_dispatch(Actions)]
 pub trait Action {
@@ -18,26 +17,27 @@ pub trait Action {
 
     fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command;
     fn cancel(&mut self);
+    fn from_action(&mut self) -> Actions;
 }
 
 #[enum_dispatch]
 pub enum Actions {
     MoveTo(MoveTo),
-    Sequencer(Sequencer),
 }
 
 #[derive(Default)]
 pub struct ActionWrapper {
-    pub actions: HashMap<u8, Actions>,
+    pub actions: HashMap<u8, Sequencer>,
 }
 
 impl ActionWrapper {
-    pub fn push<T: Action>(&mut self, id: u8, _action: T) {
-        todo!()
-    }
-
-    pub fn set<T: Action>(&mut self, _action: T) {
-        todo!()
+    pub fn push<T: Action>(&mut self, id: u8, mut action: T) {
+        if let Some(sequencer) = self.actions.get_mut(&id) {
+            sequencer.push(action.from_action());
+        } else {
+            self.actions
+                .insert(id, Sequencer::new(action.from_action()));
+        }
     }
 
     pub fn compute(&mut self, world: &World, tools: &mut ToolData) -> CommandMap {

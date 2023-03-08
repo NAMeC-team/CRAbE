@@ -4,7 +4,7 @@ use crate::manager::Manager;
 use clap::Args;
 use crabe_framework::component::{Component, DecisionComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::{Command, CommandMap};
+use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 
