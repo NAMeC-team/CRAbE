@@ -43,7 +43,7 @@ impl Action for Sequencer {
                     return Command::default();
                 }
                 State::Done => {
-                    self.actions.pop();
+                    self.actions.remove(0);
                 }
                 _ => {}
             }
