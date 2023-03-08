@@ -1,6 +1,8 @@
 use crate::action::state::State;
 use crate::action::Action;
 use crabe_framework::data::output::Command;
+use crabe_framework::data::tool::ToolData;
+use crabe_framework::data::world::World;
 
 pub struct Sequencer {
     state: State,
@@ -39,7 +41,7 @@ impl Action for Sequencer {
         self.state.clone()
     }
 
-    fn compute_order(&mut self, id: u8) -> Command {
+    fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command {
         if self.state == State::Failed || self.actions.is_empty() {
             return Command::default();
         }
@@ -60,7 +62,7 @@ impl Action for Sequencer {
         }
 
         if let Some(action) = self.actions.iter_mut().next() {
-            action.compute_order(id)
+            action.compute_order(id, world, tools)
         } else {
             self.state = State::Done;
             Command::default()
