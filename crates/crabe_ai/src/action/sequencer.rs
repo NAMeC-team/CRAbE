@@ -39,7 +39,7 @@ impl Action for Sequencer {
         self.state.clone()
     }
 
-    fn compute_order(&mut self) -> Command {
+    fn compute_order(&mut self, id: u8) -> Command {
         if self.state == State::Failed || self.actions.is_empty() {
             return Command::default();
         }
@@ -60,7 +60,7 @@ impl Action for Sequencer {
         }
 
         if let Some(action) = self.actions.iter_mut().next() {
-            action.compute_order()
+            action.compute_order(id)
         } else {
             self.state = State::Done;
             Command::default()

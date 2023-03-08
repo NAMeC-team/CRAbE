@@ -28,7 +28,7 @@ impl Action for MoveTo {
         self.state.clone()
     }
 
-    fn compute_order(&mut self) -> Command {
+    fn compute_order(&mut self, id: u8) -> Command {
         self.state = State::Done;
         Command {
             forward_velocity: 1.0,

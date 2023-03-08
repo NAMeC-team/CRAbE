@@ -41,7 +41,7 @@ impl Simulator {
         Self { socket }
     }
 
-    fn prepare_packet(&self, commands: impl Iterator<Item = (u32, Command)>) -> RobotControl {
+    fn prepare_packet(&self, commands: impl Iterator<Item = (u8, Command)>) -> RobotControl {
         let mut packet = RobotControl::default();
 
         for (id, command) in commands {
@@ -52,15 +52,15 @@ impl Simulator {
             };
 
             let robot_command = RobotCommand {
-                id,
+                id: id as u32,
                 move_command: Some(RobotMoveCommand {
-                    command: Some(robot_move_command::Command::LocalVelocity {
-                        0: MoveLocalVelocity {
+                    command: Some(robot_move_command::Command::LocalVelocity(
+                        MoveLocalVelocity {
                             forward: command.forward_velocity,
                             left: command.left_velocity,
                             angular: command.angular_velocity,
                         },
-                    }),
+                    )),
                 }),
                 kick_speed: Some(kick_speed),
                 kick_angle: Some(kick_angle),
@@ -105,7 +105,7 @@ impl CommandSenderTask for Simulator {
     fn close(&mut self) {
         let mut commands: CommandMap = Default::default();
         for id in 0..MAX_ID_ROBOTS {
-            commands.insert(id as u32, Default::default());
+            commands.insert(id as u8, Default::default());
         }
 
         self.step(commands);
