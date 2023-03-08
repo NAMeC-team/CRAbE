@@ -26,14 +26,6 @@ impl Manager for Manual {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        self.strategies = self
-            .strategies
-            .iter_mut()
-            .filter(|mut s| !s.step(data, commands, tools_data, action_wrapper))
-            .map(|s| {
-                let strategy: &dyn Strategy = s.as_ref();
-                Box::new(strategy.clone()) as Box<dyn Strategy>
-            })
-            .collect();
+        self.strategies.retain_mut(|s| !s.step(data, tools_data, action_wrapper));
     }
 }

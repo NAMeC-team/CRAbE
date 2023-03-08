@@ -9,7 +9,6 @@ pub trait Strategy {
     fn step(
         &mut self,
         data: &World,
-        commands: &mut CommandMap,
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool;
