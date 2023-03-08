@@ -16,11 +16,21 @@ pub trait Action {
     fn cancel(&mut self);
 }
 
+#[enum_dispatch(Action)]
 pub enum Actions {
     MoveTo(MoveTo),
     Sequencer(Sequencer),
 }
 
+/*impl Actions {
+    fn computer_order(&mut self) -> Command {
+        match self {
+            Actions::MoveTo(b) => { b.compute_order()}
+            Actions::Sequencer(b) => { b.compute_order() }
+        }
+    }
+}
+*/
 #[derive(Default)]
 pub struct ActionWrapper {
     pub actions: HashMap<u16, Actions>,
@@ -36,6 +46,10 @@ impl ActionWrapper {
     }
 
     pub fn compute(&mut self) -> CommandMap {
-        todo!()
+        let mut command_map = CommandMap::default();
+        for action in self.actions.values_mut() {
+            command_map.insert(0, action.computer_order());
+        }
+        command_map
     }
 }
