@@ -30,12 +30,6 @@ pub struct ActionWrapper {
 
 impl ActionWrapper {
     pub fn push<T: Action>(&mut self, _action: T) {
-        let sequencer: Sequencer = Default::default();
-        let mut actions: Actions= sequencer.into();
-        actions.cancel();
-
-        let actions2 = &mut actions;
-        actions2.cancel();
         todo!()
     }
 
