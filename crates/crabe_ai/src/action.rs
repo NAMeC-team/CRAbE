@@ -30,7 +30,7 @@ pub struct ActionWrapper {
 }
 
 impl ActionWrapper {
-    pub fn push<T: Action>(&mut self, _action: T) {
+    pub fn push<T: Action>(&mut self, id: u8, _action: T) {
         todo!()
     }
 

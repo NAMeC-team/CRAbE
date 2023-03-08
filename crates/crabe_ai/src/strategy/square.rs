@@ -10,11 +10,11 @@ use std::f64::consts::PI;
 
 #[derive(Default)]
 pub struct Square {
-    id: u16,
+    id: u8,
 }
 
 impl Square {
-    fn new(id: u16) -> Self {
+    pub fn new(id: u8) -> Self {
         Self { id }
     }
 }
@@ -22,22 +22,14 @@ impl Square {
 impl Strategy for Square {
     fn step(
         &mut self,
-        data: &World,
-        tools_data: &mut ToolData,
+        _data: &World,
+        _tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        // let mut sequencer = Sequencer::default();
-        action_wrapper.push(MoveTo::new(Point2::new(-1.0, 1.0), PI / 4.0));
-        action_wrapper.push(MoveTo::new(
-            Point2::new(1.0, 1.0),
-            -3.0 * PI / 4.0,
-        ));
-        action_wrapper.push(MoveTo::new(
-            Point2::new(1.0, -1.0),
-            3.0 * PI / 4.0,
-        ));
-        action_wrapper.push(MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0));
-       //  action_wrapper.set( sequencer);
+        action_wrapper.push(self.id, MoveTo::new(Point2::new(-1.0, 1.0), PI / 4.0));
+        action_wrapper.push(self.id, MoveTo::new(Point2::new(1.0, 1.0), -3.0 * PI / 4.0));
+        action_wrapper.push(self.id, MoveTo::new(Point2::new(1.0, -1.0), 3.0 * PI / 4.0));
+        action_wrapper.push(self.id, MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0));
         true
     }
 }
