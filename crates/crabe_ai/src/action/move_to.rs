@@ -13,6 +13,16 @@ pub struct MoveTo {
     orientation: f64,
 }
 
+impl From<&mut MoveTo> for MoveTo {
+    fn from(other: &mut MoveTo) -> MoveTo {
+        MoveTo {
+            state: other.state,
+            target: other.target,
+            orientation: other.orientation,
+        }
+    }
+}
+
 impl MoveTo {
     pub fn new(target: Point2<f64>, orientation: f64) -> Self {
         Self {
@@ -85,6 +95,6 @@ impl Action for MoveTo {
     fn cancel(&mut self) {}
 
     fn from_action(&mut self) -> Actions {
-        Actions::MoveTo(self.clone())
+        Actions::MoveTo(self.into())
     }
 }
