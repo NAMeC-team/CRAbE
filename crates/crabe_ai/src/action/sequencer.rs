@@ -1,4 +1,5 @@
-use crate::action::{Action, State};
+use crate::action::state::State;
+use crate::action::Action;
 use crabe_framework::data::output::Command;
 
 pub struct Sequencer {

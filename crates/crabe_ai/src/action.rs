@@ -1,28 +1,12 @@
 pub mod move_to;
 pub mod sequencer;
+pub mod state;
 
 use crate::action::move_to::MoveTo;
 use crate::action::sequencer::Sequencer;
 use crabe_framework::data::output::{Command, CommandMap};
+use state::State;
 use std::collections::HashMap;
-
-#[derive(Clone)]
-pub enum State {
-    Running,
-    Failed,
-    Done,
-}
-
-impl PartialEq for State {
-    fn eq(&self, other: &Self) -> bool {
-        matches!(
-            (self, other),
-            (Self::Running, Self::Running)
-                | (Self::Failed, Self::Failed)
-                | (Self::Done, Self::Done)
-        )
-    }
-}
 
 pub trait Action {
     fn name(&self) -> String;
