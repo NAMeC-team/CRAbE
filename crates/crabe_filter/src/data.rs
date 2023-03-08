@@ -28,7 +28,7 @@ pub struct FilterData {
 pub struct TrackedRobot<T> {
     pub packets: ConstGenericRingBuffer<CamRobot, PACKET_BUFFER_SIZE>,
     pub data: Robot<T>,
-    pub last_update: Instant,
+    pub last_update: Option<DateTime<Utc>>,
 }
 
 impl<T: Default> Default for TrackedRobot<T> {
@@ -36,7 +36,7 @@ impl<T: Default> Default for TrackedRobot<T> {
         TrackedRobot {
             packets: ConstGenericRingBuffer::new(),
             data: Robot::<T>::default(),
-            last_update: Instant::now(),
+            last_update: None,
         }
     }
 }

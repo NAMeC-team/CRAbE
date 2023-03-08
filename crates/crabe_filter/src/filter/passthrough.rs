@@ -16,6 +16,7 @@ fn robot_passthrough<'a, T: 'a + Default>(
                 has_ball: false,
                 robot_info: T::default(),
                 velocity: 0.0,
+                timestamp: packet.frame_info.t_capture
             }
         }
     })
