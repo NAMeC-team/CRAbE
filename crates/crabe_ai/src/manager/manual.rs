@@ -26,6 +26,7 @@ impl Manager for Manual {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        self.strategies.retain_mut(|s| !s.step(data, tools_data, action_wrapper));
+        self.strategies
+            .retain_mut(|s| !s.step(data, tools_data, action_wrapper));
     }
 }

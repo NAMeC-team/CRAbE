@@ -56,6 +56,9 @@ impl Action for MoveTo {
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
             let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < 0.115;
+            if arrived {
+                self.state = State::Done;
+            }
             const GOTO_SPEED: f64 = 3.0;
             const GOTO_ROTATION: f64 = 1.5;
 
@@ -64,9 +67,18 @@ impl Action for MoveTo {
                 GOTO_SPEED * error_y,
                 GOTO_ROTATION * error_orientation,
             );
-        }
 
-        Command::default()
+            Command {
+                forward_velocity: order.x as f32,
+                left_velocity: order.y as f32,
+                angular_velocity: order.z as f32,
+                charge: false,
+                kick: None,
+                dribbler: 0.0,
+            }
+        } else {
+            Command::default()
+        }
     }
 
     fn cancel(&mut self) {}
