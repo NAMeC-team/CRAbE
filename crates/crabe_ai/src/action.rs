@@ -27,11 +27,11 @@ pub struct ActionWrapper {
 }
 
 impl ActionWrapper {
-    pub fn push(&mut self, _action: Box<dyn Action>) {
+    pub fn push<T: Action>(&mut self, _action: T) {
         todo!()
     }
 
-    pub fn set(&mut self, _action: Box<dyn Action>) {
+    pub fn set<T: Action>(&mut self, _action: T) {
         todo!()
     }
 

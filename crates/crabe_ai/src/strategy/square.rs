@@ -26,17 +26,18 @@ impl Strategy for Square {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        let mut sequencer = Sequencer::default();
-        sequencer.push(Box::new(MoveTo::new(Point2::new(-1.0, 1.0), PI / 4.0)));
-        sequencer.push(Box::new(MoveTo::new(
+        // let mut sequencer = Sequencer::default();
+        action_wrapper.push(MoveTo::new(Point2::new(-1.0, 1.0), PI / 4.0));
+        action_wrapper.push(MoveTo::new(
             Point2::new(1.0, 1.0),
             -3.0 * PI / 4.0,
-        )));
-        sequencer.push(Box::new(MoveTo::new(
+        ));
+        action_wrapper.push(MoveTo::new(
             Point2::new(1.0, -1.0),
             3.0 * PI / 4.0,
-        )));
-        sequencer.push(Box::new(MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0)));
+        ));
+        action_wrapper.push(MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0));
+       //  action_wrapper.set( sequencer);
         true
     }
 }
