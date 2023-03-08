@@ -2,7 +2,7 @@ use flume::{unbounded, Receiver, Sender};
 use futures_util::StreamExt;
 use log::{error, info};
 use serde::de::DeserializeOwned;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use std::net::SocketAddr;
 use std::thread;
 use std::thread::JoinHandle;

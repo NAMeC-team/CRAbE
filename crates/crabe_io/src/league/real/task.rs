@@ -1,5 +1,4 @@
 use crate::league::real::RealConfig;
-use crabe_framework::component::OutputComponent;
 
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};

@@ -58,7 +58,7 @@ impl Action for MoveTo {
         self.state.clone()
     }
 
-    fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command {
+    fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&(id as u32)) {
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);

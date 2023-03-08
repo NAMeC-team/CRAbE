@@ -40,6 +40,12 @@ impl ActionWrapper {
         }
     }
 
+    pub fn clean(&mut self, id: u8) {
+        if let Some(sequencer) = self.actions.get_mut(&id) {
+            sequencer.clear();
+        }
+    }
+
     pub fn compute(&mut self, world: &World, tools: &mut ToolData) -> CommandMap {
         let mut command_map = CommandMap::default();
         self.actions.iter_mut().for_each(|(id, action)| {

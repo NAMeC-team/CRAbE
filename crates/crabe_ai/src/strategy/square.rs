@@ -1,8 +1,6 @@
 use crate::action::move_to::MoveTo;
-use crate::action::sequencer::Sequencer;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
-use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::Point2;
@@ -26,7 +24,7 @@ impl Strategy for Square {
         _tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.push(self.id, MoveTo::new(Point2::new(-1.0, 1.0), PI / 4.0));
+        action_wrapper.push(self.id, MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0));
         action_wrapper.push(self.id, MoveTo::new(Point2::new(1.0, 1.0), -3.0 * PI / 4.0));
         action_wrapper.push(self.id, MoveTo::new(Point2::new(1.0, -1.0), 3.0 * PI / 4.0));
         action_wrapper.push(self.id, MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0));

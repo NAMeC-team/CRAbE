@@ -34,6 +34,11 @@ impl Sequencer {
         };
     }
 
+    pub fn clear(&mut self) {
+        self.actions.iter_mut().for_each(|a| a.cancel());
+        self.actions.clear();
+    }
+
     pub fn name(&self) -> String {
         self.actions
             .iter()

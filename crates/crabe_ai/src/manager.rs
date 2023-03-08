@@ -1,5 +1,4 @@
 use crate::action::ActionWrapper;
-use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 

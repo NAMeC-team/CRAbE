@@ -1,9 +1,8 @@
 use clap::Args;
 use crabe_framework::component::{Component, GuardComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::output::{Command, CommandMap, FeedbackMap};
-use crabe_framework::data::receiver::InboundData;
-use crabe_framework::data::tool::{ToolCommands, ToolData};
+use crabe_framework::data::output::CommandMap;
+use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 
 #[derive(Args)]
@@ -23,13 +22,13 @@ pub struct GuardPipeline {
 }
 
 impl GuardPipeline {
-    pub fn with_config(input_cfg: GuardConfig, common_cfg: &CommonConfig) -> Self {
+    pub fn with_config(_guard_cfg: GuardConfig, _common_cfg: &CommonConfig) -> Self {
         Self { guards: vec![] }
     }
 }
 
 impl Component for GuardPipeline {
-    fn close(mut self) {}
+    fn close(self) {}
 }
 
 impl GuardComponent for GuardPipeline {

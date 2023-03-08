@@ -7,7 +7,7 @@ use crabe_framework::component::{
 };
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::FeedbackMap;
-use crabe_framework::data::tool::{ToolCommands, ToolData};
+use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use crabe_guard::pipeline::{GuardConfig, GuardPipeline};
 use crabe_io::pipeline::input::{InputConfig, InputPipeline};
