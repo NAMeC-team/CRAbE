@@ -1,9 +1,22 @@
 use crate::action::state::State;
 use crate::action::Action;
 use crabe_framework::data::output::Command;
+use nalgebra::Point2;
 
 pub struct MoveTo {
     state: State,
+    target: Point2<f64>,
+    orientation: f64,
+}
+
+impl MoveTo {
+    pub fn new(target: Point2<f64>, orientation: f64) -> Self {
+        Self {
+            state: State::Running,
+            target,
+            orientation,
+        }
+    }
 }
 
 impl Action for MoveTo {

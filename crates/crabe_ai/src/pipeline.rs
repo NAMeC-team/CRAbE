@@ -31,15 +31,10 @@ impl Component for DecisionPipeline {
 
 impl DecisionComponent for DecisionPipeline {
     fn step(&mut self, data: &World) -> (CommandMap, ToolData) {
-        let mut command_map = CommandMap::new();
         let mut tool_data = ToolData::default();
-        self.manager.step(
-            data,
-            &mut command_map,
-            &mut tool_data,
-            &mut self.action_wrapper,
-        );
+        self.manager
+            .step(data, &mut tool_data, &mut self.action_wrapper);
 
-        (command_map, tool_data)
+        (self.action_wrapper.compute(), tool_data)
     }
 }

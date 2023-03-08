@@ -7,6 +7,15 @@ pub struct Sequencer {
     pub actions: Vec<Box<dyn Action>>,
 }
 
+impl Default for Sequencer {
+    fn default() -> Self {
+        Self {
+            state: State::Running,
+            actions: vec![],
+        }
+    }
+}
+
 impl Sequencer {
     pub fn push(&mut self, action: Box<dyn Action>) {
         self.actions.push(action);
