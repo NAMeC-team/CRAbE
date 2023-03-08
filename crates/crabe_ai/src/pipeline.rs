@@ -20,7 +20,7 @@ impl DecisionPipeline {
     pub fn with_config(_decision_cfg: DecisionConfig, _common_cfg: &CommonConfig) -> Self {
         Self {
             action_wrapper: ActionWrapper::default(),
-            manager: Box::<Manual>::default(),
+            manager: Box::new(Manual::new()),
         }
     }
 }

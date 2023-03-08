@@ -12,7 +12,7 @@ pub struct Manual {
 }
 
 impl Manual {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             strategies: vec![Box::new(Square::default())],
         }
