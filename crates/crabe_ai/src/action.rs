@@ -1,7 +1,10 @@
 pub mod move_to;
 pub mod sequencer;
 
+use crate::action::move_to::MoveTo;
+use crate::action::sequencer::Sequencer;
 use crabe_framework::data::output::{Command, CommandMap};
+use std::collections::HashMap;
 
 #[derive(Clone)]
 pub enum State {
@@ -29,9 +32,14 @@ pub trait Action {
     fn cancel(&mut self);
 }
 
+pub enum Actions {
+    MoveTo(MoveTo),
+    Sequencer(Sequencer),
+}
+
 #[derive(Default)]
 pub struct ActionWrapper {
-    actions: Vec<Box<dyn Action>>,
+    pub actions: HashMap<u16, Actions>,
 }
 
 impl ActionWrapper {
