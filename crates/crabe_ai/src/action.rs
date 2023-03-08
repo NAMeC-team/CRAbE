@@ -10,6 +10,17 @@ pub enum State {
     Done,
 }
 
+impl PartialEq for State {
+    fn eq(&self, other: &Self) -> bool {
+        matches!(
+            (self, other),
+            (Self::Running, Self::Running)
+                | (Self::Failed, Self::Failed)
+                | (Self::Done, Self::Done)
+        )
+    }
+}
+
 pub trait Action {
     fn name(&self) -> String;
     fn state(&mut self) -> State;
