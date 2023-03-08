@@ -9,8 +9,15 @@ fn update_velocity<T>(tracked_robots: &mut TrackedRobotMap<T>, robots: &RobotMap
     tracked_robots.iter_mut().for_each(|(id, tracked)| {
         if let Some(robot) = robots.get(id) {
             let time = tracked.data.timestamp.clone() - robot.timestamp.clone();
-            let distance = (robot.position - tracked.data.position).norm();
-            tracked.data.velocity = distance / (time.num_seconds() as f64);
+
+            let distance = (tracked.data.position - robot.position);
+            let angle = tracked.data.orientation - robot.orientation;
+            if let Ok(duration) = time.to_std() {
+                let seconds = duration.as_secs_f64();
+                tracked.data.linear_velocity = distance / seconds;
+                tracked.data.angular_velocity = angle / seconds;
+            }
+
         }
     })
 }

@@ -5,6 +5,7 @@ use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
+use nalgebra::Vector2;
 
 #[derive(Serialize, Clone, Default, Debug)]
 pub struct AllyInfo;
@@ -18,7 +19,8 @@ pub struct Robot<T> {
     pub orientation: f64,
     pub has_ball: bool,
     pub robot_info: T,
-    pub velocity: f64,
+    pub linear_velocity: Vector2<f64>,
+    pub angular_velocity: f64,
     pub timestamp: DateTime<Utc>
 }
 
@@ -30,7 +32,8 @@ impl<T: Clone> Clone for Robot<T> {
             orientation: self.orientation,
             has_ball: self.has_ball,
             robot_info: self.robot_info.clone(),
-            velocity: self.velocity,
+            linear_velocity: self.linear_velocity,
+            angular_velocity: self.angular_velocity,
             timestamp: self.timestamp
         }
     }
