@@ -6,6 +6,12 @@ pub struct Sequencer {
     pub actions: Vec<Box<dyn Action>>,
 }
 
+impl Sequencer {
+    pub fn push(&mut self, action: Box<dyn Action>) {
+        self.actions.push(action);
+    }
+}
+
 impl Action for Sequencer {
     fn name(&self) -> String {
         self.actions
