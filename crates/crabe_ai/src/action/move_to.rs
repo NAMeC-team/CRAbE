@@ -49,6 +49,10 @@ pub fn angle_wrap(alpha: f64) -> f64 {
     (alpha + PI) % (2.0 * PI) - PI
 }
 
+const GOTO_SPEED: f64 = 1.5;
+const GOTO_ROTATION: f64 = 1.5;
+const ERR_TOLERANCE: f64 = 0.115;
+
 impl Action for MoveTo {
     fn name(&self) -> String {
         String::from("MoveTo")
@@ -66,12 +70,11 @@ impl Action for MoveTo {
             let error_orientation = angle_wrap(self.orientation - robot.orientation);
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
-            let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < 0.115;
+            let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
             if arrived {
                 self.state = State::Done;
             }
-            const GOTO_SPEED: f64 = 1.5;
-            const GOTO_ROTATION: f64 = 1.5;
+
 
             let order = Vector3::new(
                 GOTO_SPEED * error_x,
