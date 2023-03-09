@@ -1,5 +1,4 @@
 use crate::league::real::RealConfig;
-use crabe_framework::component::OutputComponent;
 
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
@@ -21,7 +20,7 @@ impl Real {
         Self { usb }
     }
 
-    fn prepare_packet(&mut self, id: u32, command: Command) -> IaToMainBoard {
+    fn prepare_packet(&mut self, id: u8, command: Command) -> IaToMainBoard {
         let (kicker_cmd, kick_power) = match command.kick {
             None => {
                 (0, 0.0 as f32) // TODO : Remove this 0 and use the kicker enum
@@ -31,7 +30,7 @@ impl Real {
         };
 
         IaToMainBoard {
-            robot_id: id,
+            robot_id: id as u32,
             normal_speed: command.forward_velocity,
             tangential_speed: command.left_velocity,
             angular_speed: command.angular_velocity,
@@ -56,7 +55,7 @@ impl CommandSenderTask for Real {
     fn close(&mut self) {
         let mut commands: CommandMap = Default::default();
         for id in 0..MAX_ID_ROBOTS {
-            commands.insert(id as u32, Default::default());
+            commands.insert(id as u8, Default::default());
         }
 
         self.step(commands);
