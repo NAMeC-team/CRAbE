@@ -42,7 +42,7 @@ pub fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
 }
 
 pub fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
-    frame(robot.position.x, robot.position.y, robot.orientation)
+    frame(robot.pose.position.x, robot.pose.position.y, robot.pose.orientation)
 }
 
 pub fn angle_wrap(alpha: f64) -> f64 {
@@ -67,7 +67,7 @@ impl Action for MoveTo {
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
 
-            let error_orientation = angle_wrap(self.orientation - robot.orientation);
+            let error_orientation = angle_wrap(self.orientation - robot.pose.orientation);
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
             let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
