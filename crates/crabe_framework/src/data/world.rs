@@ -19,6 +19,13 @@ pub struct RobotVelocity {
 }
 
 #[derive(Serialize, Default, Debug, Clone)]
+pub struct RobotAcceleration {
+    pub linear: Vector2<f64>,
+    pub angular: f64
+}
+
+
+#[derive(Serialize, Default, Debug, Clone)]
 pub struct Pose {
     pub orientation: f64,
     pub position: Point2<f64>
@@ -40,6 +47,7 @@ pub struct Robot<T> {
     pub robot_info: T,
     pub pose: Pose,
     pub velocity: RobotVelocity,
+    pub acceleration: RobotAcceleration,
     pub timestamp: DateTime<Utc>
 }
 
@@ -51,6 +59,7 @@ impl<T: Clone> Clone for Robot<T> {
             robot_info: self.robot_info.clone(),
             pose: self.pose.clone(),
             velocity: self.velocity.clone(),
+            acceleration: self.acceleration.clone(),
             timestamp: self.timestamp
         }
     }
@@ -60,7 +69,8 @@ impl<T: Clone> Clone for Robot<T> {
 pub struct Ball {
     pub position: Point3<f64>,
     pub timestamp: DateTime<Utc>,
-    pub velocity: Vector3<f64>
+    pub velocity: Vector3<f64>,
+    pub acceleration: Vector3<f64>
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]

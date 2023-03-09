@@ -15,6 +15,7 @@ fn robot_passthrough<'a, T: 'a + Default>(
                 has_ball: false,
                 robot_info: T::default(),
                 velocity: Default::default(),
+                acceleration: Default::default(),
                 timestamp: packet.frame_info.t_capture
             }
         }
@@ -27,7 +28,8 @@ fn ball_passthrough(ball: &mut TrackedBall) {
         ball.data = Ball {
             position: packet.position,
             timestamp: packet.frame_info.t_capture,
-            velocity: Default::default()
+            velocity: Default::default(),
+            acceleration: Default::default()
         }
     }
 }
