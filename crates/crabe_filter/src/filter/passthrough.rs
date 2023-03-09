@@ -28,6 +28,8 @@ fn ball_passthrough(ball: &mut TrackedBall) {
     if let Some(packet) = last_packet {
         ball.data = Ball {
             position: packet.position,
+            timestamp: packet.frame_info.t_capture,
+            velocity: Default::default()
         }
     }
 }

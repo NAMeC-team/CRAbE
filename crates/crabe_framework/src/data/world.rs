@@ -1,7 +1,7 @@
 use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
 use clap::builder::Str;
-use nalgebra::{Point2, Point3};
+use nalgebra::{Point2, Point3, Vector3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use chrono::{DateTime, Utc};
@@ -42,6 +42,8 @@ impl<T: Clone> Clone for Robot<T> {
 #[derive(Serialize, Default, Clone, Debug)]
 pub struct Ball {
     pub position: Point3<f64>,
+    pub timestamp: DateTime<Utc>,
+    pub velocity: Vector3<f64>
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
