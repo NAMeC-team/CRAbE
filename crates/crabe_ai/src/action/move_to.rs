@@ -96,8 +96,4 @@ impl Action for MoveTo {
     }
 
     fn cancel(&mut self) {}
-
-    fn from_action(&mut self) -> Actions {
-        Actions::MoveTo(self.into())
-    }
 }

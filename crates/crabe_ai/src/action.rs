@@ -17,7 +17,6 @@ pub trait Action {
 
     fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command;
     fn cancel(&mut self);
-    fn from_action(&mut self) -> Actions;
 }
 
 #[enum_dispatch]
@@ -31,12 +30,12 @@ pub struct ActionWrapper {
 }
 
 impl ActionWrapper {
-    pub fn push<T: Action>(&mut self, id: u8, mut action: T) {
+    pub fn push<T: Action + Into<Actions>>(&mut self, id: u8, mut action: T) {
         if let Some(sequencer) = self.actions.get_mut(&id) {
-            sequencer.push(action.from_action());
+            sequencer.push(action.into());
         } else {
             self.actions
-                .insert(id, Sequencer::new(action.from_action()));
+                .insert(id, Sequencer::new(action.into()));
         }
     }
 
