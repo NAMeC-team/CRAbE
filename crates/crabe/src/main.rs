@@ -52,6 +52,67 @@ pub struct Cli {
     pub output_config: OutputConfig,
 }
 
+#[derive(Default)]
+pub struct SystemBuilder {
+    input_component: Option<Box<dyn InputComponent>>,
+    filter_component: Option<Box<dyn FilterComponent>>,
+    decision_component: Option<Box<dyn DecisionComponent>>,
+    tool_component: Option<Box<dyn ToolComponent>>,
+    guard_component: Option<Box<dyn GuardComponent>>,
+    output_component: Option<Box<dyn OutputComponent>>,
+    world: Option<World>,
+}
+
+impl SystemBuilder {
+    fn input_component(mut self, input: impl InputComponent + 'static) -> Self {
+        self.input_component = Some(Box::new(input));
+        self
+    }
+
+    fn filter_component(mut self, filter: impl FilterComponent + 'static) -> Self {
+        self.filter_component = Some(Box::new(filter));
+        self
+    }
+
+    fn decision_component(mut self, decision: impl DecisionComponent + 'static) -> Self {
+        self.decision_component = Some(Box::new(decision));
+        self
+    }
+
+    fn tool_component(mut self, tool: impl ToolComponent + 'static) -> Self {
+        self.tool_component = Some(Box::new(tool));
+        self
+    }
+
+    fn guard_component(mut self, guard: impl GuardComponent + 'static) -> Self {
+        self.guard_component = Some(Box::new(guard));
+        self
+    }
+
+    fn output_component(mut self, output: impl OutputComponent + 'static) -> Self {
+        self.output_component = Some(Box::new(output));
+        self
+    }
+    
+    fn world(mut self, world: World) -> Self {
+        self.world = Some(world);
+        self
+    }
+    
+    fn build(self) -> System {
+        System {
+            input_component: self.input_component.expect("missing input component"),
+            filter_component: self.filter_component.expect("missing filter component"),
+            decision_component: self.decision_component.expect("missing decision component"),
+            tool_component: self.tool_component.expect("missing tool component"),
+            guard_component: self.guard_component.expect("missing guard component"),
+            output_component: self.output_component.expect("missing output component"),
+            running: Arc::new(Default::default()),
+            world: self.world.expect("missing world")
+        }
+    }
+}
+
 pub struct System {
     input_component: Box<dyn InputComponent>,
     filter_component: Box<dyn FilterComponent>,
@@ -130,6 +191,17 @@ fn main() {
     // GuardPipeline
     // OutputPipeline
 
+    let mut system = SystemBuilder::default()
+        .world(World::with_config(&cli.common))
+        .input_component(InputPipeline::with_config(cli.input_config, &cli.common))
+        .filter_component(FilterPipeline::with_config(cli.filter_config, &cli.common))
+        .decision_component(DecisionPipeline::with_config(cli.decision_config, &cli.common))
+        .tool_component(ToolServer::with_config(cli.tool_config, &cli.common))
+        .guard_component(GuardPipeline::with_config(cli.guard_config, &cli.common))
+        .output_component(OutputPipeline::with_config(cli.output_config, &cli.common))
+        .build();
+
+    /*
     let mut system = System::new(
         World::with_config(&cli.common),
         InputPipeline::with_config(cli.input_config, &cli.common),
@@ -139,6 +211,7 @@ fn main() {
         GuardPipeline::with_config(cli.guard_config, &cli.common),
         OutputPipeline::with_config(cli.output_config, &cli.common),
     );
+     */
 
     system.run(Duration::from_millis(16));
     system.close();
