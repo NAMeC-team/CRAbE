@@ -9,7 +9,7 @@ pub struct Feedback {
     pub voltage: f32,
 }
 
-pub type CommandMap = HashMap<u32, Command>;
+pub type CommandMap = HashMap<u8, Command>;
 
 pub enum Kick {
     StraightKick { power: f32 },

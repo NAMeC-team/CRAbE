@@ -1,6 +1,5 @@
 use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
-use clap::builder::Str;
 use nalgebra::{Point2, Point3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

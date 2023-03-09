@@ -2,7 +2,6 @@ use crate::data::geometry::goal::Goal;
 use crate::data::geometry::penalty::Penalty;
 
 use crabe_math::shape::circle::Circle;
-use nalgebra::Point2;
 use serde::Serialize;
 
 pub mod goal;

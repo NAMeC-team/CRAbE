@@ -36,7 +36,7 @@ impl Component for ToolServer {
 }
 
 impl ToolComponent for ToolServer {
-    fn step(&mut self, world_data: &World, tool_data: &mut ToolData) -> ToolCommands {
+    fn step(&mut self, world_data: &World, _tool_data: &mut ToolData) -> ToolCommands {
         self.websocket.send(ToolMessage::World(world_data.clone()));
         ToolCommands {}
     }

@@ -9,5 +9,7 @@ authors = ["NAMeC"]
 [dependencies]
 log = "0.4.17"
 clap = { version = "4.1.8", features = ["derive"] }
+nalgebra = "0.32.2"
+enum_dispatch = "0.3.11"
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
