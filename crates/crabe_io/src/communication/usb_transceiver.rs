@@ -23,7 +23,9 @@ impl UsbTransceiver {
         let mut buf = Vec::new();
         buf.reserve(packet.encoded_len() + 1);
         buf.push(packet.encoded_len() as u8);
-        packet.encode(&mut buf).unwrap();
+        if let Err(err) = packet.encode(&mut buf) {
+            error!("Cannot encode the packet, {}", err);
+        }
 
         match self.port.write(&buf[0..packet.encoded_len() + 1]) {
             Ok(_v) => {
