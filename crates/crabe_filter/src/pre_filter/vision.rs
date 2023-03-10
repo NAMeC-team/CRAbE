@@ -190,8 +190,8 @@ mod geometry {
                 CamFieldLine {
                     thickness: line.thickness as f64 / 1000.0,
                     line: Line {
-                        p1: Point2::new(line.p1.x as f64 / 1000.0, line.p1.y as f64 / 1000.0),
-                        p2: Point2::new(line.p2.x as f64 / 1000.0, line.p2.y as f64 / 1000.0),
+                        start: Point2::new(line.p1.x as f64 / 1000.0, line.p1.y as f64 / 1000.0),
+                        end: Point2::new(line.p2.x as f64 / 1000.0, line.p2.y as f64 / 1000.0),
                     },
                 },
             );
@@ -208,8 +208,8 @@ mod geometry {
                             arc.center.y as f64 / 1000.0,
                         ),
                         radius: arc.radius as f64 / 1000.0,
-                        start_angle: arc.a1 as f64,
-                        end_angle: arc.a2 as f64,
+                        start: arc.a1 as f64,
+                        end: arc.a2 as f64,
                     },
                 },
             );

@@ -30,10 +30,10 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
         .field_lines
         .get("LeftFieldLeftPenaltyStretch")
         .map(|line| {
-            let width = 2.0 * line.line.p1.y.abs();
+            let width = 2.0 * line.line.start.y.abs();
             Penalty {
                 width,
-                depth: (line.line.p1.x - line.line.p2.x).abs(),
+                depth: (line.line.start.x - line.line.end.x).abs(),
                 top_left_position: Point2::new(
                     factor * (cam_geometry.field_length / 2.0),
                     factor * (width / 2.0),
