@@ -13,3 +13,4 @@ serde_json = "1.0.94"
 nalgebra = { version = "0.32.2", features = ["serde-serialize"] }
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_math = { path = "../crabe_math" }
+chrono={ version="0.4.23", features = ["serde"]}

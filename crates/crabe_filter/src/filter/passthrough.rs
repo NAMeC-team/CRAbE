@@ -1,6 +1,6 @@
 use crate::data::{FilterData, TrackedBall, TrackedRobot};
 use crate::filter::Filter;
-use crabe_framework::data::world::{Ball, Robot, World};
+use crabe_framework::data::world::{Ball, Pose, Robot, World};
 use ringbuffer::RingBufferRead;
 
 fn robot_passthrough<'a, T: 'a + Default>(
@@ -11,10 +11,12 @@ fn robot_passthrough<'a, T: 'a + Default>(
         if let Some(packet) = last_packet {
             r.data = Robot {
                 id: packet.id,
-                position: packet.position,
-                orientation: packet.orientation,
+                pose: Pose::new(packet.position, packet.orientation),
                 has_ball: false,
                 robot_info: T::default(),
+                velocity: Default::default(),
+                acceleration: Default::default(),
+                timestamp: packet.frame_info.t_capture
             }
         }
     })
@@ -25,6 +27,9 @@ fn ball_passthrough(ball: &mut TrackedBall) {
     if let Some(packet) = last_packet {
         ball.data = Ball {
             position: packet.position,
+            timestamp: packet.frame_info.t_capture,
+            velocity: Default::default(),
+            acceleration: Default::default()
         }
     }
 }
