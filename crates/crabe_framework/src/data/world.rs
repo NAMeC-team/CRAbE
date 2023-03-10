@@ -1,11 +1,10 @@
 use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
-use clap::builder::Str;
+use chrono::{DateTime, Utc};
+use nalgebra::Vector2;
 use nalgebra::{Point2, Point3, Vector3};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use chrono::{DateTime, Utc};
-use nalgebra::Vector2;
 
 #[derive(Serialize, Clone, Default, Debug)]
 pub struct AllyInfo;
@@ -15,27 +14,26 @@ pub struct EnemyInfo;
 #[derive(Serialize, Default, Debug, Clone)]
 pub struct RobotVelocity {
     pub linear: Vector2<f64>,
-    pub angular: f64
+    pub angular: f64,
 }
 
 #[derive(Serialize, Default, Debug, Clone)]
 pub struct RobotAcceleration {
     pub linear: Vector2<f64>,
-    pub angular: f64
+    pub angular: f64,
 }
-
 
 #[derive(Serialize, Default, Debug, Clone)]
 pub struct Pose {
     pub orientation: f64,
-    pub position: Point2<f64>
+    pub position: Point2<f64>,
 }
 
 impl Pose {
     pub fn new(position: Point2<f64>, orientation: f64) -> Pose {
         Pose {
             orientation,
-            position
+            position,
         }
     }
 }
@@ -48,7 +46,7 @@ pub struct Robot<T> {
     pub pose: Pose,
     pub velocity: RobotVelocity,
     pub acceleration: RobotAcceleration,
-    pub timestamp: DateTime<Utc>
+    pub timestamp: DateTime<Utc>,
 }
 
 impl<T: Clone> Clone for Robot<T> {
@@ -60,7 +58,7 @@ impl<T: Clone> Clone for Robot<T> {
             pose: self.pose.clone(),
             velocity: self.velocity.clone(),
             acceleration: self.acceleration.clone(),
-            timestamp: self.timestamp
+            timestamp: self.timestamp,
         }
     }
 }
@@ -70,7 +68,7 @@ pub struct Ball {
     pub position: Point3<f64>,
     pub timestamp: DateTime<Utc>,
     pub velocity: Vector3<f64>,
-    pub acceleration: Vector3<f64>
+    pub acceleration: Vector3<f64>,
 }
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]

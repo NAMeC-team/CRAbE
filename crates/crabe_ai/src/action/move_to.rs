@@ -1,5 +1,5 @@
 use crate::action::state::State;
-use crate::action::{Action, Actions};
+use crate::action::Action;
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
@@ -42,7 +42,11 @@ pub fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
 }
 
 pub fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
-    frame(robot.pose.position.x, robot.pose.position.y, robot.pose.orientation)
+    frame(
+        robot.pose.position.x,
+        robot.pose.position.y,
+        robot.pose.orientation,
+    )
 }
 
 pub fn angle_wrap(alpha: f64) -> f64 {
@@ -74,7 +78,6 @@ impl Action for MoveTo {
             if arrived {
                 self.state = State::Done;
             }
-
 
             let order = Vector3::new(
                 GOTO_SPEED * error_x,

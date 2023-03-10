@@ -30,12 +30,11 @@ pub struct ActionWrapper {
 }
 
 impl ActionWrapper {
-    pub fn push<T: Action + Into<Actions>>(&mut self, id: u8, mut action: T) {
+    pub fn push<T: Action + Into<Actions>>(&mut self, id: u8, action: T) {
         if let Some(sequencer) = self.actions.get_mut(&id) {
             sequencer.push(action.into());
         } else {
-            self.actions
-                .insert(id, Sequencer::new(action.into()));
+            self.actions.insert(id, Sequencer::new(action.into()));
         }
     }
 
