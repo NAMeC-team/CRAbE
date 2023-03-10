@@ -11,12 +11,13 @@ pub struct Feedback {
 
 pub type CommandMap = HashMap<u8, Command>;
 
+#[derive(Copy, Clone)]
 pub enum Kick {
     StraightKick { power: f32 },
     ChipKick { power: f32 },
 }
 
-#[derive(Default)]
+#[derive(Copy, Clone, Default)]
 pub struct Command {
     /// Velocity forward in m.s-1 (towards the dribbler)
     pub forward_velocity: f32,
