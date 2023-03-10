@@ -64,7 +64,7 @@ impl FilterComponent for FilterPipeline {
     fn step(&mut self, inbound_data: InboundData, world: &mut World) {
         self.pre_filters
             .iter_mut()
-            .for_each(|f| f.step(&inbound_data, &world.team_color, &mut self.filter_data));
+            .for_each(|f| f.step(&inbound_data, &self.team_color, &mut self.filter_data));
 
         self.filters
             .iter_mut()
