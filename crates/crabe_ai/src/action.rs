@@ -24,7 +24,7 @@ pub trait Action {
     /// Computes the next command to be executed by the robot.
     fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command;
     /// Cancel the action.
-    fn cancel(&mut self);
+    fn cancel(&mut self) {}
 }
 
 /// The Actions enum is used to define the various actions that can be taken by a robot and implement the Action

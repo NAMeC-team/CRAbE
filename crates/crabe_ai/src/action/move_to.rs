@@ -97,6 +97,4 @@ impl Action for MoveTo {
             Command::default()
         }
     }
-
-    fn cancel(&mut self) {}
 }

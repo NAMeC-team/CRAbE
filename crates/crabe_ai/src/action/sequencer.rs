@@ -74,8 +74,4 @@ impl Sequencer {
             Command::default()
         }
     }
-
-    pub fn cancel(&mut self) {
-        self.actions.iter_mut().for_each(|action| action.cancel());
-    }
 }
