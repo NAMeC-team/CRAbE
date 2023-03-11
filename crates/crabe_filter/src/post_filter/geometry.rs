@@ -1,8 +1,8 @@
 use crate::data::camera::CamGeometry;
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
-use crabe_framework::data::geometry::goal::Goal;
-use crabe_framework::data::geometry::penalty::Penalty;
+use crabe_framework::data::geometry::Goal;
+use crabe_framework::data::geometry::Penalty;
 use crabe_framework::data::geometry::{Field, Geometry};
 use crabe_framework::data::world::World;
 use crabe_math::shape::circle::Circle;

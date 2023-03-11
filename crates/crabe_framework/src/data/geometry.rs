@@ -1,11 +1,10 @@
-use crate::data::geometry::goal::Goal;
-use crate::data::geometry::penalty::Penalty;
-
 use crabe_math::shape::circle::Circle;
 use serde::Serialize;
 
-pub mod goal;
-pub mod penalty;
+mod goal;
+pub use self::goal::Goal;
+mod penalty;
+pub use self::penalty::Penalty;
 
 #[derive(Serialize, Clone, Debug)]
 pub struct Field {

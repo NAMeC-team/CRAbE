@@ -13,6 +13,7 @@ pub struct InboundData {
     /// Game controller packet received by the software. This can come from
     /// SSL-Game-Controller.
     pub gc_packet: Vec<Referee>,
-    /// TODO:
+    /// Simulator or USB Packet that provides feedback from the robot,
+    /// such as odometry or infrared data.
     pub feedback: FeedbackMap,
 }
