@@ -1,6 +1,6 @@
 use crate::data::FrameInfo;
-use crabe_math::shape::arc::Arc;
-use crabe_math::shape::line::Line;
+use crabe_math::shape::Arc;
+use crabe_math::shape::Line;
 use nalgebra::{Point2, Point3};
 use std::collections::HashMap;
 

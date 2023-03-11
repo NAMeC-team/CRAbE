@@ -1,4 +1,4 @@
-use crabe_math::shape::circle::Circle;
+use crabe_math::shape::Circle;
 use nalgebra::Point2;
 use serde::Serialize;
 

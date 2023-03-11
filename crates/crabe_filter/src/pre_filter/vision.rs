@@ -153,8 +153,8 @@ mod detection {
 mod geometry {
     use crate::data::camera::{CamFieldArc, CamFieldLine};
     use crate::data::{camera::CamGeometry, FilterData};
-    use crabe_math::shape::arc::Arc;
-    use crabe_math::shape::line::Line;
+    use crabe_math::shape::Arc;
+    use crabe_math::shape::Line;
     use crabe_protocol::protobuf::vision_packet::SslGeometryData;
     use nalgebra::Point2;
     use std::collections::HashMap;

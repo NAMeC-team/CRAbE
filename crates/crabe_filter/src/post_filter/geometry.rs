@@ -5,7 +5,7 @@ use crabe_framework::data::geometry::Goal;
 use crabe_framework::data::geometry::Penalty;
 use crabe_framework::data::geometry::{Field, Geometry};
 use crabe_framework::data::world::World;
-use crabe_math::shape::circle::Circle;
+use crabe_math::shape::Circle;
 use nalgebra::Point2;
 
 pub struct GeometryFilter;
