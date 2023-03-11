@@ -7,8 +7,8 @@ use crabe_framework::data::world::World;
 /// experiment with different behaviors.
 pub mod testing;
 
-/// The `Strategy` trait represents a behavior that a robot can adopt in order to achieve a certain goal.
-/// A strategy receives information about the world and its own state, and issues commands to the robot
+/// The `Strategy` trait defines the interface for a behavior that one or multiple robots can adopt to achieve a certain goal.
+/// A strategy receives information about the state of the world and its own state, and issues commands to the robot
 /// through an `ActionWrapper` instance. A strategy can run for multiple time steps, until it decides to
 /// terminate by returning `true` from the `step` method.
 pub trait Strategy {
