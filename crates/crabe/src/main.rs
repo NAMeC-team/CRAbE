@@ -93,18 +93,19 @@ impl SystemBuilder {
         self.output_component = Some(Box::new(output));
         self
     }
-    
+
     fn world(mut self, world: World) -> Self {
         self.world = Some(world);
         self
     }
-    
+
     fn build(self) -> System {
         let running = Arc::new(AtomicBool::new(true));
         let running_ctrlc = Arc::clone(&running);
         ctrlc::set_handler(move || {
             running_ctrlc.store(false, Ordering::Relaxed);
-        }).expect("Failed to set Ctrl-C handler");
+        })
+        .expect("Failed to set Ctrl-C handler");
 
         System {
             input_component: self.input_component.expect("missing input component"),
@@ -114,7 +115,7 @@ impl SystemBuilder {
             guard_component: self.guard_component.expect("missing guard component"),
             output_component: self.output_component.expect("missing output component"),
             running,
-            world: self.world.expect("missing world")
+            world: self.world.expect("missing world"),
         }
     }
 }
@@ -131,10 +132,6 @@ pub struct System {
 }
 
 impl System {
-    pub fn setup(&mut self) {
-
-    }
-
     // TODO: Use refresh rate
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback: FeedbackMap = Default::default();
@@ -166,16 +163,14 @@ fn main() {
         .write_style_or("CRABE_LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
-    // DecisionPipeline
-    // ToolsPipeline
-    // GuardPipeline
-    // OutputPipeline
-
     let mut system = SystemBuilder::default()
         .world(World::with_config(&cli.common))
         .input_component(InputPipeline::with_config(cli.input_config, &cli.common))
         .filter_component(FilterPipeline::with_config(cli.filter_config, &cli.common))
-        .decision_component(DecisionPipeline::with_config(cli.decision_config, &cli.common))
+        .decision_component(DecisionPipeline::with_config(
+            cli.decision_config,
+            &cli.common,
+        ))
         .tool_component(ToolServer::with_config(cli.tool_config, &cli.common))
         .guard_component(GuardPipeline::with_config(cli.guard_config, &cli.common))
         .output_component(OutputPipeline::with_config(cli.output_config, &cli.common))
