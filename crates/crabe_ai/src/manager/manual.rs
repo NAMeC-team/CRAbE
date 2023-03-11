@@ -1,6 +1,6 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
-use crate::strategy::square::Square;
+use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
