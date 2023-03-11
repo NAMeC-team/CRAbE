@@ -29,15 +29,25 @@ where
     }
 }
 
-// TODO: Document
+/// The `InputComponent` trait defines the methods required for a component that handles
+/// the input data for a SSL game (Vision, Game Controller, ...).
+/// Reads input data and returns a new `InboundData` struct with the processed data.
+/// The feedback parameter is used to provide feedback to the component,
+/// such as odometry or infrared data.
 pub trait InputComponent: Component {
     fn step(&mut self, feedback: &mut FeedbackMap) -> InboundData;
 }
-
+/// The `FilterComponent` trait defines the methods required for a component that applies
+/// filters to the input data to remove noise, unwanted or unnecessary information.
+/// It processes `InboundData` and updates `World` struct with the desired information
 pub trait FilterComponent: Component {
     fn step(&mut self, data: InboundData, world: &mut World);
 }
 
+/// The `ToolComponent` trait defines the methods required for a component that manages and
+/// manipulates additional tools used by the project's crates.
+/// These tools can include things like a joystick handler or sending and
+/// receiving data for tools, such as a viewer or a control center.
 pub trait DecisionComponent: Component {
     fn step(&mut self, data: &World) -> (CommandMap, ToolData);
 }
@@ -53,3 +63,4 @@ pub trait GuardComponent: Component {
 pub trait OutputComponent: Component {
     fn step(&mut self, commands: CommandMap, tool_commands: ToolCommands) -> FeedbackMap;
 }
+// TODO: Document
