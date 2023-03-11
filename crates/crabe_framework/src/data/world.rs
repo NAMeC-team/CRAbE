@@ -16,17 +16,26 @@ use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
 use serde::Serialize;
 
+/// The `World` struct represents the state of the world in the SSL game,
+/// containing information about the game state, the field geometry, the robots and the ball.
 #[derive(Serialize, Clone, Debug)]
 pub struct World {
+    /// The current state of the game.
     pub state: GameState,
+    /// The geometry of the field, including its dimensions and the positions of goals and other areas.
     pub geometry: Geometry,
+    /// A map of all the ally robots in the game, identified by their unique ID.
     pub allies_bot: RobotMap<AllyInfo>,
+    /// A map of all the enemy robots in the game, identified by their unique ID.
     pub enemies_bot: RobotMap<EnemyInfo>,
+    /// The current position and state of the ball, if it is visible.
     pub ball: Option<Ball>,
+    /// The team color of our team.
     pub team_color: TeamColor,
 }
 
 impl World {
+    /// Creates a new `World` instance based on a given `CommonConfig` instance.
     pub fn with_config(config: &CommonConfig) -> Self {
         let team_color = if config.yellow {
             TeamColor::Yellow
