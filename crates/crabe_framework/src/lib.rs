@@ -2,12 +2,14 @@
 //!
 //! This crate provides shared utilities and settings for the CRAbE project.
 //!
-//! The `config` module contains settings that are common to multiple CRAbE
+//! - The `config` module contains settings that are common to multiple CRAbE
 //! crates.
-//! The `constant` module contains constants that are common to multiple
+//! - The `constant` module contains constants that are common to multiple
 //! CRAbE crates.
-//! The `component` module contains traits and structs that defines the component architecture
+//! - The `component` module contains traits and structs that defines the component architecture
 //! used in the CRAbE project
+//! - The `data` module contains definitions of structs and enums used to represent and manipulate
+//!   data in the robocup SSL system.
 //!
 //! This crate is intended to be used as a dependency by other CRAbE crates, and
 //! should not be used on its own. Please refer to the individual modules for
@@ -38,7 +40,15 @@ pub mod config;
 /// new crate that implements the DecisionComponent trait.
 pub mod component;
 
-/// TODO
+/// The `data` module contains definitions of structs and enums used to represent and manipulate
+/// data in the robocup SSL system.
+///
+/// This module includes structs for representing game-related information such as robots, the ball,
+/// field dimensions, and game events. It also includes enums for representing game states and
+/// game events.
+///
+/// In addition to these core data structures, this module provides utility functions and methods
+/// for working with these data types.
 pub mod data;
 
 /// This module contains constants that are used throughout the CRAbE project.

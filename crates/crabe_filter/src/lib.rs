@@ -17,7 +17,7 @@ use crate::pre_filter::PreFilter;
 use clap::Args;
 use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::receiver::InboundData;
+use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
 
 #[derive(Args)]

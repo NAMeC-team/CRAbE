@@ -3,7 +3,7 @@ use crate::constant::{VISION_PORT_REAL, VISION_PORT_SIM};
 use crate::league::vision::VisionConfig;
 use crate::pipeline::input::ReceiverTask;
 use crabe_framework::config::CommonConfig;
-use crabe_framework::data::receiver::InboundData;
+use crabe_framework::data::input::InboundData;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use log::{error, info};
 use std::net::Ipv4Addr;

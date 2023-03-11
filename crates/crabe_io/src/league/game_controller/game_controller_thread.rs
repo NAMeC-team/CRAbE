@@ -1,7 +1,7 @@
 use crate::communication::MulticastUDPReceiver;
 use crate::league::game_controller::GameControllerConfig;
 use crate::pipeline::input::ReceiverTask;
-use crabe_framework::data::receiver::InboundData;
+use crabe_framework::data::input::InboundData;
 use crabe_protocol::protobuf::game_controller_packet::Referee;
 use log::{error, info};
 use std::net::Ipv4Addr;

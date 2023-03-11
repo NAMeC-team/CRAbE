@@ -3,8 +3,8 @@ use crate::league::vision::{Vision, VisionConfig};
 use clap::Args;
 use crabe_framework::component::{Component, InputComponent};
 use crabe_framework::config::CommonConfig;
+use crabe_framework::data::input::InboundData;
 use crabe_framework::data::output::FeedbackMap;
-use crabe_framework::data::receiver::InboundData;
 
 #[derive(Args)]
 pub struct InputConfig {
