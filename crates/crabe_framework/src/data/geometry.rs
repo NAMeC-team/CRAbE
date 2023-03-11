@@ -1,4 +1,5 @@
 use crabe_math::shape::circle::Circle;
+use nalgebra::Point2;
 use serde::Serialize;
 
 mod goal;
@@ -23,38 +24,37 @@ pub struct Geometry {
     pub center: Circle,
 }
 
-// TODO: Add default dimension of field Division B
 impl Default for Geometry {
     fn default() -> Self {
         Self {
-            boundary_width: Default::default(),
+            boundary_width: 0.3,
             field: Field {
                 width: 9.0,
                 length: 6.0,
             },
             ally_goal: Goal {
-                width: 0.0,
-                depth: 0.0,
-                top_left_position: Default::default(),
+                width: 1.0,
+                depth: 0.18,
+                top_left_position: Point2::new(-4.68, -0.5),
             },
             enemy_goal: Goal {
-                width: 0.0,
-                depth: 0.0,
-                top_left_position: Default::default(),
+                width: 1.0,
+                depth: 0.18,
+                top_left_position: Point2::new(4.68, 0.5),
             },
             ally_penalty: Penalty {
-                width: 0.0,
-                depth: 0.0,
-                top_left_position: Default::default(),
+                width: 2.0,
+                depth: 1.0,
+                top_left_position: Point2::new(-4.5, -1.0),
             },
             enemy_penalty: Penalty {
-                width: 0.0,
-                depth: 0.0,
-                top_left_position: Default::default(),
+                width: 2.0,
+                depth: 1.0,
+                top_left_position: Point2::new(4.5, 1.0),
             },
             center: Circle {
-                center: Default::default(),
-                radius: 0.0,
+                center: Point2::new(0.0, 0.0),
+                radius: 0.5,
             },
         }
     }
