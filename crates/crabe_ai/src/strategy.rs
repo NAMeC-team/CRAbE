@@ -2,7 +2,10 @@ use crate::action::ActionWrapper;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 
-pub mod square;
+/// The `testing` module contains different strategies used for testing purposes. These strategies
+/// are not meant to be used in an actual game but rather to test specific functionalities or to
+/// experiment with different behaviors.
+pub mod testing;
 
 /// The `Strategy` trait represents a behavior that a robot can adopt in order to achieve a certain goal.
 /// A strategy receives information about the world and its own state, and issues commands to the robot
