@@ -1,5 +1,5 @@
 use clap::Parser;
-use crabe_ai::pipeline::{DecisionConfig, DecisionPipeline};
+use crabe_decision::pipeline::{DecisionConfig, DecisionPipeline};
 use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{
     Component, DecisionComponent, FilterComponent, GuardComponent, InputComponent, OutputComponent,
