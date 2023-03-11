@@ -14,18 +14,18 @@ pub struct EnemyInfo;
 /// The `RobotVelocity` struct represents the velocity of a robot in the SSL.
 #[derive(Serialize, Default, Debug, Clone)]
 pub struct RobotVelocity {
-    /// The linear velocity of the robot in meters by second.
+    /// The linear velocity of the robot in meters per second.
     pub linear: Vector2<f64>,
-    /// The angular velocity of the robot in radians by second.
+    /// The angular velocity of the robot in radians per second.
     pub angular: f64,
 }
 
 /// The `RobotAcceleration` struct represents the acceleration of a robot in the SSL.
 #[derive(Serialize, Default, Debug, Clone)]
 pub struct RobotAcceleration {
-    /// The linear acceleration of the robot in meters by second.
+    /// The linear acceleration of the robot in meters per second squared.
     pub linear: Vector2<f64>,
-    /// The angular acceleration of the robot in radians by second.
+    /// The angular acceleration of the robot in radians per second squared.
     pub angular: f64,
 }
 

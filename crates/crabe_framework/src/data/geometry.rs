@@ -10,9 +10,9 @@ pub use self::penalty::Penalty;
 /// The `Field` struct represent the SSL field.
 #[derive(Serialize, Clone, Debug)]
 pub struct Field {
-    /// Width of the SSL field.
+    /// Width of the SSL field in meters.
     pub width: f64,
-    /// Length of the SSL field.
+    /// Length of the SSL field in meters.
     pub length: f64,
 }
 
@@ -20,7 +20,7 @@ pub struct Field {
 /// By default, the geometry corresponds to the size of the SSL Division B field.
 #[derive(Serialize, Clone, Debug)]
 pub struct Geometry {
-    /// The width of the boundary around the field
+    /// The width of the boundary around the field in meters.
     pub boundary_width: f64,
     /// The dimensions of the field.
     pub field: Field,
@@ -32,7 +32,7 @@ pub struct Geometry {
     pub ally_penalty: Penalty,
     ///  The position and size of the enemy penalty area.
     pub enemy_penalty: Penalty,
-    /// The center circle of the field.
+    /// The center circle of the field (position in meters and radius in radian).
     pub center: Circle,
 }
 
