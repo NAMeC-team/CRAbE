@@ -7,20 +7,32 @@ pub use self::goal::Goal;
 mod penalty;
 pub use self::penalty::Penalty;
 
+/// The `Field` struct represent the SSL field.
 #[derive(Serialize, Clone, Debug)]
 pub struct Field {
+    /// Width of the SSL field.
     pub width: f64,
+    /// Length of the SSL field.
     pub length: f64,
 }
 
+/// The `Geometry` struct contains all the geometric information of the SSL field.
+/// By default, the geometry corresponds to the size of the SSL Division B field.
 #[derive(Serialize, Clone, Debug)]
 pub struct Geometry {
+    /// The width of the boundary around the field
     pub boundary_width: f64,
+    /// The dimensions of the field.
     pub field: Field,
+    /// The position and size of the ally goal.
     pub ally_goal: Goal,
+    /// The position and size of the enemy goal.
     pub enemy_goal: Goal,
+    /// The position and size of the ally penalty area.
     pub ally_penalty: Penalty,
+    ///  The position and size of the enemy penalty area.
     pub enemy_penalty: Penalty,
+    /// The center circle of the field.
     pub center: Circle,
 }
 
