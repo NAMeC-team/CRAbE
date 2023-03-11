@@ -3,7 +3,8 @@ use serde::Serialize;
 
 /// Represents a circle in 2D space defined by its center point and radius.
 ///
-/// Note that the `center` and `radius` fields should have the same units of measurement.
+/// Note that the `center` and `radius` fields should have the same units of
+/// measurement.
 #[derive(Serialize, Clone, Debug)]
 pub struct Circle {
     /// The center point of the circle.

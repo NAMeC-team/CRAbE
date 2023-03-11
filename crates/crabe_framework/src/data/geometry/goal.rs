@@ -8,7 +8,8 @@ pub struct Goal {
     pub width: f64,
     /// The depth of the goal, in meters.
     pub depth: f64,
-    /// The top-left corner of the goal, measured from the origin of the field, in meters.
+    /// The top-left corner of the goal, measured from the origin of the field,
+    /// in meters.
     pub top_left_position: Point2<f64>,
 }
 

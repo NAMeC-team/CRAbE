@@ -8,7 +8,8 @@ pub struct Penalty {
     pub width: f64,
     /// The depth of the penalty area in meters.
     pub depth: f64,
-    /// The top-left corner of the penalty area, measured from the origin of the field, in meters.
+    /// The top-left corner of the penalty area, measured from the origin of the
+    /// field, in meters.
     pub top_left_position: Point2<f64>,
 }
 

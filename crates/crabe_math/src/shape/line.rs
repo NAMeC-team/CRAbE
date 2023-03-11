@@ -2,7 +2,8 @@ use nalgebra::Point2;
 
 /// A line segment in 2D space, defined by two points.
 ///
-/// Note that the `start` and `end` fields should have the same units of measurement.
+/// Note that the `start` and `end` fields should have the same units of
+/// measurement.
 #[derive(Debug)]
 pub struct Line {
     /// The starting point of the line segment.

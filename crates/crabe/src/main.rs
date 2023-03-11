@@ -139,7 +139,6 @@ impl System {
         while self.running.load(Ordering::SeqCst) {
             let receive_data = self.input_component.step(&mut feedback);
             self.filter_component.step(receive_data, &mut self.world);
-            //dbg!(&world);
             let (mut command_map, mut tool_data) = self.decision_component.step(&self.world);
             self.tool_component.step(&mut self.world, &mut tool_data);
             self.guard_component
