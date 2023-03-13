@@ -48,13 +48,13 @@ impl Pose {
 }
 
 /// The `RobotMap` type is a hashmap that maps a robot ID to a Robot struct.
-pub type RobotMap<T> = HashMap<u32, Robot<T>>;
+pub type RobotMap<T> = HashMap<u8, Robot<T>>;
 
 /// The Robot struct represents a robot in the SSL game.
 #[derive(Serialize, Default, Debug)]
 pub struct Robot<T> {
     /// The unique identifier of the robot.
-    pub id: u32,
+    pub id: u8,
     /// Whether or not the robot currently possesses the ball.
     pub has_ball: bool,
     /// Additional information about the robot (can be `AllyInfo` or `EnemyInfo`)

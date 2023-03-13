@@ -13,7 +13,7 @@ pub struct CamBall {
 
 #[derive(Debug)]
 pub struct CamRobot {
-    pub id: u32,
+    pub id: u8,
     pub frame_info: FrameInfo,
     pub position: Point2<f64>,
     pub orientation: f64,

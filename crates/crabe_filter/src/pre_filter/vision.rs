@@ -13,6 +13,7 @@ mod detection {
 
     mod robot {
         use crate::data::{camera::CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
+        use crabe_framework::constant::MAX_ID_ROBOTS;
         use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, TeamColor};
         use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
         use nalgebra::Point2;
@@ -49,7 +50,7 @@ mod detection {
         ) {
             let map_packet = |r: &SslDetectionRobot| {
                 r.robot_id.map(|id| CamRobot {
-                    id,
+                    id: (id % MAX_ID_ROBOTS as u32) as u8,
                     frame_info: frame.clone(),
                     position: Point2::new(r.x as f64 / 1000.0, r.y as f64 / 1000.0),
                     orientation: r.orientation.unwrap_or(0.0) as f64,

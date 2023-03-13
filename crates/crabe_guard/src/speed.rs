@@ -1,8 +1,8 @@
+use crate::constant::{MAX_ANGULAR, MAX_LINEAR};
+use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
-use crate::constant::{MAX_ANGULAR, MAX_LINEAR};
-use crate::pipeline::Guard;
 
 pub struct SpeedGuard {
     max_linear: f32,
@@ -28,23 +28,22 @@ impl Default for SpeedGuard {
 }
 
 impl Guard for SpeedGuard {
-    fn guard(&mut self,
-             _world: &World,
-             commands: &mut CommandMap,
-             _tool_commands: &mut ToolCommands
+    fn guard(
+        &mut self,
+        _world: &World,
+        commands: &mut CommandMap,
+        _tool_commands: &mut ToolCommands,
     ) {
-        commands
-            .iter_mut()
-            .for_each(|(_id, command)| {
-                command.forward_velocity = command
-                    .forward_velocity
-                    .clamp(-self.max_linear, self.max_linear);
-                command.left_velocity = command
-                    .left_velocity
-                    .clamp(-self.max_linear, self.max_linear);
-                command.angular_velocity = command
-                    .angular_velocity
-                    .clamp(-self.max_angular, self.max_angular);
-            });
+        commands.iter_mut().for_each(|(_id, command)| {
+            command.forward_velocity = command
+                .forward_velocity
+                .clamp(-self.max_linear, self.max_linear);
+            command.left_velocity = command
+                .left_velocity
+                .clamp(-self.max_linear, self.max_linear);
+            command.angular_velocity = command
+                .angular_velocity
+                .clamp(-self.max_angular, self.max_angular);
+        });
     }
 }
