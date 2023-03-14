@@ -16,7 +16,7 @@ pub struct FrameInfo {
     pub t_capture: DateTime<Utc>,
 }
 
-pub type TrackedRobotMap<T> = HashMap<u32, TrackedRobot<T>>;
+pub type TrackedRobotMap<T> = HashMap<u8, TrackedRobot<T>>;
 
 pub struct FilterData {
     pub allies: TrackedRobotMap<AllyInfo>,

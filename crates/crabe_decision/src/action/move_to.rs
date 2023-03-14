@@ -90,7 +90,7 @@ impl Action for MoveTo {
     /// * `world`: The current state of the world.
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
-        if let Some(robot) = world.allies_bot.get(&(id as u32)) {
+        if let Some(robot) = world.allies_bot.get(&id) {
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
 

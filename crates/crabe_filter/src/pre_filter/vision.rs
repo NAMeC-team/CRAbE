@@ -13,8 +13,10 @@ mod detection {
 
     mod robot {
         use crate::data::{camera::CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
+        use crabe_framework::constant::MAX_ID_ROBOTS;
         use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, TeamColor};
         use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
+        use log::warn;
         use nalgebra::Point2;
         use ringbuffer::RingBufferWrite;
 
@@ -48,13 +50,22 @@ mod detection {
             team_color: &TeamColor,
         ) {
             let map_packet = |r: &SslDetectionRobot| {
-                r.robot_id.map(|id| CamRobot {
-                    id,
-                    frame_info: frame.clone(),
-                    position: Point2::new(r.x as f64 / 1000.0, r.y as f64 / 1000.0),
-                    orientation: r.orientation.unwrap_or(0.0) as f64,
-                    confidence: r.confidence as f64,
-                })
+                r.robot_id
+                    .map(|id| {
+                        if id > MAX_ID_ROBOTS as u32 {
+                            warn!("invalid id");
+                            return None;
+                        } else {
+                            Some(CamRobot {
+                                id: id as u8,
+                                frame_info: frame.clone(),
+                                position: Point2::new(r.x as f64 / 1000.0, r.y as f64 / 1000.0),
+                                orientation: r.orientation.unwrap_or(0.0) as f64,
+                                confidence: r.confidence as f64,
+                            })
+                        }
+                    })
+                    .flatten()
             };
 
             let yellow = detection.detected_yellow.iter().filter_map(map_packet);

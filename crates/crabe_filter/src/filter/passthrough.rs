@@ -4,7 +4,7 @@ use crabe_framework::data::world::{Ball, Pose, Robot, World};
 use ringbuffer::RingBufferRead;
 
 fn robot_passthrough<'a, T: 'a + Default>(
-    robots: impl Iterator<Item = (&'a u32, &'a mut TrackedRobot<T>)>,
+    robots: impl Iterator<Item = (&'a u8, &'a mut TrackedRobot<T>)>,
 ) {
     robots.for_each(|(_id, r)| {
         let last_packet = r.packets.drain().last();
