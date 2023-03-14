@@ -151,6 +151,9 @@ impl System {
     pub fn close(self) {
         self.input_component.close();
         self.filter_component.close();
+        self.decision_component.close();
+        self.guard_component.close();
+        self.output_component.close();
         self.tool_component.close();
     }
 }
