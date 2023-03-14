@@ -12,6 +12,7 @@ mod detection {
     use log::error;
 
     mod robot {
+        use log::warn;
         use crate::data::{camera::CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
         use crabe_framework::constant::MAX_ID_ROBOTS;
         use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, TeamColor};
@@ -28,7 +29,7 @@ mod detection {
 
         fn track_robots<T: Default>(
             robots: &mut TrackedRobotMap<T>,
-            cam_robots: impl Iterator<Item = CamRobot>,
+            cam_robots: impl Iterator<Item=CamRobot>,
         ) {
             cam_robots.for_each(|r| {
                 let robot = robots.entry(r.id).or_insert_with(|| TrackedRobot {
@@ -49,13 +50,22 @@ mod detection {
             team_color: &TeamColor,
         ) {
             let map_packet = |r: &SslDetectionRobot| {
-                r.robot_id.map(|id| CamRobot {
-                    id: (id % MAX_ID_ROBOTS as u32) as u8,
-                    frame_info: frame.clone(),
-                    position: Point2::new(r.x as f64 / 1000.0, r.y as f64 / 1000.0),
-                    orientation: r.orientation.unwrap_or(0.0) as f64,
-                    confidence: r.confidence as f64,
-                })
+                r.robot_id.map(|id|
+                    if id > MAX_ID_ROBOTS as u32 {
+                        warn!("invalid id");
+                        return None;
+                    } else {
+                        Some(
+                            CamRobot {
+                                id: id as u8,
+                                frame_info: frame.clone(),
+                                position: Point2::new(r.x as f64 / 1000.0, r.y as f64 / 1000.0),
+                                orientation: r.orientation.unwrap_or(0.0) as f64,
+                                confidence: r.confidence as f64,
+                            }
+                        )
+                    }
+                ).flatten()
             };
 
             let yellow = detection.detected_yellow.iter().filter_map(map_packet);
