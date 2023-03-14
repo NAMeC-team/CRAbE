@@ -10,10 +10,12 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 #[derive(Serialize)]
 enum ToolMessage {
     World(World),
+    Data(ToolData)
 }
 
 #[derive(Deserialize)]
-enum ToolRequest {}
+enum ToolRequest {
+}
 
 pub struct ToolServer {
     websocket: WebSocketTransceiver<ToolRequest, ToolMessage>,
@@ -36,8 +38,9 @@ impl Component for ToolServer {
 }
 
 impl ToolComponent for ToolServer {
-    fn step(&mut self, world_data: &World, _tool_data: &mut ToolData) -> ToolCommands {
+    fn step(&mut self, world_data: &World, tool_data: &mut ToolData) -> ToolCommands {
         self.websocket.send(ToolMessage::World(world_data.clone()));
+        self.websocket.send(ToolMessage::Data(tool_data.clone()));
         ToolCommands {}
     }
 }

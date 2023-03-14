@@ -11,3 +11,4 @@ pub mod tool;
 /// The world module contains the data structures for representing the state of the world
 /// in the control system. It includes information about robots, the ball, and the field.
 pub mod world;
+pub mod annotation;
