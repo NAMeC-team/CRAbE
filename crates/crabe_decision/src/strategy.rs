@@ -17,7 +17,7 @@ pub trait Strategy {
     ///
     /// # Arguments
     ///
-    /// * `data`: The current state of the world.
+    /// * `world`: The current state of the world.
     /// * `tools_data`: A collection of external tools used by the strategy, such as a viewer.
     /// * `action_wrapper`: An `ActionWrapper` instance used to issue actions to the robot.
     ///
@@ -26,7 +26,7 @@ pub trait Strategy {
     /// `false` if the strategy should continue running, `true` if it should terminate.
     fn step(
         &mut self,
-        data: &World,
+        world: &World,
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool;

@@ -29,7 +29,7 @@ impl Strategy for Square {
     ///
     /// # Arguments
     ///
-    /// * data: The current state of the game world.
+    /// * world: The current state of the game world.
     /// * tools_data: A collection of external tools used by the strategy, such as a viewer.    
     /// * action_wrapper: An `ActionWrapper` instance used to issue actions to the robot.
     ///
@@ -39,7 +39,7 @@ impl Strategy for Square {
     #[allow(unused_variables)]
     fn step(
         &mut self,
-        data: &World,
+        world: &World,
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {

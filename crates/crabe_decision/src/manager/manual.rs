@@ -29,11 +29,11 @@ impl Manager for Manual {
     /// Executes the list of strategies on the given `World` data, `ToolData`, and `ActionWrapper`.
     fn step(
         &mut self,
-        data: &World,
+        world: &World,
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
         self.strategies
-            .retain_mut(|s| !s.step(data, tools_data, action_wrapper));
+            .retain_mut(|s| !s.step(world, tools_data, action_wrapper));
     }
 }

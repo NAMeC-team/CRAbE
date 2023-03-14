@@ -144,7 +144,7 @@ impl<RX: DeserializeOwned + Send + 'static, TX: Serialize + Send + 'static>
     pub fn close(self) {
         self.cancellation_tx
             .send(())
-            .unwrap_or_else(|e| error!("Error sending cancellation"));
-        self.handle.join().unwrap_or_else(|e| error!("Join error"));
+            .unwrap_or_else(|_e| error!("Error sending cancellation"));
+        self.handle.join().unwrap_or_else(|_e| error!("Join error"));
     }
 }
