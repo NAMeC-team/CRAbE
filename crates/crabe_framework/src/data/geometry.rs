@@ -41,8 +41,8 @@ impl Default for Geometry {
         Self {
             boundary_width: 0.3,
             field: Field {
-                width: 9.0,
-                length: 6.0,
+                length: 9.0,
+                width: 6.0,
             },
             ally_goal: Goal {
                 width: 1.0,
