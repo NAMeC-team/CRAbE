@@ -9,6 +9,7 @@ use std::net::{Ipv4Addr, SocketAddrV4};
 
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ToolMessage {
     world: World,
     data: ToolData
@@ -40,10 +41,12 @@ impl Component for ToolServer {
 
 impl ToolComponent for ToolServer {
     fn step(&mut self, world_data: &World, tool_data: &mut ToolData) -> ToolCommands {
-        self.websocket.send(ToolMessage {
+        let msg = ToolMessage {
             data: tool_data.clone(),
             world: world_data.clone()
-        });
+        };
+        println!("msg: {:?}", serde_json::to_string(&msg));
+        self.websocket.send(msg);
         ToolCommands {}
     }
 }

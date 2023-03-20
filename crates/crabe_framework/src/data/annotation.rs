@@ -4,11 +4,15 @@ use serde::{Deserialize, Serialize};
 use crabe_math::shape::{Circle, Line, Rectangle};
 
 #[derive(Clone, Default, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AnnotationStore {
+    #[serde_as(as = "Vec<(_, _)>")]
     annotations: HashMap<String, Annotation>
 }
 
+///
 #[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub enum Annotation {
     Circle(Circle),
     Line(Line),
