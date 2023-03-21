@@ -7,12 +7,13 @@ use serde_with::serde_as;
 #[serde_as]
 #[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
+/// Store annotations with their names
 pub struct AnnotationStore {
     #[serde_as(as = "Vec<(_, _)>")]
     annotations: HashMap<String, Annotation>
 }
 
-///
+/// Annotation to be displayed with tools
 #[derive(Clone, Serialize)]
 #[serde(tag = "kind", content = "content", rename_all = "camelCase")]
 pub enum Annotation {
