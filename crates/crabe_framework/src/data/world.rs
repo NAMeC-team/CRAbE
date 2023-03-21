@@ -3,6 +3,8 @@ pub use self::robot::{
     AllyInfo, EnemyInfo, Pose, Robot, RobotAcceleration, RobotMap, RobotVelocity,
 };
 
+use serde_with::serde_as;
+
 mod ball;
 pub use self::ball::Ball;
 
@@ -20,6 +22,7 @@ use serde::ser::SerializeMap;
 /// The `World` struct represents the state of the world in the SSL game,
 /// containing information about the game state, the field geometry, the robots and the ball.
 #[derive(Serialize, Clone, Debug)]
+#[serde_as]
 #[serde(rename_all = "camelCase")]
 pub struct World {
     /// The current state of the game.

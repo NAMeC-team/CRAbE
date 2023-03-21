@@ -2,9 +2,11 @@ use std::collections::HashMap;
 use nalgebra::Point2;
 use serde::{Deserialize, Serialize};
 use crabe_math::shape::{Circle, Line, Rectangle};
+use serde_with::serde_as;
 
 #[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[serde_as]
 pub struct AnnotationStore {
     #[serde_as(as = "Vec<(_, _)>")]
     annotations: HashMap<String, Annotation>
@@ -12,7 +14,7 @@ pub struct AnnotationStore {
 
 ///
 #[derive(Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(tag = "kind", content = "content", rename_all = "camelCase")]
 pub enum Annotation {
     Circle(Circle),
     Line(Line),
