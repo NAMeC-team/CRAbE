@@ -5,7 +5,8 @@ use crate::data::annotation::AnnotationStore;
 /// external tools, such as a viewer or joystick handler.
 #[derive(Clone, Default, Serialize)]
 pub struct ToolData {
-    annotations: AnnotationStore
+    #[serde(flatten)]
+    pub annotations: AnnotationStore
 }
 
 /// The `ToolCommands` struct is a container for storing commands that are sent to external

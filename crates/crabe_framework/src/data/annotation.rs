@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use crabe_math::shape::{Circle, Line, Rectangle};
 use serde_with::serde_as;
 
+#[serde_as]
 #[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
-#[serde_as]
 pub struct AnnotationStore {
     #[serde_as(as = "Vec<(_, _)>")]
     annotations: HashMap<String, Annotation>
