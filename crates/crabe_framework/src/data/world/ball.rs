@@ -4,6 +4,7 @@ use serde::Serialize;
 
 /// The `Ball` struct represents the ball in the SSL game.
 #[derive(Serialize, Default, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Ball {
     /// The position of the ball in 3D space in meters, with respect to the center of the field.
     pub position: Point3<f64>,

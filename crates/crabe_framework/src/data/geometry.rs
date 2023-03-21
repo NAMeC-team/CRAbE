@@ -9,6 +9,7 @@ pub use self::penalty::Penalty;
 
 /// The `Field` struct represent the SSL field.
 #[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Field {
     /// Width of the SSL field in meters.
     pub width: f64,
@@ -19,6 +20,7 @@ pub struct Field {
 /// The `Geometry` struct contains all the geometric information of the SSL field.
 /// By default, the geometry corresponds to the size of the SSL Division B field.
 #[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Geometry {
     /// The width of the boundary around the field in meters.
     pub boundary_width: f64,
