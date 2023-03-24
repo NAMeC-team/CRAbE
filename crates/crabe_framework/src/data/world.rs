@@ -16,8 +16,8 @@ pub use self::game_state::GameState;
 
 use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
-use serde::{Serialize, Serializer};
 use serde::ser::SerializeMap;
+use serde::{Serialize, Serializer};
 
 /// The `World` struct represents the state of the world in the SSL game,
 /// containing information about the game state, the field geometry, the robots and the ball.
