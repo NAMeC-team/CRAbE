@@ -2,4 +2,7 @@
 /// in a counter-clockwise direction. It is used for testing purposes only and is not intended
 /// for use in a game.
 mod square;
+mod order;
+
 pub use self::square::Square;
+pub use self::order::Order;
