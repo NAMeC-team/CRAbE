@@ -73,7 +73,7 @@ impl DecisionComponent for GamepadPipeline {
                 command.kick = Some(Kick::ChipKick { power: 1.0 });
             }
             let mut command_map = CommandMap::new();
-            command_map.insert(4, command);
+            command_map.insert(0, command);
 
 
             (command_map, ToolData::default())
