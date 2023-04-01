@@ -20,6 +20,7 @@ impl Manual {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
+            // strategies: vec![],
             strategies: vec![Box::new(Order::new(1))],
         }
     }
