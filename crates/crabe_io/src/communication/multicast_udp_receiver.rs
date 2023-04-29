@@ -50,7 +50,7 @@ impl MulticastUDPReceiver {
         socket.set_reuse_address(true)?;
         socket.set_nonblocking(true)?;
         socket.bind(&SocketAddrV4::new(ip, port).into())?;
-        socket.join_multicast_v4(&ip, &Ipv4Addr::UNSPECIFIED).expect("Multicast error");
+        socket.join_multicast_v4(&ip, &Ipv4Addr::UNSPECIFIED)?;
         Ok(Self {
             socket: socket.into(),
             buffer: [0u8; BUFFER_SIZE],
