@@ -1,8 +1,8 @@
 use crate::constant::BUFFER_SIZE;
 use log::error;
+use socket2::{Domain, Protocol, Socket, Type};
 use std::io::Cursor;
 use std::net::{Ipv4Addr, SocketAddrV4, UdpSocket};
-use socket2::{Domain, Protocol, Socket, Type};
 
 /// A struct that handles a Multicast UDP Receiver.
 pub struct MulticastUDPReceiver {

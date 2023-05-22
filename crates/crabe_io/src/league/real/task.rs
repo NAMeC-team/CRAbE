@@ -1,5 +1,5 @@
-use log::error;
 use crate::league::real::RealConfig;
+use log::error;
 
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
@@ -25,25 +25,21 @@ impl Real {
         let mut packet = PcToBase::default();
         for (id, command) in commands {
             let (kicker_cmd, kick_power) = match command.kick {
-                None => {
-                    (Kicker::NoKick, 0.0 as f32)
-                }
+                None => (Kicker::NoKick, 0.0 as f32),
                 Some(Kick::StraightKick { power }) => (Kicker::Flat, power),
                 Some(Kick::ChipKick { power }) => (Kicker::Chip, power),
             };
 
-
-            packet.commands.push(
-                BaseCommand {
-                    robot_id: id as u32,
-                    normal_velocity: command.forward_velocity,
-                    tangential_velocity: command.left_velocity,
-                    angular_velocity: command.angular_velocity,
-                    kick: kicker_cmd.into(),
-                    kick_power,
-                    charge: command.charge,
-                    dribbler: command.dribbler,
-                });
+            packet.commands.push(BaseCommand {
+                robot_id: id as u32,
+                normal_velocity: command.forward_velocity,
+                tangential_velocity: command.left_velocity,
+                angular_velocity: command.angular_velocity,
+                kick: kicker_cmd.into(),
+                kick_power,
+                charge: command.charge,
+                dribbler: command.dribbler,
+            });
         }
         packet
     }
@@ -57,9 +53,8 @@ impl CommandSenderTask for Real {
             Default::default()
         }
 
-        let packet = self.prepare_packet( commands.into_iter());
+        let packet = self.prepare_packet(commands.into_iter());
         self.usb.send(packet);
-
 
         Default::default()
     }

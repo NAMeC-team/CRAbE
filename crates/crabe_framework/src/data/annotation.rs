@@ -1,6 +1,6 @@
 use crabe_math::shape::{Circle, Line, Rectangle};
 use nalgebra::Point2;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_with::serde_as;
 use std::collections::HashMap;
 

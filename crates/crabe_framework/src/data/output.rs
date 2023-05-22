@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use std::collections::HashMap;
 
 /// The FeedbackMap type is a hash map that stores feedback data for robots in the game.
