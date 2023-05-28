@@ -38,8 +38,10 @@ impl Manager for GameManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
+        println!("{:?}",world.data.state);
         // info!("{:?}", &world.data.state);
         if self.last_game_state.is_none() || self.last_game_state.unwrap() != world.data.state {
+            println!("secnd phsae");
             // info!("clearing strategy");
             // clear current strategy
             self.strategies.clear();
