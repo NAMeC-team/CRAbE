@@ -1,4 +1,5 @@
 use crate::action::ActionWrapper;
+use crate::manager::game_manager::GameManager;
 use crate::manager::manual::Manual;
 use crate::manager::Manager;
 use clap::Args;
@@ -27,7 +28,7 @@ impl DecisionPipeline {
     pub fn with_config(_decision_cfg: DecisionConfig, _common_cfg: &CommonConfig) -> Self {
         Self {
             action_wrapper: ActionWrapper::default(),
-            manager: Box::new(Manual::new()),
+            manager: Box::new(GameManager::new()),
         }
     }
 }
