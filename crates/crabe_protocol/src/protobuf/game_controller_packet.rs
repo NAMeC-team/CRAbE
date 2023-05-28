@@ -109,10 +109,13 @@ pub struct GameEvent {
     /// Ignored if sent by autoRef to game controller.
     #[prost(string, repeated, tag = "41")]
     pub origin: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    /// Unix timestamp in microseconds when the event was created.
+    #[prost(uint64, optional, tag = "49")]
+    pub created_timestamp: ::core::option::Option<u64>,
     /// the event that occurred
     #[prost(
         oneof = "game_event::Event",
-        tags = "6, 7, 11, 19, 31, 43, 13, 17, 24, 26, 27, 15, 18, 22, 21, 29, 28, 20, 39, 8, 44, 14, 5, 45, 2, 3, 32, 34, 37, 38, 46, 47, 35, 36, 1, 9, 10, 12, 16, 42, 23, 25, 30, 33"
+        tags = "6, 7, 11, 19, 31, 43, 13, 17, 24, 26, 27, 15, 18, 22, 21, 29, 28, 20, 39, 8, 44, 14, 5, 45, 2, 3, 32, 34, 37, 38, 46, 48, 47, 35, 36, 1, 9, 10, 12, 16, 42, 23, 25, 30, 33"
     )]
     pub event: ::core::option::Option<game_event::Event>,
 }
@@ -655,6 +658,17 @@ pub mod game_event {
         #[prost(enumeration = "super::Team", required, tag = "1")]
         pub by_team: i32,
     }
+    /// A challenge, flagged recently, has been handled by the referee
+    #[allow(clippy::derive_partial_eq_without_eq)]
+    #[derive(Clone, PartialEq, ::prost::Message)]
+    pub struct ChallengeFlagHandled {
+        /// the team that requested the challenge flag
+        #[prost(enumeration = "super::Team", required, tag = "1")]
+        pub by_team: i32,
+        /// the challenge was accepted by the referee
+        #[prost(bool, required, tag = "2")]
+        pub accepted: bool,
+    }
     /// An emergency stop, requested by team previously, occurred
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(Clone, PartialEq, ::prost::Message)]
@@ -701,6 +715,9 @@ pub mod game_event {
         /// the location of the ball at the moment of this event \[m\]
         #[prost(message, optional, tag = "2")]
         pub location: ::core::option::Option<super::Vector2>,
+        /// an explanation of the failure
+        #[prost(string, optional, tag = "3")]
+        pub reason: ::core::option::Option<::prost::alloc::string::String>,
     }
     #[derive(
         Clone,
@@ -779,6 +796,8 @@ pub mod game_event {
         /// triggered by GC
         ChallengeFlag = 44,
         /// triggered by GC
+        ChallengeFlagHandled = 46,
+        /// triggered by GC
         EmergencyStop = 45,
         /// triggered by human ref
         UnsportingBehaviorMinor = 35,
@@ -838,6 +857,7 @@ pub mod game_event {
                 Type::BotSubstitution => "BOT_SUBSTITUTION",
                 Type::TooManyRobots => "TOO_MANY_ROBOTS",
                 Type::ChallengeFlag => "CHALLENGE_FLAG",
+                Type::ChallengeFlagHandled => "CHALLENGE_FLAG_HANDLED",
                 Type::EmergencyStop => "EMERGENCY_STOP",
                 Type::UnsportingBehaviorMinor => "UNSPORTING_BEHAVIOR_MINOR",
                 Type::UnsportingBehaviorMajor => "UNSPORTING_BEHAVIOR_MAJOR",
@@ -900,6 +920,7 @@ pub mod game_event {
                 "BOT_SUBSTITUTION" => Some(Self::BotSubstitution),
                 "TOO_MANY_ROBOTS" => Some(Self::TooManyRobots),
                 "CHALLENGE_FLAG" => Some(Self::ChallengeFlag),
+                "CHALLENGE_FLAG_HANDLED" => Some(Self::ChallengeFlagHandled),
                 "EMERGENCY_STOP" => Some(Self::EmergencyStop),
                 "UNSPORTING_BEHAVIOR_MINOR" => Some(Self::UnsportingBehaviorMinor),
                 "UNSPORTING_BEHAVIOR_MAJOR" => Some(Self::UnsportingBehaviorMajor),
@@ -989,6 +1010,8 @@ pub mod game_event {
         TooManyRobots(TooManyRobots),
         #[prost(message, tag = "46")]
         ChallengeFlag(ChallengeFlag),
+        #[prost(message, tag = "48")]
+        ChallengeFlagHandled(ChallengeFlagHandled),
         #[prost(message, tag = "47")]
         EmergencyStop(EmergencyStop),
         #[prost(message, tag = "35")]
@@ -1150,6 +1173,9 @@ pub mod referee {
         /// Indicate if the team reached the maximum allowed ball placement failures and is thus not allowed to place the ball anymore
         #[prost(bool, optional, tag = "15")]
         pub ball_placement_failures_reached: ::core::option::Option<bool>,
+        /// The team is allowed to substitute one or more robots currently
+        #[prost(bool, optional, tag = "16")]
+        pub bot_substitution_allowed: ::core::option::Option<bool>,
     }
     /// The coordinates of the Designated Position. These are measured in
     /// millimetres and correspond to SSL-Vision coordinates. These fields are
@@ -1302,7 +1328,6 @@ pub mod referee {
         TimeoutBlue = 13,
         /// The yellow team just scored a goal.
         /// For information only.
-        /// For rules compliance, teams must treat as STOP.
         /// Deprecated: Use the score field from the team infos instead. That way, you can also detect revoked goals.
         GoalYellow = 14,
         /// The blue team just scored a goal. See also GOAL_YELLOW.

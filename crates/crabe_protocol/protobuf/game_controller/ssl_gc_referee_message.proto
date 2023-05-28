@@ -105,7 +105,6 @@ message Referee {
         TIMEOUT_BLUE = 13;
         // The yellow team just scored a goal.
         // For information only.
-        // For rules compliance, teams must treat as STOP.
         // Deprecated: Use the score field from the team infos instead. That way, you can also detect revoked goals.
         GOAL_YELLOW = 14 [deprecated = true];
         // The blue team just scored a goal. See also GOAL_YELLOW.
@@ -159,6 +158,8 @@ message Referee {
         optional bool bot_substitution_intent = 14;
         // Indicate if the team reached the maximum allowed ball placement failures and is thus not allowed to place the ball anymore
         optional bool ball_placement_failures_reached = 15;
+        // The team is allowed to substitute one or more robots currently
+        optional bool bot_substitution_allowed = 16;
     }
 
     // Information about the two teams.
