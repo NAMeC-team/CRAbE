@@ -1,4 +1,5 @@
 pub mod camera;
+pub mod referee;
 
 use crate::constant;
 use crate::data::camera::{CamBall, CamGeometry, CamRobot};
