@@ -35,24 +35,29 @@ pub struct FilterPipeline {
 
 impl FilterPipeline {
     pub fn with_config(_config: FilterConfig, common_config: &CommonConfig) -> Self {
-        Self {
-            pre_filters: vec![Box::new(VisionFilter::new())],
-            filters: vec![
-                Box::new(PassthroughFilter),
-                Box::new(InactiveFilter::default()),
-            ],
-            post_filters: vec![
+        let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
+        let filters: Vec<Box<dyn Filter>> = vec![Box::new(PassthroughFilter), Box::new(VelocityAccelerationFilter), Box::new(InactiveFilter::default())];
+        let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
                 Box::new(RobotFilter),
                 Box::new(GeometryFilter),
                 Box::new(BallFilter),
-                Box::new(GameControllerPostFilter),
-            ],
+            ];
+
+        if input_config.gc {
+            pre_filters.push(Box::new(GameControllerPreFilter));
+            post_filters.push(Box::new(GameControllerPostFilter::default()));
+        }
+
+        Self {
+            pre_filters,
+            filters,
+            post_filters,
             filter_data: FilterData {
                 allies: Default::default(),
                 enemies: Default::default(),
                 ball: Default::default(),
                 geometry: Default::default(),
-                referee: Default::default(),
+                referee: Default::default()
             },
             team_color: if common_config.yellow {
                 TeamColor::Yellow
