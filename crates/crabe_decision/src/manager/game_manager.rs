@@ -1,4 +1,3 @@
-use log::info;
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
@@ -13,7 +12,8 @@ use crabe_framework::data::world::World;
 /// To add a strategy, simply create a new instance of the desired strategy and add it to the
 /// `strategies` field in the `new()` method of the `Manual` struct.
 #[derive(Default)]
-pub struct GameManager { // Karen says what to do lmao
+pub struct GameManager {
+    // Karen says what to do lmao
     last_game_state: Option<GameState>,
     strategies: Vec<Box<dyn Strategy>>,
 }
@@ -25,7 +25,7 @@ impl GameManager {
     pub fn new() -> Self {
         Self {
             last_game_state: None,
-            strategies: vec![]
+            strategies: vec![],
         }
     }
 }
@@ -38,7 +38,7 @@ impl Manager for GameManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        println!("{:?}",world.data.state);
+        println!("{:?}", world.data.state);
         // info!("{:?}", &world.data.state);
         if self.last_game_state.is_none() || self.last_game_state.unwrap() != world.data.state {
             println!("secnd phsae");
@@ -53,36 +53,34 @@ impl Manager for GameManager {
                 GameState::Halted(_) => {
                     println!("halted");
                 }
-                GameState::Stopped(stopped_state) => {
-                    match stopped_state {
-                        StoppedState::Stop => {
-                            println!("stop");
-                        }
-                        StoppedState::PrepareKickoff => {
-                            println!("prepare kick off");
-                        }
-                        StoppedState::PreparePenalty => {
-                            println!("prepare penalty");}
-                        StoppedState::BallPlacement => {
-                            println!("ball placement");}
+                GameState::Stopped(stopped_state) => match stopped_state {
+                    StoppedState::Stop => {
+                        println!("stop");
                     }
-                }
-                GameState::Running(running_state) => {
-                    match running_state {
-                        RunningState::KickOff(team) => {
-                            println!("kickoff");
-                        }
-                        RunningState::Penalty => {
-                            println!("penalty");
-                        }
-                        RunningState::FreeKick => {
-                            println!("free kick");
-                        }
-                        RunningState::Run => {
-                            println!("run");
-                        }
+                    StoppedState::PrepareKickoff => {
+                        println!("prepare kick off");
                     }
-                }
+                    StoppedState::PreparePenalty => {
+                        println!("prepare penalty");
+                    }
+                    StoppedState::BallPlacement => {
+                        println!("ball placement");
+                    }
+                },
+                GameState::Running(running_state) => match running_state {
+                    RunningState::KickOff(team) => {
+                        println!("kickoff");
+                    }
+                    RunningState::Penalty => {
+                        println!("penalty");
+                    }
+                    RunningState::FreeKick => {
+                        println!("free kick");
+                    }
+                    RunningState::Run => {
+                        println!("run");
+                    }
+                },
             }
         }
 

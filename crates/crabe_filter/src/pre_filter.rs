@@ -2,8 +2,8 @@ use crate::data::FilterData;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 
-pub mod vision;
 pub mod game_controller;
+pub mod vision;
 
 pub trait PreFilter {
     fn step(

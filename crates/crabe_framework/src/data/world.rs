@@ -13,8 +13,8 @@ pub use self::team::{Team, TeamColor};
 
 pub mod game_data;
 pub mod game_state;
-pub use self::game_state::{GameState, HaltedState};
 pub use self::game_data::GameData;
+pub use self::game_state::{GameState, HaltedState};
 
 use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;

@@ -1,27 +1,23 @@
-use std::time::Instant;
-use std::u8;
-use serde::{Serialize, Deserialize};
-use crabe_protocol;
-use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
+use crabe_framework::data::world::game_state::{
+    GameState, HaltedState, RunningState, StoppedState,
+};
 use crabe_framework::data::world::{TeamColor, World};
+use crabe_protocol;
 use crabe_protocol::protobuf::game_controller_packet::game_event::Event;
-use crabe_protocol::protobuf::game_controller_packet::Referee;
 use crabe_protocol::protobuf::game_controller_packet::referee::Command;
-use crabe_framework::data::event::GameEvent;
-use crate::data::referee::RefereeCommand;
-use crate::data::referee::RefereeCommand::Stop;
+
+use std::time::Instant;
 
 #[derive(Debug)]
 pub struct GameControllerPostFilter {
     previous_game_event: crabe_protocol::protobuf::game_controller_packet::GameEvent,
     // previous_event: Option<Event>,
     // chrono: Option<Instant>,
-    #[serde(skip_serializing)]
     previous_event: Option<Event>,
     chrono: Option<Instant>,
-    kicked_off_once: bool
+    kicked_off_once: bool,
 }
 
 impl Default for GameControllerPostFilter {
@@ -55,7 +51,11 @@ impl GameControllerPostFilter {
         println!("Stop all robots");
     }
 
-    fn stop_state_branch(previous_event_opt: &Option<Event>, world: &mut World, mut kicked_off_once: bool) {
+    fn stop_state_branch(
+        previous_event_opt: &Option<Event>,
+        world: &mut World,
+        mut kicked_off_once: bool,
+    ) {
         // TODO: 3/4 ?
         if let Some(previous_event) = previous_event_opt {
             match previous_event {
@@ -92,7 +92,11 @@ impl GameControllerPostFilter {
         }
     }
 
-    fn normal_start_state_branch(previous_event_opt: &Option<Event>, world: &mut World, mut chrono: Option<Instant>) {
+    fn normal_start_state_branch(
+        previous_event_opt: &Option<Event>,
+        world: &mut World,
+        mut chrono: Option<Instant>,
+    ) {
         if let Some(previous_event) = previous_event_opt {
             match previous_event {
                 Event::Goal(g) => {
@@ -104,7 +108,8 @@ impl GameControllerPostFilter {
                         if chrono.elapsed() > std::time::Duration::from_secs(10) {
                             // let kickoff_team = g.by_team as TeamColor;
                             // world.data.state = GameState::Running(RunningState::KickOff(kickoff_team));
-                            world.data.state = GameState::Running(RunningState::KickOff(TeamColor::Blue));
+                            world.data.state =
+                                GameState::Running(RunningState::KickOff(TeamColor::Blue));
                         }
                     } else {
                         println!("Running normally after kickoff");
@@ -176,8 +181,6 @@ impl GameControllerPostFilter {
     }
 }
 
-
-
 impl PostFilter for GameControllerPostFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         self.fix_yourself();
@@ -189,10 +192,10 @@ impl PostFilter for GameControllerPostFilter {
             None => {
                 return;
             }
-            Some(r) => r
+            Some(r) => r,
         };
 
-        println!("{:?}",last_referee_packet);
+        println!("{:?}", last_referee_packet);
         let ref_command = last_referee_packet.command();
 
         // dbg!(&ref_command);
@@ -200,13 +203,27 @@ impl PostFilter for GameControllerPostFilter {
 
         match ref_command {
             Command::Halt => GameControllerPostFilter::halt_state_branch(world),
-            Command::Stop => GameControllerPostFilter::stop_state_branch(&self.previous_event, world, self.kicked_off_once),
-            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(&self.previous_event, world, self.chrono),
+            Command::Stop => GameControllerPostFilter::stop_state_branch(
+                &self.previous_event,
+                world,
+                self.kicked_off_once,
+            ),
+            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(
+                &self.previous_event,
+                world,
+                self.chrono,
+            ),
             Command::TimeoutBlue => GameControllerPostFilter::timeout_blue_branch(world),
             Command::TimeoutYellow => GameControllerPostFilter::timeout_yellow_branch(world),
-            Command::DirectFreeBlue => GameControllerPostFilter::freekick_blue_branch(world, self.chrono),
-            Command::DirectFreeYellow => GameControllerPostFilter::freekick_yellow_branch(world, self.chrono),
-            Command::BallPlacementBlue => GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono),
+            Command::DirectFreeBlue => {
+                GameControllerPostFilter::freekick_blue_branch(world, self.chrono)
+            }
+            Command::DirectFreeYellow => {
+                GameControllerPostFilter::freekick_yellow_branch(world, self.chrono)
+            }
+            Command::BallPlacementBlue => {
+                GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
+            }
             _ => {}
         }
 

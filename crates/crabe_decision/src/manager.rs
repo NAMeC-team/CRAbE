@@ -2,8 +2,8 @@ use crate::action::ActionWrapper;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 
-pub mod manual;
 pub mod game_manager;
+pub mod manual;
 
 /// The `Manager` trait defines a coach that handles the SSL game and gives each robot at least one strategy.
 /// A strategy is a behavior for one or multiple robots that gives one `Action` per robot. The `Manager`'s

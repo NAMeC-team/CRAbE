@@ -1,13 +1,12 @@
-use chrono::Duration;
-use nalgebra::Point2;
-use serde::Serialize;
 use crate::data::world::TeamColor;
-use crabe_protocol::protobuf::game_controller_packet::referee::Point;
+use chrono::Duration;
+
+use nalgebra::Point2;
 
 #[derive(Clone, Debug)]
 pub enum EventOrigin {
     GameController,
-    Autorefs(Vec<String>)
+    Autorefs(Vec<String>),
 }
 
 #[derive(Clone, Debug)]
@@ -35,7 +34,7 @@ pub struct Goal {
     pub max_ball_height: Option<f64>,
     pub num_bots_by_team: Option<u32>,
     pub last_touch_by_team: Option<u64>,
-    pub message: Option<String>
+    pub message: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -43,7 +42,7 @@ pub struct BotTooFastInStop {
     pub by_team: TeamColor,
     pub by_bot: Option<u32>,
     pub location: Option<Point2<f64>>,
-    pub speed: Option<f64>
+    pub speed: Option<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -51,7 +50,7 @@ pub struct DefenderTooCloseToKickPoint {
     pub by_team: TeamColor,
     pub by_bot: Option<u32>,
     pub location: Option<Point2<f64>>,
-    pub distance: Option<f64>
+    pub distance: Option<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -60,7 +59,7 @@ pub struct BotCrashDrawn {
     pub bot_yellow: Option<u32>,
     pub crash_speed: Option<f64>,
     pub speed_diff: Option<f64>,
-    pub crash_angle: Option<f64>
+    pub crash_angle: Option<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -71,7 +70,7 @@ pub struct BotCrashUnique {
     pub location: Option<Point2<f64>>,
     pub crash_speed: Option<f64>,
     pub speed_diff: Option<f64>,
-    pub crash_angle: Option<f64>
+    pub crash_angle: Option<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -80,7 +79,7 @@ pub struct BotPushedBot {
     pub violator: Option<u32>,
     pub victim: Option<u32>,
     pub location: Option<Point2<f64>>,
-    pub pushed_distance: Option<f64>
+    pub pushed_distance: Option<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -88,7 +87,7 @@ pub struct BotTippedOver {
     pub by_team: TeamColor,
     pub by_bot: Option<u32>,
     pub location: Option<Point2<f64>>,
-    pub ball_location: Option<Point2<f64>>
+    pub ball_location: Option<Point2<f64>>,
 }
 
 #[derive(Clone, Debug)]
@@ -105,9 +104,8 @@ pub struct DefenderInDefenseAreaPartially {
     pub by_bot: Option<u32>,
     pub location: Option<Point2<f64>>,
     pub distance: Option<f64>,
-    pub ball_location: Option<Point2<f64>>
+    pub ball_location: Option<Point2<f64>>,
 }
-
 
 #[derive(Clone, Debug)]
 pub struct AttackerTouchedBallInDefenseArea {
@@ -131,15 +129,14 @@ pub struct BotDribbledBallTooFar {
     pub by_team: TeamColor,
     pub by_bot: Option<u32>,
     pub start: Option<Point2<f64>>,
-    pub end: Option<Point2<f64>>
+    pub end: Option<Point2<f64>>,
 }
-
 
 #[derive(Clone, Debug)]
 pub struct AttackerDoubleTouchedBall {
     pub by_team: TeamColor,
     pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>
+    pub location: Option<Point2<f64>>,
 }
 
 #[derive(Clone, Debug)]
@@ -175,7 +172,7 @@ pub struct MultipleFouls {
 #[derive(Clone, Debug)]
 pub struct NoProgressInGame {
     pub location: Option<Point2<f64>>,
-    pub time: Option<Duration>
+    pub time: Option<Duration>,
 }
 
 #[derive(Clone, Debug)]
@@ -200,7 +197,7 @@ pub struct UnsportingBehaviorMajor {
 pub struct KeeperHeldBall {
     pub by_team: TeamColor,
     pub location: Option<Point2<f64>>,
-    pub duration: Option<Duration>
+    pub duration: Option<Duration>,
 }
 
 #[derive(Clone, Debug)]
@@ -208,7 +205,7 @@ pub struct PlacementSucceeded {
     pub by_team: TeamColor,
     pub time_taken: Option<f64>,
     pub precision: Option<f64>,
-    pub distance: Option<f64>
+    pub distance: Option<f64>,
 }
 
 #[derive(Clone, Debug)]
@@ -216,20 +213,19 @@ pub struct TooManyRobots {
     pub by_team: TeamColor,
     pub num_robots_allowed: Option<u32>,
     pub num_robots_on_field: Option<u32>,
-    pub ball_location: Option<Point2<f64>>
+    pub ball_location: Option<Point2<f64>>,
 }
-
 
 #[derive(Clone, Debug)]
 pub struct BoundaryCrossing {
     pub by_team: TeamColor,
-    pub location: Option<Point2<f64>>
+    pub location: Option<Point2<f64>>,
 }
 
 #[derive(Clone, Debug)]
 pub struct PenaltyKickFailed {
     pub by_team: TeamColor,
-    pub location: Option<Point2<f64>>
+    pub location: Option<Point2<f64>>,
 }
 
 #[derive(Clone, Debug)]

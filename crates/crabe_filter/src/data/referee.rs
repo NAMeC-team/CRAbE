@@ -1,15 +1,14 @@
-use std::time::Instant;
 use chrono::{DateTime, Duration, Utc};
-use nalgebra::Point2;
+use crabe_framework::data::event::GameEvent;
 use crabe_framework::data::output::Command;
 use crabe_framework::data::world::{Team, TeamColor};
-use crabe_framework::data::event::GameEvent;
+use nalgebra::Point2;
 
 pub enum MatchType {
     UnknownMatch,
     GroupPhase,
     EliminationPhase,
-    Friendly
+    Friendly,
 }
 
 pub struct Referee {
@@ -27,12 +26,12 @@ pub struct Referee {
     pub next_command: Option<Command>,
     pub game_events: Vec<GameEvent>,
     pub game_event_proposals: Vec<GameEventProposalGroup>,
-    pub current_action_time_remaining: Option<Duration>
+    pub current_action_time_remaining: Option<Duration>,
 }
 
 pub struct GameEventProposalGroup {
     pub game_event: Vec<GameEvent>,
-    pub accepted: Option<bool>
+    pub accepted: Option<bool>,
 }
 
 pub enum Stage {
@@ -49,7 +48,7 @@ pub enum Stage {
     ExtraSecondHalf,
     PenaltyShootoutBreak,
     PenaltyShootout,
-    PostGame
+    PostGame,
 }
 
 pub enum RefereeCommand {
@@ -61,5 +60,5 @@ pub enum RefereeCommand {
     PreparePenalty(TeamColor),
     DirectFree(TeamColor),
     Timeout(TeamColor),
-    BallPlacement(TeamColor)
+    BallPlacement(TeamColor),
 }
