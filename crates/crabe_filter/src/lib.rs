@@ -12,6 +12,7 @@ use crate::filter::Filter;
 use crate::post_filter::ball::BallFilter;
 use crate::post_filter::geometry::GeometryFilter;
 use crate::post_filter::robot::RobotFilter;
+use crate::post_filter::game_controller::GameControllerPostFilter;
 use crate::post_filter::PostFilter;
 use crate::pre_filter::vision::VisionFilter;
 use crate::pre_filter::PreFilter;
@@ -44,6 +45,7 @@ impl FilterPipeline {
                 Box::new(RobotFilter),
                 Box::new(GeometryFilter),
                 Box::new(BallFilter),
+                Box::new(GameControllerPostFilter),
             ],
             filter_data: FilterData {
                 allies: Default::default(),

@@ -1,6 +1,7 @@
 use std::time::Instant;
 use std::u8;
-use chrono::Duration;
+use serde::{Serialize, Deserialize};
+use crabe_protocol;
 use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
@@ -17,7 +18,7 @@ pub struct GameControllerPostFilter {
     previous_game_event: crabe_protocol::protobuf::game_controller_packet::GameEvent,
     // previous_event: Option<Event>,
     // chrono: Option<Instant>,
-    #[serde(skipSerialization)]
+    //#[serde(skip_serializing)]
     previous_event: Option<Event>,
     chrono: Option<Instant>,
     kicked_off_once: bool
@@ -182,7 +183,7 @@ impl PostFilter for GameControllerPostFilter {
         self.fix_yourself();
 
         filter_data.referee.last();
-
+        println!("filter game con");
         // grab data
         let last_referee_packet = match filter_data.referee.last() {
             None => {

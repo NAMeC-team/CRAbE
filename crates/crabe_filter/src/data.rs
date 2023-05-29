@@ -6,7 +6,7 @@ use crate::data::camera::{CamBall, CamGeometry, CamRobot};
 use chrono::{DateTime, Utc};
 use constant::PACKET_BUFFER_SIZE;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
-use crate::data::referee::Referee;
+use crabe_protocol::protobuf::game_controller_packet::Referee;
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
 use std::time::Instant;
