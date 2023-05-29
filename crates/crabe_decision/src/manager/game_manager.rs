@@ -18,8 +18,6 @@ pub struct GameManager {
     strategies: Vec<Box<dyn Strategy>>,
 }
 
-const KEEPER_ID: u8 = 0;
-
 impl GameManager {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
@@ -69,7 +67,7 @@ impl Manager for GameManager {
                 },
                 GameState::Running(running_state) => match running_state {
                     RunningState::KickOff(team) => {
-                        println!("kickoff");
+                        println!("kickoff for {:#?}", team);
                     }
                     RunningState::Penalty => {
                         println!("penalty");

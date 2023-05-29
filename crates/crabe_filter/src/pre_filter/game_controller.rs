@@ -5,11 +5,7 @@ use crabe_framework::data::world::TeamColor;
 
 pub struct GameControllerPreFilter;
 
-impl GameControllerPreFilter {
-    fn new() -> Self {
-        Self
-    }
-}
+impl GameControllerPreFilter {}
 
 impl PreFilter for GameControllerPreFilter {
     fn step(

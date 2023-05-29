@@ -186,7 +186,6 @@ impl PostFilter for GameControllerPostFilter {
         self.fix_yourself();
 
         filter_data.referee.last();
-        println!("filter game con");
         // grab data
         let last_referee_packet = match filter_data.referee.last() {
             None => {
