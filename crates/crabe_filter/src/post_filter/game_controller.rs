@@ -191,9 +191,7 @@ impl PostFilter for GameControllerPostFilter {
             Some(r) => r
         };
 
-        // Note de journal: 4h44
-        // - touche une pute :D
-        // dbg!(last_referee_packet);
+        println!("{:?}",last_referee_packet);
         let ref_command = last_referee_packet.command();
 
         // dbg!(&ref_command);
