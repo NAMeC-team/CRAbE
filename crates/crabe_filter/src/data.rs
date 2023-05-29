@@ -6,6 +6,7 @@ use crate::data::camera::{CamBall, CamGeometry, CamRobot};
 use chrono::{DateTime, Utc};
 use constant::PACKET_BUFFER_SIZE;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
+use crate::data::referee::Referee;
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
 use std::time::Instant;
@@ -24,6 +25,7 @@ pub struct FilterData {
     pub enemies: TrackedRobotMap<EnemyInfo>,
     pub ball: TrackedBall,
     pub geometry: CamGeometry,
+    pub referee: Vec<Referee>,
 }
 
 pub struct TrackedRobot<T> {
