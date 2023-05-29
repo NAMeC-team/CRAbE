@@ -18,7 +18,7 @@ pub struct GameControllerPostFilter {
     previous_game_event: crabe_protocol::protobuf::game_controller_packet::GameEvent,
     // previous_event: Option<Event>,
     // chrono: Option<Instant>,
-    //#[serde(skip_serializing)]
+    #[serde(skip_serializing)]
     previous_event: Option<Event>,
     chrono: Option<Instant>,
     kicked_off_once: bool
