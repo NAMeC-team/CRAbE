@@ -13,8 +13,6 @@ use std::time::Instant;
 #[derive(Debug)]
 pub struct GameControllerPostFilter {
     previous_game_event: crabe_protocol::protobuf::game_controller_packet::GameEvent,
-    // previous_event: Option<Event>,
-    // chrono: Option<Instant>,
     previous_event: Option<Event>,
     chrono: Option<Instant>,
     kicked_off_once: bool,
@@ -92,12 +90,24 @@ impl GameControllerPostFilter {
         }
     }
 
+    fn force_start_state_branch(
+        previous_event_opt: &Option<Event>,
+        world: &mut World,
+        mut chrono: Option<Instant>,
+    ) {
+        GameControllerPostFilter::normal_start_state_branch(
+            previous_event_opt,
+            world,
+            chrono
+        )
+    }
     fn normal_start_state_branch(
         previous_event_opt: &Option<Event>,
         world: &mut World,
         mut chrono: Option<Instant>,
     ) {
         if let Some(previous_event) = previous_event_opt {
+            dbg!(previous_event);
             match previous_event {
                 Event::Goal(g) => {
                     dbg!(g.by_team);
@@ -184,8 +194,6 @@ impl GameControllerPostFilter {
 impl PostFilter for GameControllerPostFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         self.fix_yourself();
-
-        filter_data.referee.last();
         // grab data
         let last_referee_packet = match filter_data.referee.last() {
             None => {
@@ -194,11 +202,11 @@ impl PostFilter for GameControllerPostFilter {
             Some(r) => r,
         };
 
-        println!("{:?}", last_referee_packet);
+        //println!("{:?}", last_referee_packet);
         let ref_command = last_referee_packet.command();
 
         // dbg!(&ref_command);
-        dbg!(&self.previous_event);
+        //dbg!(&self.previous_event);
 
         match ref_command {
             Command::Halt => GameControllerPostFilter::halt_state_branch(world),
@@ -210,7 +218,12 @@ impl PostFilter for GameControllerPostFilter {
             Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(
                 &self.previous_event,
                 world,
-                self.chrono,
+                self.chrono
+            ),
+            Command::ForceStart => GameControllerPostFilter::force_start_state_branch(
+                &self.previous_event, 
+                world, 
+                self.chrono
             ),
             Command::TimeoutBlue => GameControllerPostFilter::timeout_blue_branch(world),
             Command::TimeoutYellow => GameControllerPostFilter::timeout_yellow_branch(world),
@@ -223,7 +236,9 @@ impl PostFilter for GameControllerPostFilter {
             Command::BallPlacementBlue => {
                 GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
             }
-            _ => {}
+            _ => {
+                println!("untreated state");
+                dbg!(ref_command);}
         }
 
         // Update previous gamestate & event
@@ -342,7 +357,7 @@ impl PostFilter for GameControllerPostFilter {
         //     }
         // }
         //
-        dbg!(referee_command);
-        dbg!(&world.data.state);
+        //dbg!(referee_command);
+        //dbg!(&world.data.state);
     }
 }
