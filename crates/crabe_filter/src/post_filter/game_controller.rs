@@ -107,7 +107,6 @@ impl GameControllerPostFilter {
         mut chrono: Option<Instant>,
     ) {
         if let Some(previous_event) = previous_event_opt {
-            dbg!(previous_event);
             match previous_event {
                 Event::Goal(g) => {
                     dbg!(g.by_team);
@@ -130,7 +129,7 @@ impl GameControllerPostFilter {
                 }
 
                 &_ => {
-                    // Just play the game when no particular state is found
+                    // Just play the game when no particular state is found (like penalty kick failed)
                     // - what's your problem green ?
                     // - me said alone ramp, me said alone ramp
                     // - (proceeds to destroy his table)
@@ -143,12 +142,14 @@ impl GameControllerPostFilter {
         }
     }
 
+    //TODO : color different state
     fn timeout_yellow_branch(world: &mut World) {
         world.data.state = GameState::Halted(HaltedState::Timeout);
     }
     fn timeout_blue_branch(world: &mut World) {
         world.data.state = GameState::Halted(HaltedState::Timeout);
     }
+
 
     fn freekick_blue_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
         if let Some(chrono) = chrono_opt {
@@ -161,20 +162,42 @@ impl GameControllerPostFilter {
                 world.data.state = GameState::Running(RunningState::FreeKick);
             }
         }
-        chrono_opt = Option::from(Instant::now());
-        GameControllerPostFilter::freekick_blue_branch(world, chrono_opt);
-        unreachable!("Chrono is None!");
     }
 
     fn freekick_yellow_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
         if let Some(chrono) = chrono_opt {
             if chrono.elapsed() > std::time::Duration::from_secs(10) {
+                // if 10s have passed, game runs normally
                 world.data.state = GameState::Running(RunningState::Run);
                 chrono_opt = Some(Instant::now());
             } else {
+                // otherwise, we are still in the FreeKick state
                 world.data.state = GameState::Running(RunningState::FreeKick);
             }
         }
+    }
+
+    fn prepare_penalty_yellow_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
+        //TODO : idk the penalty comportement
+        world.data.state = GameState::Running(RunningState::Penalty);
+    }
+
+    fn prepare_penalty_blue_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
+        //TODO : idk the penalty comportement
+        world.data.state = GameState::Running(RunningState::Penalty);
+    }
+
+    fn ball_placement_yellow_branch(world: &mut World, chrono_opt: Option<Instant>) {
+        if let Some(chrono) = chrono_opt {
+            // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
+            if chrono.elapsed() >= std::time::Duration::from_secs(30) {
+                world.data.state = GameState::Running(RunningState::Run);
+            } else {
+                world.data.state = GameState::Stopped(StoppedState::BallPlacement);
+            }
+        }
+        // The chrono should always be available to us
+        unreachable!();
     }
 
     fn ball_placement_blue_branch(world: &mut World, chrono_opt: Option<Instant>) {
@@ -210,32 +233,17 @@ impl PostFilter for GameControllerPostFilter {
 
         match ref_command {
             Command::Halt => GameControllerPostFilter::halt_state_branch(world),
-            Command::Stop => GameControllerPostFilter::stop_state_branch(
-                &self.previous_event,
-                world,
-                self.kicked_off_once,
-            ),
-            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(
-                &self.previous_event,
-                world,
-                self.chrono
-            ),
-            Command::ForceStart => GameControllerPostFilter::force_start_state_branch(
-                &self.previous_event, 
-                world, 
-                self.chrono
-            ),
-            Command::TimeoutBlue => GameControllerPostFilter::timeout_blue_branch(world),
+            Command::Stop => GameControllerPostFilter::stop_state_branch(&self.previous_event,world,self.kicked_off_once),
+            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(&self.previous_event,world,self.chrono),
+            Command::ForceStart => GameControllerPostFilter::force_start_state_branch(&self.previous_event, world, self.chrono),
             Command::TimeoutYellow => GameControllerPostFilter::timeout_yellow_branch(world),
-            Command::DirectFreeBlue => {
-                GameControllerPostFilter::freekick_blue_branch(world, self.chrono)
-            }
-            Command::DirectFreeYellow => {
-                GameControllerPostFilter::freekick_yellow_branch(world, self.chrono)
-            }
-            Command::BallPlacementBlue => {
-                GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
-            }
+            Command::TimeoutBlue => GameControllerPostFilter::timeout_blue_branch(world),
+            Command::DirectFreeYellow => GameControllerPostFilter::freekick_yellow_branch(world, self.chrono),
+            Command::DirectFreeBlue => GameControllerPostFilter::freekick_blue_branch(world, self.chrono),
+            Command::BallPlacementYellow => GameControllerPostFilter::ball_placement_yellow_branch(world, self.chrono),
+            Command::BallPlacementBlue => GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono),
+            Command::PreparePenaltyYellow => GameControllerPostFilter::prepare_penalty_yellow_branch(world, self.chrono),
+            Command::PreparePenaltyBlue => GameControllerPostFilter::prepare_penalty_blue_branch(world, self.chrono),
             _ => {
                 println!("untreated state");
                 dbg!(ref_command);}
