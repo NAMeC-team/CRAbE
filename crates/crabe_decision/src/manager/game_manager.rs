@@ -68,11 +68,11 @@ impl Manager for GameManager {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
                     }
-                    RunningState::Penalty => {
-                        println!("penalty");
+                    RunningState::Penalty(team) => {
+                        println!("penalty for {:#?}", team);
                     }
-                    RunningState::FreeKick => {
-                        println!("free kick");
+                    RunningState::FreeKick(team) => {
+                        println!("free kick for {:#?}", team);
                     }
                     RunningState::Run => {
                         println!("run");

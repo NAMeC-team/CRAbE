@@ -85,7 +85,7 @@ impl GameControllerPostFilter {
                 // this one's totally arbitrary
                 // i don't understand how we can fetch a forced free kick from the commands
                 // todo: fix what's mentioned above me (fix me !)
-                world.data.state = GameState::Running(RunningState::FreeKick);
+                world.data.state = GameState::Running(RunningState::FreeKick(TeamColor::Blue));
             }
         }
     }
@@ -106,6 +106,7 @@ impl GameControllerPostFilter {
         world: &mut World,
         mut chrono: Option<Instant>,
     ) {
+        //TODO team color
         if let Some(previous_event) = previous_event_opt {
             match previous_event {
                 Event::Goal(g) => {
@@ -115,7 +116,6 @@ impl GameControllerPostFilter {
                     if let Some(chrono) = chrono {
                         println!("Kickoff in progress ! It lasts for 10s at most");
                         if chrono.elapsed() > std::time::Duration::from_secs(10) {
-                            //TODO
                             //let kickoff_team = g.by_team as TeamColor;
                             //world.data.state = GameState::Running(RunningState::KickOff(kickoff_team));
                             world.data.state =
@@ -160,7 +160,7 @@ impl GameControllerPostFilter {
                 chrono_opt = Some(Instant::now());
             } else {
                 // otherwise, we are still in the FreeKick state
-                world.data.state = GameState::Running(RunningState::FreeKick);
+                world.data.state = GameState::Running(RunningState::FreeKick(TeamColor::Blue));
             }
         }
     }
@@ -173,19 +173,19 @@ impl GameControllerPostFilter {
                 chrono_opt = Some(Instant::now());
             } else {
                 // otherwise, we are still in the FreeKick state
-                world.data.state = GameState::Running(RunningState::FreeKick);
+                world.data.state = GameState::Running(RunningState::FreeKick(TeamColor::Yellow));
             }
         }
     }
 
     fn prepare_penalty_yellow_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
         //TODO : idk the penalty comportement
-        world.data.state = GameState::Running(RunningState::Penalty);
+        world.data.state = GameState::Running(RunningState::Penalty(TeamColor::Yellow));
     }
 
     fn prepare_penalty_blue_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
         //TODO : idk the penalty comportement
-        world.data.state = GameState::Running(RunningState::Penalty);
+        world.data.state = GameState::Running(RunningState::Penalty(TeamColor::Blue));
     }
 
     fn ball_placement_yellow_branch(world: &mut World, chrono_opt: Option<Instant>) {

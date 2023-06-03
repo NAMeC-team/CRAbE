@@ -29,7 +29,7 @@ pub enum StoppedState {
 #[serde(rename_all = "camelCase")]
 pub enum RunningState {
     KickOff(TeamColor),
-    Penalty,
-    FreeKick,
+    Penalty(TeamColor),
+    FreeKick(TeamColor),
     Run,
 }
