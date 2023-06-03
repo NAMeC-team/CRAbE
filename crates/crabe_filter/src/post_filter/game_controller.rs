@@ -115,8 +115,9 @@ impl GameControllerPostFilter {
                     if let Some(chrono) = chrono {
                         println!("Kickoff in progress ! It lasts for 10s at most");
                         if chrono.elapsed() > std::time::Duration::from_secs(10) {
-                            // let kickoff_team = g.by_team as TeamColor;
-                            // world.data.state = GameState::Running(RunningState::KickOff(kickoff_team));
+                            //TODO
+                            //let kickoff_team = g.by_team as TeamColor;
+                            //world.data.state = GameState::Running(RunningState::KickOff(kickoff_team));
                             world.data.state =
                                 GameState::Running(RunningState::KickOff(TeamColor::Blue));
                         }
