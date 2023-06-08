@@ -3,7 +3,7 @@ use crate::action::Action;
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
-use nalgebra::{Isometry2, Point2, Vector2, Vector3};
+use nalgebra::{distance, Isometry2, Point2, Vector2, Vector3};
 use std::f64::consts::PI;
 
 /// The `MoveTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
@@ -25,7 +25,7 @@ impl From<&mut MoveTo> for MoveTo {
             state: other.state,
             target: other.target,
             orientation: other.orientation,
-            avoid_ball : other.avoid_ball
+            avoid_ball: other.avoid_ball,
         }
     }
 }
@@ -43,7 +43,7 @@ impl MoveTo {
             state: State::Running,
             target,
             orientation,
-            avoid_ball
+            avoid_ball,
         }
     }
 }
@@ -96,16 +96,16 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-
             const ATTRACTIVE_GRAVITY_COEFFICIENT: f32 = 1.0;
             /// ATTRACTIVE FIELD
             let attract_force = self.target - robot.pose.position;
-            
 
             if self.avoid_ball {
                 println!("[TODO] : AVOID BALL")
             }
 
+            let dist_target_robot = distance(&self.target, &robot.pose.position);
+            println!("{}", dist_target_robot);
             Command::default()
         } else {
             Command::default()

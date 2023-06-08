@@ -9,19 +9,19 @@ use std::f64::consts::PI;
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
 #[derive(Default)]
-pub struct Square {
+pub struct GoToCenter {
     /// The id of the robot to move.
     id: u8,
 }
 
-impl Square {
+impl GoToCenter {
     /// Creates a new Square instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id }
     }
 }
 
-impl Strategy for Square {
+impl Strategy for GoToCenter {
     /// Executes the Square strategy.
     ///
     /// This strategy commands the robot with the specified ID to move in a square shape in a
@@ -45,23 +45,14 @@ impl Strategy for Square {
     ) -> bool {
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, false),
-        );
-        action_wrapper.push(
-            self.id,
-            MoveTo::new(Point2::new(1.0, 1.0), -3.0 * PI / 4.0, false),
-        );
-        action_wrapper.push(
-            self.id,
-            MoveTo::new(Point2::new(1.0, -1.0), 3.0 * PI / 4.0, false),
-        );
-        action_wrapper.push(
-            self.id,
-            MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0, false),
-        );
-        action_wrapper.push(
-            self.id,
-            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, false),
+            MoveTo::new(
+                Point2::new(
+                    world.geometry.center.center.x,
+                    world.geometry.center.center.y,
+                ),
+                0.0,
+                false,
+            ),
         );
         true
     }
