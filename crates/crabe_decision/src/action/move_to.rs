@@ -48,33 +48,6 @@ impl MoveTo {
     }
 }
 
-fn frame(x: f64, y: f64, orientation: f64) -> Isometry2<f64> {
-    Isometry2::new(Vector2::new(x, y), orientation)
-}
-
-fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
-    frame.inverse()
-}
-
-fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
-    frame(
-        robot.pose.position.x,
-        robot.pose.position.y,
-        robot.pose.orientation,
-    )
-}
-
-fn angle_wrap(alpha: f64) -> f64 {
-    (alpha + PI) % (2.0 * PI) - PI
-}
-
-/// The default factor speed for the robot to move towards the target position.
-const GOTO_SPEED: f64 = 1.5;
-/// The default factor speed for the robot to rotate towards the target orientation.
-const GOTO_ROTATION: f64 = 1.5;
-/// The error tolerance for arriving at the target position.
-const ERR_TOLERANCE: f64 = 0.115;
-
 impl Action for MoveTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
@@ -96,17 +69,73 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-            const ATTRACTIVE_GRAVITY_COEFFICIENT: f32 = 1.0;
-            /// ATTRACTIVE FIELD
-            let attract_force = self.target - robot.pose.position;
+            const ATTRACTIVE_COEFFICIENT: f64 = 1.0;
+            const OBSTACLE_RADIUS: f64 = 0.5;
+            const REPULSIVE_COEFFICIENT: f64 = 1.0;
+
+            // let distance_goal = 1;
+            // let distance_obstacle = 2;
+
+            let mut result = Vector2::new(0.0, 0.0);
+
+            // Attractive field
+            // let attract_force = self.target - robot.pose.position;
+            let dist_target_robot = distance(&self.target, &robot.pose.position);
+
+            let force_magnitude = dist_target_robot * ATTRACTIVE_COEFFICIENT;
+            let target_robot = self.target - robot.pose.position;
+
+            let attractive_force = (target_robot / dist_target_robot) * force_magnitude;
+
+            result += attractive_force;
+
+            // Repulsive field
 
             if self.avoid_ball {
                 println!("[TODO] : AVOID BALL")
             }
 
-            let dist_target_robot = distance(&self.target, &robot.pose.position);
-            println!("{}", dist_target_robot);
-            Command::default()
+            world.allies_bot.iter().for_each(|(id, ally)| {
+                // Our robot id is not an obstacle
+                if robot.id == *id {
+                    return;
+                }
+
+                let dist_ally_robot = distance(&robot.pose.position, &ally.pose.position);
+
+                if dist_ally_robot < OBSTACLE_RADIUS {
+                    let force_magnitude = dist_ally_robot * REPULSIVE_COEFFICIENT;
+                    let ally_robot = ally.pose.position - robot.pose.position;
+
+                    let repulsive_force = (ally_robot / dist_ally_robot) * force_magnitude;
+                    result -= repulsive_force;
+                }
+            });
+
+            world.enemies_bot.iter().for_each(|(_, enemy)| {
+                let dist_enemy_robot = distance(&robot.pose.position, &enemy.pose.position);
+                dbg!(dist_enemy_robot);
+
+                if dist_enemy_robot < OBSTACLE_RADIUS {
+                    dbg!(dist_enemy_robot);
+                    let force_magnitude = dist_enemy_robot * REPULSIVE_COEFFICIENT;
+                    let enemy_robot = enemy.pose.position - robot.pose.position;
+
+                    let repulsive_force = (enemy_robot / dist_enemy_robot) * force_magnitude;
+                    result -= repulsive_force;
+                }
+            });
+
+            result *= 1.0;
+
+            Command {
+                forward_velocity: result.x as f32,
+                left_velocity: result.y as f32,
+                angular_velocity: 0.0,
+                charge: false,
+                kick: None,
+                dribbler: 0.0,
+            }
         } else {
             Command::default()
         }
