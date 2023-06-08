@@ -15,6 +15,8 @@ pub struct MoveTo {
     target: Point2<f64>,
     /// The target orientation of the robot.
     orientation: f64,
+    /// Avoid the ball
+    avoid_ball: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -23,6 +25,7 @@ impl From<&mut MoveTo> for MoveTo {
             state: other.state,
             target: other.target,
             orientation: other.orientation,
+            avoid_ball : other.avoid_ball
         }
     }
 }
@@ -34,11 +37,13 @@ impl MoveTo {
     ///
     /// * `target`: The target position on the field to move the robot to.
     /// * `orientation`: The target orientation of the robot.
-    pub fn new(target: Point2<f64>, orientation: f64) -> Self {
+    /// * `avoid_ball`
+    pub fn new(target: Point2<f64>, orientation: f64, avoid_ball: bool) -> Self {
         Self {
             state: State::Running,
             target,
             orientation,
+            avoid_ball
         }
     }
 }
@@ -91,31 +96,17 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-            let ti = frame_inv(robot_frame(robot));
-            let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
 
-            let error_orientation = angle_wrap(self.orientation - robot.pose.orientation);
-            let error_x = target_in_robot[0];
-            let error_y = target_in_robot[1];
-            let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
-            if arrived {
-                self.state = State::Done;
+            const ATTRACTIVE_GRAVITY_COEFFICIENT: f32 = 1.0;
+            /// ATTRACTIVE FIELD
+            let attract_force = self.target - robot.pose.position;
+            
+
+            if self.avoid_ball {
+                println!("[TODO] : AVOID BALL")
             }
 
-            let order = Vector3::new(
-                GOTO_SPEED * error_x,
-                GOTO_SPEED * error_y,
-                GOTO_ROTATION * error_orientation,
-            );
-
-            Command {
-                forward_velocity: order.x as f32,
-                left_velocity: order.y as f32,
-                angular_velocity: order.z as f32,
-                charge: false,
-                kick: None,
-                dribbler: 0.0,
-            }
+            Command::default()
         } else {
             Command::default()
         }
