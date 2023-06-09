@@ -104,7 +104,7 @@ impl Action for MoveTo {
                 let dist_ally_robot = distance(&robot.pose.position, &ally.pose.position);
 
                 if dist_ally_robot < OBSTACLE_RADIUS {
-                    let force_magnitude = dist_ally_robot * REPULSIVE_COEFFICIENT;
+                    let force_magnitude = REPULSIVE_COEFFICIENT / dist_ally_robot;
                     let ally_robot = ally.pose.position - robot.pose.position;
 
                     let repulsive_force = (ally_robot / dist_ally_robot) * force_magnitude;
@@ -118,7 +118,7 @@ impl Action for MoveTo {
 
                 if dist_enemy_robot < OBSTACLE_RADIUS {
                     dbg!(dist_enemy_robot);
-                    let force_magnitude = dist_enemy_robot * REPULSIVE_COEFFICIENT;
+                    let force_magnitude =  REPULSIVE_COEFFICIENT / dist_enemy_robot;
                     let enemy_robot = enemy.pose.position - robot.pose.position;
 
                     let repulsive_force = (enemy_robot / dist_enemy_robot) * force_magnitude;
