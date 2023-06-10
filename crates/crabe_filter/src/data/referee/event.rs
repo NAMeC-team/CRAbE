@@ -2,67 +2,6 @@ use chrono::Duration;
 use crabe_framework::data::world::TeamColor;
 use nalgebra::Point2;
 
-#[derive(Clone, Debug)]
-pub enum EventOrigin {
-    GameController,
-    Autorefs(Vec<String>),
-}
-
-#[derive(Clone, Debug)]
-pub struct DefenderInDefenseAreaPartially {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub distance: Option<f64>,
-    pub ball_location: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
-pub struct MultipleFouls {
-    pub by_team: TeamColor,
-    pub caused_game_events: Vec<GameEvent>,
-}
-
-#[derive(Clone, Debug)]
-pub struct NoProgressInGame {
-    pub location: Option<Point2<f64>>,
-    pub time: Option<Duration>,
-}
-
-#[derive(Clone, Debug)]
-pub struct PlacementFailed {
-    pub location: Option<Point2<f64>>,
-    pub remaining_distance: f64,
-}
-
-#[derive(Clone, Debug)]
-pub struct UnsportingBehaviorMinor {
-    pub by_team: TeamColor,
-    pub reason: String,
-}
-
-#[derive(Clone, Debug)]
-pub struct UnsportingBehaviorMajor {
-    pub by_team: TeamColor,
-    pub reason: String,
-}
-
-#[derive(Clone, Debug)]
-pub struct TooManyRobots {
-    pub by_team: TeamColor,
-    pub num_robots_allowed: Option<u32>,
-    pub num_robots_on_field: Option<u32>,
-    pub ball_location: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
-pub struct PenaltyKickFailed {
-    pub by_team: TeamColor,
-    pub location: Option<Point2<f64>>,
-}
-
-////////////////////////
-
 /// GameEvent contains exactly one game event.
 /// Each game event has optional and required fields.
 #[derive(Clone, Debug)]
@@ -71,7 +10,7 @@ pub struct GameEvent {
     type_event: Option<GameEventType>,
     /// The origins of this game event.
     /// Empty, if it originates from game controller.
-    origin: Vec<String>,
+    origin: Vec<EventOrigin>,
     /// Unix timestamp in microseconds when the event was created.
     created_timestamp: Option<u64>,
     /// the event that occurred
@@ -442,10 +381,91 @@ pub struct AttackerDoubleTouchedBall {
     pub location: Option<Point2<f64>>,
 }
 
+/// Represents an event where a team successfully placed the ball.
 #[derive(Clone, Debug)]
 pub struct PlacementSucceeded {
+    /// The team that did the placement.
     pub by_team: TeamColor,
+    /// The time taken for placing the ball (in second).
     pub time_taken: Option<f64>,
+    /// The distance between placement location and actual ball position (in meter).
     pub precision: Option<f64>,
+    /// The distance between the initial ball location and the placement position (in meter).
     pub distance: Option<f64>,
+}
+
+/// Represents an event where the penalty kick failed (by time or by keeper).
+#[derive(Clone, Debug)]
+pub struct PenaltyKickFailed {
+    /// The team that last touched the ball.
+    pub by_team: TeamColor,
+    /// The location of the ball at the moment of this event (in minute).
+    pub location: Option<Point2<f64>>,
+    /// An explanation of the failure.
+    pub reason: Option<String>,
+}
+
+/// Represents an event where game was stuck.
+#[derive(Clone, Debug)]
+pub struct NoProgressInGame {
+    /// The location of the ball.
+    pub location: Option<Point2<f64>>,
+    /// The time that was waited (in second).
+    pub time: Option<Duration>,
+}
+
+/// Represents an event where the ball placement failed.
+#[derive(Clone, Debug)]
+pub struct PlacementFailed {
+    /// The team that failed.
+    pub by_team: TeamColor,
+    /// The remaining distance from ball to placement position (in meter).
+    pub remaining_distance: f64,
+}
+
+/// Represents an event where a team collected multiple fouls, which results in a yellow card.
+#[derive(Clone, Debug)]
+pub struct MultipleFouls {
+    /// The team that collected multiple fouls.
+    pub by_team: TeamColor,
+    /// The list of game events that caused the multiple fouls.
+    pub caused_game_events: Vec<GameEvent>,
+}
+
+/// Represents an event where a team has too many robots on the field.
+#[derive(Clone, Debug)]
+pub struct TooManyRobots {
+    /// The team that has too many robots.
+    pub by_team: TeamColor,
+    /// Number of robots allowed at the moment.
+    pub num_robots_allowed: Option<u32>,
+    /// Number of robots currently on the field.
+    pub num_robots_on_field: Option<u32>,
+    /// The location of the ball at the moment when this foul occurred (in meter).
+    pub ball_location: Option<Point2<f64>>,
+}
+
+/// Represents an event where a team was found guilty for minor unsporting behavior.
+#[derive(Clone, Debug)]
+pub struct UnsportingBehaviorMinor {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// An explanation of the situation and decision.
+    pub reason: String,
+}
+
+/// Represents an event where a team was found guilty for minor unsporting behavior.
+#[derive(Clone, Debug)]
+pub struct UnsportingBehaviorMajor {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// An explanation of the situation and decision.
+    pub reason: String,
+}
+
+/// Enum that represent the origin of the event.
+#[derive(Clone, Debug)]
+pub enum EventOrigin {
+    GameController,
+    Autorefs(Vec<String>),
 }

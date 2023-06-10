@@ -67,8 +67,11 @@ pub struct Referee {
     pub current_action_time_remaining: Option<Duration>,
 }
 
+/// List of matching proposals.
 pub struct GameEventProposalGroup {
+    /// The proposed game event.
     pub game_event: Vec<GameEvent>,
+    /// Whether the proposal group was accepted.
     pub accepted: Option<bool>,
 }
 /// `Stage` represents different stages of a game.
