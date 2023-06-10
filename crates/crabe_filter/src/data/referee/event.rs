@@ -9,80 +9,6 @@ pub enum EventOrigin {
 }
 
 #[derive(Clone, Debug)]
-pub struct Goal {
-    pub by_team: TeamColor,
-    pub kicking_team: Option<TeamColor>,
-    pub kicking_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub kick_location: Option<Point2<f64>>,
-    pub max_ball_height: Option<f64>,
-    pub num_bots_by_team: Option<u32>,
-    pub last_touch_by_team: Option<u64>,
-    pub message: Option<String>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotTooFastInStop {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub speed: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
-pub struct DefenderTooCloseToKickPoint {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub distance: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotCrashDrawn {
-    pub bot_blue: Option<u32>,
-    pub bot_yellow: Option<u32>,
-    pub crash_speed: Option<f64>,
-    pub speed_diff: Option<f64>,
-    pub crash_angle: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotCrashUnique {
-    pub by_team: TeamColor,
-    pub violator: Option<u32>,
-    pub victim: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub crash_speed: Option<f64>,
-    pub speed_diff: Option<f64>,
-    pub crash_angle: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotPushedBot {
-    pub by_team: TeamColor,
-    pub violator: Option<u32>,
-    pub victim: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub pushed_distance: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotTippedOver {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub ball_location: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
-pub struct DefenderInDefenseArea {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub distance: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
 pub struct DefenderInDefenseAreaPartially {
     pub by_team: TeamColor,
     pub by_bot: Option<u32>,
@@ -92,56 +18,9 @@ pub struct DefenderInDefenseAreaPartially {
 }
 
 #[derive(Clone, Debug)]
-pub struct AttackerTouchedBallInDefenseArea {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub distance: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotKickedBallTooFast {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub initial_ball_speed: Option<f64>,
-    pub chipped: Option<bool>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotDribbledBallTooFar {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub start: Option<Point2<f64>>,
-    pub end: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
-pub struct AttackerDoubleTouchedBall {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotHeldBallDeliberately {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-    pub duration: Option<Duration>,
-}
-
-#[derive(Clone, Debug)]
-pub struct BotInterferedPlacement {
-    pub by_team: TeamColor,
-    pub by_bot: Option<u32>,
-    pub location: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
 pub struct MultipleFouls {
     pub by_team: TeamColor,
-    pub caused_game_events: Vec<OldGameEvent>,
+    pub caused_game_events: Vec<GameEvent>,
 }
 
 #[derive(Clone, Debug)]
@@ -169,21 +48,6 @@ pub struct UnsportingBehaviorMajor {
 }
 
 #[derive(Clone, Debug)]
-pub struct KeeperHeldBall {
-    pub by_team: TeamColor,
-    pub location: Option<Point2<f64>>,
-    pub duration: Option<Duration>,
-}
-
-#[derive(Clone, Debug)]
-pub struct PlacementSucceeded {
-    pub by_team: TeamColor,
-    pub time_taken: Option<f64>,
-    pub precision: Option<f64>,
-    pub distance: Option<f64>,
-}
-
-#[derive(Clone, Debug)]
 pub struct TooManyRobots {
     pub by_team: TeamColor,
     pub num_robots_allowed: Option<u32>,
@@ -192,58 +56,16 @@ pub struct TooManyRobots {
 }
 
 #[derive(Clone, Debug)]
-pub struct BoundaryCrossing {
-    pub by_team: TeamColor,
-    pub location: Option<Point2<f64>>,
-}
-
-#[derive(Clone, Debug)]
 pub struct PenaltyKickFailed {
     pub by_team: TeamColor,
     pub location: Option<Point2<f64>>,
 }
 
-#[derive(Clone, Debug)]
-pub enum OldGameEvent {
-    BallLeftFieldTouchLine(BallLeftField),
-    BallLeftFieldGoalLine(BallLeftField),
-    AimlessKick(AimlessKick),
-    AttackerTooCloseToDefenseArea(AttackerTooCloseToDefenseArea),
-    DefenderInDefenseArea(DefenderInDefenseArea),
-    BoundaryCrossing(BoundaryCrossing),
-    KeeperHeldBall(KeeperHeldBall),
-    BotDribbledBallTooFar(BotDribbledBallTooFar),
-    BotPushedBot(BotPushedBot),
-    BotHeldBallDeliberately(BotHeldBallDeliberately),
-    BotTippedOver(BotTippedOver),
-    AttackerTouchedBallInDefenseArea(AttackerTouchedBallInDefenseArea),
-    BotKickedBallTooFast(BotKickedBallTooFast),
-    BotCrashUnique(BotCrashUnique),
-    BotCrashDrawn(BotCrashDrawn),
-    DefenderTooCloseToKickPoint(DefenderTooCloseToKickPoint),
-    BotTooFastInStop(BotTooFastInStop),
-    BotInterferedPlacement(BotInterferedPlacement),
-    PossibleGoal(Goal),
-    Goal(Goal),
-    InvalidGoal(Goal),
-    AttackerDoubleTouchedBall(AttackerDoubleTouchedBall),
-    PlacementSucceeded(PlacementSucceeded),
-    PenaltyKickFailed(PenaltyKickFailed),
-    NoProgressInGame(NoProgressInGame),
-    PlacementFailed(PlacementFailed),
-    MultipleCards(TeamColor),
-    MultipleFouls(MultipleFouls),
-    TooManyRobots(TooManyRobots),
-    BotSubstitution(TeamColor),
-    ChallengeFlag(TeamColor),
-    EmergencyStop(TeamColor),
-    UnsportingBehaviorMinor(UnsportingBehaviorMinor),
-    UnsportingBehaviorMajor(UnsportingBehaviorMajor),
-}
 ////////////////////////
 
 /// GameEvent contains exactly one game event.
 /// Each game event has optional and required fields.
+#[derive(Clone, Debug)]
 pub struct GameEvent {
     /// Event type of this Game
     type_event: Option<GameEventType>,
@@ -258,6 +80,7 @@ pub struct GameEvent {
 
 /// All game event type.
 /// See the protobuf message inside the crate `crabe_protocol` to see which game event is triggered by gc, auto_referee and human.
+#[derive(Clone, Debug)]
 pub enum GameEventType {
     UnknownGameEventType,
     BallLeftFieldTouchLine,
@@ -295,19 +118,10 @@ pub enum GameEventType {
     EmergencyStop,
     UnsportingBehaviorMinor,
     UnsportingBehaviorMajor,
-    /// Since this place, all of this field is deprecated !
-    Prepared,
-    IndirectGoal,
-    ChippedGoal,
-    KickTimeout,
-    AttackerTouchedOpponentInDefenseArea,
-    AttackerTouchedOpponentInDefenseAreaSkipped,
-    BotCrashUniqueSkipped,
-    BotPushedBotSkipped,
-    DefenderInDefenseAreaPartially,
-    MultiplePlacementFailures,
+    Deprecated,
 }
 
+#[derive(Clone, Debug)]
 pub enum Event {
     // Ball out of field events (Stopping)
     BallLeftFieldTouchLine(BallLeftField),
@@ -320,22 +134,32 @@ pub enum Event {
     BoundaryCrossing(BoundaryCrossing),
     KeeperHeldBall(KeeperHeldBall),
     BotDribbledBallTooFar(BotDribbledBallTooFar),
+
     BotPushedBot(BotPushedBot),
     BotHeldBallDeliberately(BotHeldBallDeliberately),
     BotTippedOver(BotTippedOver),
+
+    // Non-Stopping Fouls
     AttackerTouchedBallInDefenseArea(AttackerTouchedBallInDefenseArea),
     BotKickedBallTooFast(BotKickedBallTooFast),
     BotCrashUnique(BotCrashUnique),
     BotCrashDrawn(BotCrashDrawn),
+
+    // Fouls while ball out of play
     DefenderTooCloseToKickPoint(DefenderTooCloseToKickPoint),
     BotTooFastInStop(BotTooFastInStop),
     BotInterferedPlacement(BotInterferedPlacement),
+
+    // Scoring goals
     PossibleGoal(Goal),
     Goal(Goal),
     InvalidGoal(Goal),
+
+    // Other events
     AttackerDoubleTouchedBall(AttackerDoubleTouchedBall),
     PlacementSucceeded(PlacementSucceeded),
     PenaltyKickFailed(PenaltyKickFailed),
+
     NoProgressInGame(NoProgressInGame),
     PlacementFailed(PlacementFailed),
     MultipleCards(TeamColor),
@@ -346,31 +170,35 @@ pub enum Event {
     EmergencyStop(TeamColor),
     UnsportingBehaviorMinor(UnsportingBehaviorMinor),
     UnsportingBehaviorMajor(UnsportingBehaviorMajor),
+
+    DeprecatedEvent,
 }
 
 //////////////////////////////////////////////////////
 //               Event Struct Type                  //
 //////////////////////////////////////////////////////
 
+/// Represents an event where the ball left the field normally.
 #[derive(Clone, Debug)]
 pub struct BallLeftField {
     /// The team that last touched the ball.
     pub by_team: TeamColor,
     /// The bot that last touched the ball.
     pub by_bot: Option<u32>,
-    /// The location where the ball left the field (in meters).
+    /// The location where the ball left the field (in meter).
     pub location: Option<Point2<f64>>,
 }
 
+/// Represents an event where the ball left the field via goal line and a team committed an aimless kick.
 #[derive(Clone, Debug)]
 pub struct AimlessKick {
     /// The team that last touched the ball
     pub by_team: TeamColor,
     /// The bot that last touched the ball.
     pub by_bot: Option<u32>,
-    /// The location where the ball left the field (in meters).
+    /// The location where the ball left the field (in meter).
     pub location: Option<Point2<f64>>,
-    /// The location where the ball was last touched (in meters).
+    /// The location where the ball was last touched (in meter).
     pub kick_location: Option<Point2<f64>>,
 }
 
@@ -379,12 +207,245 @@ pub struct AimlessKick {
 pub struct AttackerTooCloseToDefenseArea {
     /// The team that found guilty.
     pub by_team: TeamColor,
-    /// The bot that is too close to the defense area
+    /// The bot that is too close to the defense area.
     pub by_bot: Option<u32>,
-    /// The location of the bot (in meters)
+    /// The location of the bot (in meter).
     pub location: Option<Point2<f64>>,
-    /// The distance of the bot to the penalty area (in meters).
+    /// The distance of the bot to the penalty area (in meter).
     pub distance: Option<f64>,
-    /// The location of the ball at the moment when this foul occurred (in meters)
+    /// The location of the ball at the moment when this foul occurred (in meter).
     pub ball_location: Option<Point2<f64>>,
+}
+
+/// Represents an event where a defender other than the keeper was fully located inside its own defense and touched the ball.
+#[derive(Clone, Debug)]
+pub struct DefenderInDefenseArea {
+    /// The team that found guilty
+    pub by_team: TeamColor,
+    /// The bot that is inside the penalty area
+    pub by_bot: Option<u32>,
+    /// The location of the bot (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The distance from bot case to the nearest point outside the defense area (in meter).
+    pub distance: Option<f64>,
+}
+
+/// Represents an event where a robot chipped the ball over the field boundary out of the playing surface.
+#[derive(Clone, Debug)]
+pub struct BoundaryCrossing {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The location of the ball (in meter).
+    pub location: Option<Point2<f64>>,
+}
+
+/// Represents an event where a keeper held the ball in its defense area for too long.
+#[derive(Clone, Debug)]
+pub struct KeeperHeldBall {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The location of the ball (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The duration that the keeper hold the ball (in seconds).
+    pub duration: Option<Duration>,
+}
+
+/// Represents an event where a bot dribbled to ball too far.
+#[derive(Clone, Debug)]
+pub struct BotDribbledBallTooFar {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that dribbled too far.
+    pub by_bot: Option<u32>,
+    /// The location where the dribbling started (in meter).
+    pub start: Option<Point2<f64>>,
+    /// The location where the maximum dribbling distance was reached (in meter).
+    pub end: Option<Point2<f64>>,
+}
+
+/// Represents an event where a bot pushed another bot over a significant distance.
+#[derive(Clone, Debug)]
+pub struct BotPushedBot {
+    /// The team that pushed the other team.
+    pub by_team: TeamColor,
+    /// The bot that pushed the other bot.
+    pub violator: Option<u32>,
+    /// The bot of the opposite team that was pushed.
+    pub victim: Option<u32>,
+    /// The location of the push (center between both bots) (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The pushed distance (in meter).
+    pub pushed_distance: Option<f64>,
+}
+
+/// Represents an event where a bot held the ball for too long.
+#[derive(Clone, Debug)]
+pub struct BotHeldBallDeliberately {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that holds the ball.
+    pub by_bot: Option<u32>,
+    /// The location of the ball (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The duration that the bot hold the ball (in seconds).
+    pub duration: Option<Duration>,
+}
+
+/// Represents an event where a bot tipped over.
+#[derive(Clone, Debug)]
+pub struct BotTippedOver {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that tipped over.
+    pub by_bot: Option<u32>,
+    /// The location of the bot (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The location of the ball at the moment when this foul occurred (in meter).
+    pub ball_location: Option<Point2<f64>>,
+}
+
+/// Represents an event where an attacker touched the ball inside the opponent defense area.
+#[derive(Clone, Debug)]
+pub struct AttackerTouchedBallInDefenseArea {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that is inside the penalty area.
+    pub by_bot: Option<u32>,
+    /// The location of the bot (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The distance that the bot is inside the penalty area (in meter).
+    pub distance: Option<f64>,
+}
+
+/// Represents an event where a bot kicked the ball too fast.
+#[derive(Clone, Debug)]
+pub struct BotKickedBallTooFast {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that kicked too fast.
+    pub by_bot: Option<u32>,
+    /// The location of the ball at the time of the highest speed (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The absolute initial ball speed (kick speed) (in meter per second).
+    pub initial_ball_speed: Option<f64>,
+    /// Was the ball chipped?
+    pub chipped: Option<bool>,
+}
+
+/// Represents an event where two robots crashed into each other and one team was found guilty to due significant speed difference.
+#[derive(Clone, Debug)]
+pub struct BotCrashUnique {
+    /// The team that caused the crash.
+    pub by_team: TeamColor,
+    /// The bot that caused the crash.
+    pub violator: Option<u32>,
+    /// The bot of the opposite team that was involved in the crash.
+    pub victim: Option<u32>,
+    /// The location of the crash (center between both bots) (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The calculated crash speed vector of the two bots (in meter per second).
+    pub crash_speed: Option<f64>,
+    /// The difference of the velocity of the two bots (in meter per second).
+    pub speed_diff: Option<f64>,
+    /// the angle [rad] in the range [0, π] of the bot velocity vectors
+    /// an angle of 0 rad (  0°) means, the bots barely touched each other
+    /// an angle of π rad (180°) means, the bots crashed frontal into each other
+    pub crash_angle: Option<f64>,
+}
+/// Represents an event where two robots crashed into each other with similar speeds
+#[derive(Clone, Debug)]
+pub struct BotCrashDrawn {
+    /// The bot of the yellow team.
+    pub bot_yellow: Option<u32>,
+    /// The bot of the blue team.
+    pub bot_blue: Option<u32>,
+    /// The location of the crash (center between both bots) (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The calculated crash speed of the two bots (in meter per second).
+    pub crash_speed: Option<f64>,
+    /// The difference of the velocity of the two bots (in meter per second).
+    pub speed_diff: Option<f64>,
+    /// the angle [rad] in the range [0, π] of the bot velocity vectors
+    /// an angle of 0 rad (  0°) means, the bots barely touched each other
+    /// an angle of π rad (180°) means, the bots crashed frontal into each other.
+    pub crash_angle: Option<f64>,
+}
+
+/// Represents an event where a bot of the defending team got too close to the kick point during a free kick.
+#[derive(Clone, Debug)]
+pub struct DefenderTooCloseToKickPoint {
+    /// The team that was found guilty.
+    pub by_team: TeamColor,
+    /// The bot that violates the distance to the kick point.
+    pub by_bot: Option<u32>,
+    /// The location of the bot (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The distance from bot to the kick point (including the minimum radius) (in meter).
+    pub distance: Option<f64>,
+}
+
+/// Represents an event where a bot moved too fast while the game was stopped.
+#[derive(Clone, Debug)]
+pub struct BotTooFastInStop {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that was too fast.
+    pub by_bot: Option<u32>,
+    /// The location of the bot (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The bot speed (in meter per second).
+    pub speed: Option<f64>,
+}
+
+/// Represents an event where a bot interfered the ball placement of the other team.
+#[derive(Clone, Debug)]
+pub struct BotInterferedPlacement {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that interfered the placement.
+    pub by_bot: Option<u32>,
+    /// The location of the bot (in meter).
+    pub location: Option<Point2<f64>>,
+}
+
+/// Represents an event where a team shot a goal
+#[derive(Clone, Debug)]
+pub struct Goal {
+    /// The team that scored the goal.
+    pub by_team: TeamColor,
+    /// The team that shot the goal (different from by_team for own goals).
+    pub kicking_team: Option<TeamColor>,
+    /// The bot that shot the goal.
+    pub kicking_bot: Option<u32>,
+    /// The location where the ball entered the goal (in meter).
+    pub location: Option<Point2<f64>>,
+    /// The location where the ball was kicked (for deciding if this was a valid goal) (in meter).
+    pub kick_location: Option<Point2<f64>>,
+    /// The maximum height the ball reached during the goal kick (for deciding if this was a valid goal) (in meter).
+    pub max_ball_height: Option<f64>,
+    /// Number of robots of scoring team when the ball entered the goal (for deciding if this was a valid goal).
+    pub num_bots_by_team: Option<u32>,
+    /// The UNIX timestamp when the scoring team last touched the ball (in microsecond).
+    pub last_touch_by_team: Option<u64>,
+    /// An additional message with e.g. a reason for invalid goals.
+    pub message: Option<String>,
+}
+
+/// Represents an event where an attacker touched the ball multiple times when it was not allowed to.
+#[derive(Clone, Debug)]
+pub struct AttackerDoubleTouchedBall {
+    /// The team that found guilty.
+    pub by_team: TeamColor,
+    /// The bot that touched the ball twice.
+    pub by_bot: Option<u32>,
+    /// The location of the ball when it was first touched (in meter).
+    pub location: Option<Point2<f64>>,
+}
+
+#[derive(Clone, Debug)]
+pub struct PlacementSucceeded {
+    pub by_team: TeamColor,
+    pub time_taken: Option<f64>,
+    pub precision: Option<f64>,
+    pub distance: Option<f64>,
 }
