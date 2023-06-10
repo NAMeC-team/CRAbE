@@ -95,11 +95,7 @@ impl GameControllerPostFilter {
         world: &mut World,
         mut chrono: Option<Instant>,
     ) {
-        GameControllerPostFilter::normal_start_state_branch(
-            previous_event_opt,
-            world,
-            chrono
-        )
+        GameControllerPostFilter::normal_start_state_branch(previous_event_opt, world, chrono)
     }
     fn normal_start_state_branch(
         previous_event_opt: &Option<Event>,
@@ -150,7 +146,6 @@ impl GameControllerPostFilter {
     fn timeout_blue_branch(world: &mut World) {
         world.data.state = GameState::Halted(HaltedState::Timeout);
     }
-
 
     fn freekick_blue_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
         if let Some(chrono) = chrono_opt {
@@ -234,20 +229,45 @@ impl PostFilter for GameControllerPostFilter {
 
         match ref_command {
             Command::Halt => GameControllerPostFilter::halt_state_branch(world),
-            Command::Stop => GameControllerPostFilter::stop_state_branch(&self.previous_event,world,self.kicked_off_once),
-            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(&self.previous_event,world,self.chrono),
-            Command::ForceStart => GameControllerPostFilter::force_start_state_branch(&self.previous_event, world, self.chrono),
+            Command::Stop => GameControllerPostFilter::stop_state_branch(
+                &self.previous_event,
+                world,
+                self.kicked_off_once,
+            ),
+            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(
+                &self.previous_event,
+                world,
+                self.chrono,
+            ),
+            Command::ForceStart => GameControllerPostFilter::force_start_state_branch(
+                &self.previous_event,
+                world,
+                self.chrono,
+            ),
             Command::TimeoutYellow => GameControllerPostFilter::timeout_yellow_branch(world),
             Command::TimeoutBlue => GameControllerPostFilter::timeout_blue_branch(world),
-            Command::DirectFreeYellow => GameControllerPostFilter::freekick_yellow_branch(world, self.chrono),
-            Command::DirectFreeBlue => GameControllerPostFilter::freekick_blue_branch(world, self.chrono),
-            Command::BallPlacementYellow => GameControllerPostFilter::ball_placement_yellow_branch(world, self.chrono),
-            Command::BallPlacementBlue => GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono),
-            Command::PreparePenaltyYellow => GameControllerPostFilter::prepare_penalty_yellow_branch(world, self.chrono),
-            Command::PreparePenaltyBlue => GameControllerPostFilter::prepare_penalty_blue_branch(world, self.chrono),
+            Command::DirectFreeYellow => {
+                GameControllerPostFilter::freekick_yellow_branch(world, self.chrono)
+            }
+            Command::DirectFreeBlue => {
+                GameControllerPostFilter::freekick_blue_branch(world, self.chrono)
+            }
+            Command::BallPlacementYellow => {
+                GameControllerPostFilter::ball_placement_yellow_branch(world, self.chrono)
+            }
+            Command::BallPlacementBlue => {
+                GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
+            }
+            Command::PreparePenaltyYellow => {
+                GameControllerPostFilter::prepare_penalty_yellow_branch(world, self.chrono)
+            }
+            Command::PreparePenaltyBlue => {
+                GameControllerPostFilter::prepare_penalty_blue_branch(world, self.chrono)
+            }
             _ => {
                 println!("untreated state");
-                dbg!(ref_command);}
+                dbg!(ref_command);
+            }
         }
 
         // Update previous gamestate & event
