@@ -5,23 +5,23 @@ use crabe_framework::data::world::game_state::{
 };
 use crabe_framework::data::world::{TeamColor, World};
 use crabe_protocol;
-use crabe_protocol::protobuf::game_controller_packet::game_event::Event;
-use crabe_protocol::protobuf::game_controller_packet::referee::Command;
 
+use crate::data::referee::event::{Event, GameEvent};
+use crate::data::referee::RefereeCommand;
 use std::time::Instant;
 
 #[derive(Debug)]
 pub struct GameControllerPostFilter {
-    previous_game_event: crabe_protocol::protobuf::game_controller_packet::GameEvent,
+    previous_game_event: Option<GameEvent>,
     previous_event: Option<Event>,
-    chrono: Option<Instant>,
+    chrono: Option<Instant>, // TODO: Need to have an option here ?
     kicked_off_once: bool,
 }
 
 impl Default for GameControllerPostFilter {
     fn default() -> Self {
         GameControllerPostFilter {
-            previous_game_event: Default::default(),
+            previous_game_event: None,
             previous_event: None,
             chrono: Option::from(Instant::now()),
             kicked_off_once: false,
@@ -221,60 +221,66 @@ impl PostFilter for GameControllerPostFilter {
             Some(r) => r,
         };
 
-        //println!("{:?}", last_referee_packet);
-        let ref_command = last_referee_packet.command();
-
-        // dbg!(&ref_command);
-        //dbg!(&self.previous_event);
+        let ref_command = last_referee_packet.command.clone();
 
         match ref_command {
-            Command::Halt => GameControllerPostFilter::halt_state_branch(world),
-            Command::Stop => GameControllerPostFilter::stop_state_branch(
+            RefereeCommand::Halt => GameControllerPostFilter::halt_state_branch(world),
+            RefereeCommand::Stop => GameControllerPostFilter::stop_state_branch(
                 &self.previous_event,
                 world,
                 self.kicked_off_once,
             ),
-            Command::NormalStart => GameControllerPostFilter::normal_start_state_branch(
+            RefereeCommand::NormalStart => GameControllerPostFilter::normal_start_state_branch(
                 &self.previous_event,
                 world,
                 self.chrono,
             ),
-            Command::ForceStart => GameControllerPostFilter::force_start_state_branch(
+            RefereeCommand::ForceStart => GameControllerPostFilter::force_start_state_branch(
                 &self.previous_event,
                 world,
                 self.chrono,
             ),
-            Command::TimeoutYellow => GameControllerPostFilter::timeout_yellow_branch(world),
-            Command::TimeoutBlue => GameControllerPostFilter::timeout_blue_branch(world),
-            Command::DirectFreeYellow => {
-                GameControllerPostFilter::freekick_yellow_branch(world, self.chrono)
+            RefereeCommand::Timeout(team) => {
+                if team == TeamColor::Yellow {
+                    GameControllerPostFilter::timeout_yellow_branch(world)
+                } else {
+                    GameControllerPostFilter::timeout_blue_branch(world)
+                }
             }
-            Command::DirectFreeBlue => {
-                GameControllerPostFilter::freekick_blue_branch(world, self.chrono)
+            RefereeCommand::DirectFree(team) => {
+                if team == TeamColor::Yellow {
+                    GameControllerPostFilter::freekick_yellow_branch(world, self.chrono)
+                } else {
+                    GameControllerPostFilter::freekick_blue_branch(world, self.chrono)
+                }
             }
-            Command::BallPlacementYellow => {
-                GameControllerPostFilter::ball_placement_yellow_branch(world, self.chrono)
+            RefereeCommand::BallPlacement(team) => {
+                if team == TeamColor::Yellow {
+                    GameControllerPostFilter::ball_placement_yellow_branch(world, self.chrono)
+                } else {
+                    GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
+                }
             }
-            Command::BallPlacementBlue => {
-                GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
+            RefereeCommand::PreparePenalty(team) => {
+                if team == TeamColor::Yellow {
+                    GameControllerPostFilter::prepare_penalty_yellow_branch(world, self.chrono)
+                } else {
+                    GameControllerPostFilter::prepare_penalty_blue_branch(world, self.chrono)
+                }
             }
-            Command::PreparePenaltyYellow => {
-                GameControllerPostFilter::prepare_penalty_yellow_branch(world, self.chrono)
-            }
-            Command::PreparePenaltyBlue => {
-                GameControllerPostFilter::prepare_penalty_blue_branch(world, self.chrono)
-            }
-            _ => {
-                println!("untreated state");
-                dbg!(ref_command);
+            state => {
+                println!("untreated state {:?}", state);
             }
         }
 
         // Update previous gamestate & event
         if let Some(previous_game_event) = last_referee_packet.game_events.last() {
-            self.previous_game_event = previous_game_event.clone();
-            self.previous_event = previous_game_event.event.clone(); //todo: don't clone this, specify lifetime
+            self.previous_game_event = Option::from(previous_game_event.clone());
+            self.previous_event = Option::from(previous_game_event.event.clone());
+            //todo: don't clone this, specify lifetime
         }
+
+        // todo: Don't forget to update positive half
         // if let Some(blue_team_on_positive_half) = last_referee_packet.blue_team_on_positive_half {
         //     if blue_team_on_positive_half {
         //        world.data.positive_half = TeamColor::Blue

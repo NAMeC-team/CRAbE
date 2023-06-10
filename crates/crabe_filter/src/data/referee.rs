@@ -1,11 +1,13 @@
 use chrono::{DateTime, Duration, Utc};
 use crabe_framework::data::output::Command;
-use crabe_framework::data::world::{Team, TeamColor};
+use crabe_framework::data::world::TeamColor;
 use event::GameEvent;
 use nalgebra::Point2;
 
-mod event;
+pub mod event;
 
+/// MatchType is a meta information about the current match for easier log processing.
+#[derive(Clone, Debug)]
 pub enum MatchType {
     /// Not set
     UnknownMatch,
@@ -18,6 +20,7 @@ pub enum MatchType {
 }
 
 /// The `Referee` struct contains various information about the referee of a match.
+#[derive(Clone, Debug)]
 pub struct Referee {
     /// A random UUID of the referee that is kept constant while running.
     pub source_identifier: Option<String>,
@@ -68,6 +71,7 @@ pub struct Referee {
 }
 
 /// List of matching proposals.
+#[derive(Clone, Debug)]
 pub struct GameEventProposalGroup {
     /// The proposed game event.
     pub game_event: Vec<GameEvent>,
@@ -75,6 +79,7 @@ pub struct GameEventProposalGroup {
     pub accepted: Option<bool>,
 }
 /// `Stage` represents different stages of a game.
+#[derive(Clone, Debug)]
 pub enum Stage {
     /// Indicates that the first half is about to start.
     NormalFirstHalfPre,
@@ -108,6 +113,7 @@ pub enum Stage {
 
 /// The `RefereeCommand` enum represents a set of possible commands that a referee can issue during a game.
 /// These commands control the state of the game and dictate the actions that robots are allowed to perform at any given moment.
+#[derive(Clone, Debug)]
 pub enum RefereeCommand {
     /// Command indicating that all robots must halt movement immediately.
     Halt,
@@ -134,6 +140,8 @@ pub enum RefereeCommand {
     BallPlacement(TeamColor),
 }
 
+/// Information about a single team.
+#[derive(Clone, Debug)]
 pub struct TeamInfo {
     /// The team's name (empty string if operator has not typed anything).
     pub name: String,

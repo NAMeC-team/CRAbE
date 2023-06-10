@@ -14,9 +14,10 @@ impl PreFilter for GameControllerPreFilter {
         _team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
-        /// TODO: The referee message needs to be inside our own framework.
-        filter_data
-            .referee
-            .extend(inbound_data.gc_packet.iter().cloned());
+        // TODO: The referee message needs to be inside our own framework.
+
+        /*filter_data
+        .referee
+        .extend(inbound_data.gc_packet.iter().cloned());*/
     }
 }

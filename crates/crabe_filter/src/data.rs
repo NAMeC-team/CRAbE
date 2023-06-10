@@ -3,10 +3,10 @@ pub mod referee;
 
 use crate::constant;
 use crate::data::camera::{CamBall, CamGeometry, CamRobot};
+use crate::data::referee::Referee;
 use chrono::{DateTime, Utc};
 use constant::PACKET_BUFFER_SIZE;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
-use crabe_protocol::protobuf::game_controller_packet::Referee;
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
 use std::time::Instant;

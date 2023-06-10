@@ -7,14 +7,14 @@ use nalgebra::Point2;
 #[derive(Clone, Debug)]
 pub struct GameEvent {
     /// Event type of this Game
-    type_event: Option<GameEventType>,
+    pub type_event: Option<GameEventType>,
     /// The origins of this game event.
     /// Empty, if it originates from game controller.
-    origin: Vec<EventOrigin>,
+    pub origin: Vec<EventOrigin>,
     /// Unix timestamp in microseconds when the event was created.
-    created_timestamp: Option<u64>,
+    pub created_timestamp: Option<u64>,
     /// the event that occurred
-    event: Event,
+    pub event: Event,
 }
 
 /// All game event type.
