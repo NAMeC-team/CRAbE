@@ -13,7 +13,6 @@ use crabe_framework::data::world::World;
 /// `strategies` field in the `new()` method of the `Manual` struct.
 #[derive(Default)]
 pub struct GameManager {
-    // Karen says what to do lmao
     last_game_state: Option<GameState>,
     strategies: Vec<Box<dyn Strategy>>,
 }
@@ -42,9 +41,7 @@ impl Manager for GameManager {
             // info!("clearing strategy");
             // clear current strategy
             self.strategies.clear();
-            for id in world.allies_bot.keys() {
-                action_wrapper.clean(*id);
-            }
+            action_wrapper.clear();
 
             match world.data.state {
                 GameState::Halted(_) => {

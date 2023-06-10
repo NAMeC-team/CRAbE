@@ -27,7 +27,7 @@ impl InactiveFilter {
 impl Default for InactiveFilter {
     fn default() -> Self {
         Self {
-            timeout: constant::ROBOT_TIMEOUT,
+            timeout: constant::ROBOT_VISION_TIMEOUT,
         }
     }
 }

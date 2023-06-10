@@ -39,7 +39,7 @@ impl FilterPipeline {
         let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
         let filters: Vec<Box<dyn Filter>> = vec![
             Box::new(PassthroughFilter),
-            Box::new(InactiveFilter::default()),
+            Box::<InactiveFilter>::default(),
         ];
         let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
             Box::new(RobotFilter),
@@ -49,7 +49,7 @@ impl FilterPipeline {
 
         if common_config.gc {
             pre_filters.push(Box::new(GameControllerPreFilter));
-            post_filters.push(Box::new(GameControllerPostFilter::default()));
+            post_filters.push(Box::<GameControllerPostFilter>::default());
         }
 
         Self {
