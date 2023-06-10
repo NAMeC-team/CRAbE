@@ -1,7 +1,6 @@
 /// The `annotation` module contains data structures and functionality for managing
 /// graphical annotations to be drawn on the SSL RoboCup field viewer.
 pub mod annotation;
-pub mod event;
 /// The geometry module contains utility functions and structures related to geometry and
 /// coordinates of the SSL field.
 pub mod geometry;
