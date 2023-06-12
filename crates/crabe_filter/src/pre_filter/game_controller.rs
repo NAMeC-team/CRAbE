@@ -135,8 +135,8 @@ fn convert_referee_protobuf(packet: &game_controller_packet::Referee, team_color
             Some(command) => Some(get_command(command)),
             None => None
         },
-        game_events: todo!(),
-        game_event_proposals: todo!(),
+        game_events: vec![],
+        game_event_proposals: vec![],
         current_action_time_remaining: match packet.current_action_time_remaining {
             Some(duration_value) => Some(Duration::seconds(duration_value as i64)),
             None => Some(Duration::zero())
