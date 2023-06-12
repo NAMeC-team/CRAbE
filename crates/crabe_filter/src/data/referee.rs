@@ -1,5 +1,4 @@
 use chrono::{DateTime, Duration, Utc};
-use crabe_framework::data::output::Command;
 use crabe_framework::data::world::TeamColor;
 use event::GameEvent;
 use nalgebra::Point2;
@@ -49,13 +48,13 @@ pub struct Referee {
     pub enemy: TeamInfo,
     /// The coordinates of the designated Position (in millimeters).
     /// Use only in the case of a ball placement command.
-    pub designated_position: Point2<f64>,
+    pub designated_position: Option<Point2<f64>>,
     /// Information about the direction of play.
     /// True, if the blue team will have it's goal on the positive x-axis of the ssl-vision coordinate system.
     /// Obviously, the yellow team will play on the opposite half.
     pub positive_half: Option<TeamColor>,
     /// The command that will be issued after the current stoppage and ball placement to continue the game.
-    pub next_command: Option<Command>,
+    pub next_command: Option<RefereeCommand>,
     /// All game events that were detected since the last RUNNING state.
     /// Will be cleared as soon as the game is continued.
     pub game_events: Vec<GameEvent>,
@@ -109,6 +108,8 @@ pub enum Stage {
     PenaltyShootout,
     /// Indicates that the game has ended.
     PostGame,
+    ///Unknow state
+    Unknow
 }
 
 /// The `RefereeCommand` enum represents a set of possible commands that a referee can issue during a game.
@@ -138,6 +139,8 @@ pub enum RefereeCommand {
     Goal(TeamColor),
     /// Command equivalent to `Stop`, but the specified team must retrieve the ball and place it in a designated position.
     BallPlacement(TeamColor),
+    ///Unknown state
+    Unknow
 }
 
 /// Information about a single team.
