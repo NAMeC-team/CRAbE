@@ -4,7 +4,6 @@ use crabe_framework::data::world::game_state::{
     GameState, HaltedState, RunningState, StoppedState,
 };
 use crabe_framework::data::world::{TeamColor, World};
-use crabe_protocol;
 
 use crate::data::referee::event::{Event, GameEvent};
 use crate::data::referee::RefereeCommand;

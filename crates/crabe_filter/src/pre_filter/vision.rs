@@ -140,6 +140,7 @@ mod detection {
         let frame_info = FrameInfo {
             camera_id: detection.camera_id,
             frame_number: detection.frame_number,
+            // TODO: Add detection.t_capture with not UTC now + Add detection.t_sent
             t_capture: create_date_time(Utc::now().timestamp() as f64),
         };
 
