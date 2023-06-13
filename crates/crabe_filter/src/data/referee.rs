@@ -109,7 +109,7 @@ pub enum Stage {
     /// Indicates that the game has ended.
     PostGame,
     ///Unknow state
-    Unknow
+    Unknow,
 }
 
 /// The `RefereeCommand` enum represents a set of possible commands that a referee can issue during a game.
@@ -140,7 +140,7 @@ pub enum RefereeCommand {
     /// Command equivalent to `Stop`, but the specified team must retrieve the ball and place it in a designated position.
     BallPlacement(TeamColor),
     ///Unknown state
-    Unknow
+    Unknow,
 }
 
 /// Information about a single team.

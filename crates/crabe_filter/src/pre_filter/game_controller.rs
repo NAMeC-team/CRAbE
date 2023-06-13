@@ -1,10 +1,10 @@
+use crate::data::referee::{MatchType, Referee, RefereeCommand, Stage, TeamInfo};
 use crate::data::FilterData;
-use crate::data::referee::{Referee, MatchType, Stage, RefereeCommand, TeamInfo};
 use crate::pre_filter::PreFilter;
+use chrono::{DateTime, Duration, NaiveDateTime, Utc};
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 use crabe_protocol::protobuf::game_controller_packet;
-use chrono::{DateTime, NaiveDateTime, Utc, Duration};
 use nalgebra::Point2;
 
 pub struct GameControllerPreFilter;
@@ -16,39 +16,37 @@ fn convert_timestamp_to_datetime(timestamp: u64) -> DateTime<Utc> {
     let datetime = DateTime::from_utc(naive_datetime, Utc);
     datetime
 }
-fn get_command(command: i32) -> RefereeCommand{
+fn get_command(command: i32) -> RefereeCommand {
     match command {
-        command => {
-            match command {
-                0=>RefereeCommand::Halt,
-                1=>RefereeCommand::Stop,
-                2=>RefereeCommand::NormalStart,
-                3=>RefereeCommand::ForceStart ,
-                4=>RefereeCommand::PrepareKickoff(TeamColor::Yellow),
-                5=>RefereeCommand::PrepareKickoff(TeamColor::Blue),
-                6=>RefereeCommand::PreparePenalty(TeamColor::Yellow) ,
-                7=>RefereeCommand::PreparePenalty(TeamColor::Blue) ,
-                8=>RefereeCommand::DirectFree(TeamColor::Yellow),
-                9=>RefereeCommand::DirectFree(TeamColor::Blue),
-                10=>RefereeCommand::IndirectFree(TeamColor::Yellow),
-                11=>RefereeCommand::IndirectFree(TeamColor::Blue),
-                12=>RefereeCommand::Timeout(TeamColor::Yellow),
-                13=>RefereeCommand::Timeout(TeamColor::Blue),
-                14=>RefereeCommand::Goal(TeamColor::Yellow) ,
-                15=>RefereeCommand::Goal(TeamColor::Blue),
-                16=>RefereeCommand::BallPlacement(TeamColor::Yellow),
-                17=>RefereeCommand::BallPlacement(TeamColor::Blue),
-                _ => RefereeCommand::Unknow
-            }
-        }
+        command => match command {
+            0 => RefereeCommand::Halt,
+            1 => RefereeCommand::Stop,
+            2 => RefereeCommand::NormalStart,
+            3 => RefereeCommand::ForceStart,
+            4 => RefereeCommand::PrepareKickoff(TeamColor::Yellow),
+            5 => RefereeCommand::PrepareKickoff(TeamColor::Blue),
+            6 => RefereeCommand::PreparePenalty(TeamColor::Yellow),
+            7 => RefereeCommand::PreparePenalty(TeamColor::Blue),
+            8 => RefereeCommand::DirectFree(TeamColor::Yellow),
+            9 => RefereeCommand::DirectFree(TeamColor::Blue),
+            10 => RefereeCommand::IndirectFree(TeamColor::Yellow),
+            11 => RefereeCommand::IndirectFree(TeamColor::Blue),
+            12 => RefereeCommand::Timeout(TeamColor::Yellow),
+            13 => RefereeCommand::Timeout(TeamColor::Blue),
+            14 => RefereeCommand::Goal(TeamColor::Yellow),
+            15 => RefereeCommand::Goal(TeamColor::Blue),
+            16 => RefereeCommand::BallPlacement(TeamColor::Yellow),
+            17 => RefereeCommand::BallPlacement(TeamColor::Blue),
+            _ => RefereeCommand::Unknow,
+        },
     }
 }
-fn to_team_infos(infos: &game_controller_packet::referee::TeamInfo) -> TeamInfo{
-    let _infos = TeamInfo{
+fn to_team_infos(infos: &game_controller_packet::referee::TeamInfo) -> TeamInfo {
+    let _infos = TeamInfo {
         name: infos.name.clone(),
         score: infos.score,
         red_cards: infos.red_cards,
-        yellow_card_times:infos.yellow_card_times.clone(),
+        yellow_card_times: infos.yellow_card_times.clone(),
         yellow_cards: infos.yellow_cards,
         timeouts: infos.timeouts,
         timeout_time: infos.timeout_time,
@@ -63,54 +61,53 @@ fn to_team_infos(infos: &game_controller_packet::referee::TeamInfo) -> TeamInfo{
     };
     _infos
 }
-fn convert_referee_protobuf(packet: &game_controller_packet::Referee, team_color: &TeamColor) -> Referee {
+fn convert_referee_protobuf(
+    packet: &game_controller_packet::Referee,
+    team_color: &TeamColor,
+) -> Referee {
     dbg!(packet);
     let ally = match team_color {
         TeamColor::Yellow => to_team_infos(&packet.yellow),
-        TeamColor::Blue => to_team_infos(&packet.blue)
+        TeamColor::Blue => to_team_infos(&packet.blue),
     };
     let enemy = match team_color.opposite() {
         TeamColor::Yellow => to_team_infos(&packet.yellow),
-        TeamColor::Blue => to_team_infos(&packet.blue)
+        TeamColor::Blue => to_team_infos(&packet.blue),
     };
     let _referee = Referee {
         source_identifier: packet.source_identifier.clone(),
         match_type: match packet.match_type {
-            Some(match_type) => {
-                match match_type {
-                    1 => Some(MatchType::GroupPhase),
-                    2 => Some(MatchType::EliminationPhase),
-                    3 => Some(MatchType::Friendly),
-                    _ => Some(MatchType::UnknownMatch),
-                }
+            Some(match_type) => match match_type {
+                1 => Some(MatchType::GroupPhase),
+                2 => Some(MatchType::EliminationPhase),
+                3 => Some(MatchType::Friendly),
+                _ => Some(MatchType::UnknownMatch),
             },
             None => None,
         },
         packet_timestamp: convert_timestamp_to_datetime(packet.packet_timestamp),
         stage: match packet.stage {
-            stage => {
-                match stage {
-                    0 => Stage::NormalFirstHalfPre ,
-                    1 => Stage::NormalFirstHalf,
-                    2 => Stage::NormalHalfTime,
-                    3 => Stage::NormalSecondHalfPre,
-                    4 => Stage::NormalSecondHalf,
-                    5 => Stage::ExtraTimeBreak,
-                    6 => Stage::ExtraFirstHalfPre,
-                    7 => Stage::ExtraFirstHalf,
-                    8 => Stage::ExtraHalfTime,
-                    9 => Stage::ExtraSecondHalfPre ,
-                    10 => Stage::ExtraSecondHalf ,
-                    11 => Stage::PenaltyShootoutBreak ,
-                    12 => Stage::PenaltyShootout,
-                    13 => Stage::PostGame,
-                    _ => Stage::Unknow
-                }
-            }
+            stage => match stage {
+                0 => Stage::NormalFirstHalfPre,
+                1 => Stage::NormalFirstHalf,
+                2 => Stage::NormalHalfTime,
+                3 => Stage::NormalSecondHalfPre,
+                4 => Stage::NormalSecondHalf,
+                5 => Stage::ExtraTimeBreak,
+                6 => Stage::ExtraFirstHalfPre,
+                7 => Stage::ExtraFirstHalf,
+                8 => Stage::ExtraHalfTime,
+                9 => Stage::ExtraSecondHalfPre,
+                10 => Stage::ExtraSecondHalf,
+                11 => Stage::PenaltyShootoutBreak,
+                12 => Stage::PenaltyShootout,
+                13 => Stage::PostGame,
+                _ => Stage::Unknow,
+            },
         },
         stage_time_left: match packet.stage_time_left {
             Some(duration_value) => Some(Duration::seconds(duration_value as i64)),
-            None => Some(Duration::zero())
+            None => Some(Duration::zero()),
         },
         command: get_command(packet.command),
         command_counter: packet.command_counter,
@@ -119,27 +116,29 @@ fn convert_referee_protobuf(packet: &game_controller_packet::Referee, team_color
         enemy: enemy,
         designated_position: match &packet.designated_position {
             Some(position) => match position {
-                _ => Some(Point2::new(position.x as f64, position.y as f64))
+                _ => Some(Point2::new(position.x as f64, position.y as f64)),
             },
-            None => None
+            None => None,
         },
         positive_half: match packet.blue_team_on_positive_half {
-            Some(blue_positive) => if blue_positive {
-                Some(TeamColor::Blue)
-            }else{
-                Some(TeamColor::Yellow)
-            },
-            None => None
+            Some(blue_positive) => {
+                if blue_positive {
+                    Some(TeamColor::Blue)
+                } else {
+                    Some(TeamColor::Yellow)
+                }
+            }
+            None => None,
         },
         next_command: match packet.next_command {
             Some(command) => Some(get_command(command)),
-            None => None
+            None => None,
         },
         game_events: vec![],
         game_event_proposals: vec![],
         current_action_time_remaining: match packet.current_action_time_remaining {
             Some(duration_value) => Some(Duration::seconds(duration_value as i64)),
-            None => Some(Duration::zero())
+            None => Some(Duration::zero()),
         },
     };
     _referee
@@ -152,7 +151,7 @@ impl PreFilter for GameControllerPreFilter {
         team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
-        inbound_data.gc_packet.iter().for_each(|gc_packet|{
+        inbound_data.gc_packet.iter().for_each(|gc_packet| {
             convert_referee_protobuf(gc_packet, team_color);
         });
         // TODO: The referee message needs to be inside our own framework.
