@@ -7,12 +7,12 @@ authors = ["NAMeC"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-log = "0.4.18"
-clap = { version = "4.3.0", features = ["derive"] }
-serde = { version= "1.0.163", features = ["derive"] }
+log = "0.4.19"
+clap = { version = "4.3.3", features = ["derive"] }
+serde = { version= "1.0.164", features = ["derive"] }
 nalgebra = "0.32.2"
-ringbuffer = "0.13.0"
-chrono="0.4.25"
+ringbuffer = "0.14.0"
+chrono="0.4.26"
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
 crabe_math = { path = "../crabe_math"}
