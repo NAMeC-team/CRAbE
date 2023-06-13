@@ -6,10 +6,10 @@ use crabe_framework::data::world::TeamColor;
 
 mod detection {
     use crate::data::{FilterData, FrameInfo};
-    use chrono::{DateTime, LocalResult, TimeZone, Utc};
+    use crate::pre_filter::create_date_time;
+    use chrono::Utc;
     use crabe_framework::data::world::TeamColor;
     use crabe_protocol::protobuf::vision_packet::SslDetectionFrame;
-    use log::error;
 
     mod robot {
         use crate::data::{camera::CamRobot, FrameInfo, TrackedRobot, TrackedRobotMap};
@@ -113,22 +113,6 @@ mod detection {
             });
 
             detection.tracked.packets.extend(ball_packets);
-        }
-    }
-
-    fn create_date_time(t_capture: f64) -> DateTime<Utc> {
-        match Utc.timestamp_opt((t_capture) as i64, 0) {
-            LocalResult::Single(dt) => dt,
-            LocalResult::None => {
-                let now_utc = Utc::now();
-                error!("Invalid timestamp, using current time: {}", now_utc);
-                now_utc
-            }
-            LocalResult::Ambiguous(dt_min, dt_max) => {
-                let dt_midpoint = dt_min + (dt_max - dt_min) / 2;
-                error!("Ambiguous timestamp resolved to midpoint: {}", dt_midpoint);
-                dt_midpoint
-            }
         }
     }
 

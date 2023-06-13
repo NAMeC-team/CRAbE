@@ -1,8 +1,7 @@
 use crate::data::referee::{MatchType, Referee, RefereeCommand, Stage, TeamInfo};
 use crate::data::FilterData;
-use crate::pre_filter::PreFilter;
-use chrono::{DateTime, Duration, LocalResult, TimeZone, Utc};
-use log::error;
+use crate::pre_filter::{create_date_time, PreFilter};
+use chrono::Duration;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 use crabe_protocol::protobuf::game_controller_packet;
@@ -11,22 +10,6 @@ use nalgebra::Point2;
 pub struct GameControllerPreFilter;
 
 impl GameControllerPreFilter {}
-
-fn create_date_time(time: f64) -> DateTime<Utc> {
-    match Utc.timestamp_opt((time) as i64, 0) {
-        LocalResult::Single(dt) => dt,
-        LocalResult::None => {
-            let now_utc = Utc::now();
-            error!("Invalid timestamp, using current time: {}", now_utc);
-            now_utc
-        }
-        LocalResult::Ambiguous(dt_min, dt_max) => {
-            let dt_midpoint = dt_min + (dt_max - dt_min) / 2;
-            error!("Ambiguous timestamp resolved to midpoint: {}", dt_midpoint);
-            dt_midpoint
-        }
-    }
-}
 
 fn get_command(command: i32) -> RefereeCommand {
     match command {
@@ -164,7 +147,9 @@ impl PreFilter for GameControllerPreFilter {
         filter_data: &mut FilterData,
     ) {
         inbound_data.gc_packet.iter().for_each(|gc_packet| {
-            filter_data.referee.push(convert_referee_protobuf(gc_packet, team_color));
+            filter_data
+                .referee
+                .push(convert_referee_protobuf(gc_packet, team_color));
         });
         // TODO: The referee message needs to be inside our own framework.
 
