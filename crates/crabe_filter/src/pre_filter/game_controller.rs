@@ -1,3 +1,4 @@
+use crate::data::referee::event::GameEvent;
 use crate::data::referee::{MatchType, Referee, RefereeCommand, Stage, TeamInfo};
 use crate::data::FilterData;
 use crate::pre_filter::{create_date_time, PreFilter};
@@ -60,7 +61,7 @@ fn convert_referee_protobuf(
     packet: &game_controller_packet::Referee,
     team_color: &TeamColor,
 ) -> Referee {
-    dbg!(packet);
+    // dbg!(packet);
     let ally = match team_color {
         TeamColor::Yellow => to_team_infos(&packet.yellow),
         TeamColor::Blue => to_team_infos(&packet.blue),
@@ -136,6 +137,11 @@ fn convert_referee_protobuf(
             None => Some(Duration::zero()),
         },
     };
+
+    packet.game_events.iter().for_each(|event| {
+        dbg!(GameEvent::from(event.clone()));
+    });
+
     _referee
 }
 

@@ -1,5 +1,7 @@
 use chrono::Duration;
 use crabe_framework::data::world::TeamColor;
+use crabe_protocol::protobuf::game_controller_packet;
+use crabe_protocol::protobuf::game_controller_packet::game_event::Type;
 use nalgebra::Point2;
 
 /// GameEvent contains exactly one game event.
@@ -17,11 +19,22 @@ pub struct GameEvent {
     pub event: Event,
 }
 
+impl From<game_controller_packet::GameEvent> for GameEvent {
+    fn from(packet: game_controller_packet::GameEvent) -> Self {
+        Self {
+            type_event: Option::from(GameEventType::from(packet.r#type())),
+            origin: vec![],
+            created_timestamp: None,
+            event: Event::DeprecatedEvent,
+        }
+    }
+}
+
 /// All game event type.
 /// See the protobuf message inside the crate `crabe_protocol` to see which game event is triggered by gc, auto_referee and human.
 #[derive(Clone, Debug)]
 pub enum GameEventType {
-    UnknownGameEventType,
+    Unknown,
     BallLeftFieldTouchLine,
     BallLeftFieldGoalLine,
     AimlessKick,
@@ -42,7 +55,7 @@ pub enum GameEventType {
     BotInterferedPlacement,
     PossibleGoal,
     Goal,
-    InvalidGoal = 42,
+    InvalidGoal,
     AttackerDoubleTouchedBall,
     PlacementSucceeded,
     PenaltyKickFailed,
@@ -58,6 +71,61 @@ pub enum GameEventType {
     UnsportingBehaviorMinor,
     UnsportingBehaviorMajor,
     Deprecated,
+}
+
+impl From<Type> for GameEventType {
+    fn from(packet: Type) -> Self {
+        match packet {
+            Type::UnknownGameEventType => GameEventType::Unknown,
+            Type::BallLeftFieldTouchLine => GameEventType::BallLeftFieldTouchLine,
+            Type::BallLeftFieldGoalLine => GameEventType::BallLeftFieldGoalLine,
+            Type::AimlessKick => GameEventType::AimlessKick,
+            Type::AttackerTooCloseToDefenseArea => GameEventType::AttackerTooCloseToDefenseArea,
+            Type::DefenderInDefenseArea => GameEventType::DefenderInDefenseArea,
+            Type::BoundaryCrossing => GameEventType::BoundaryCrossing,
+            Type::KeeperHeldBall => GameEventType::KeeperHeldBall,
+            Type::BotDribbledBallTooFar => GameEventType::BotDribbledBallTooFar,
+            Type::BotPushedBot => GameEventType::BotPushedBot,
+            Type::BotHeldBallDeliberately => GameEventType::BotHeldBallDeliberately,
+            Type::BotTippedOver => GameEventType::BotTippedOver,
+            Type::AttackerTouchedBallInDefenseArea => {
+                GameEventType::AttackerTouchedBallInDefenseArea
+            }
+            Type::BotKickedBallTooFast => GameEventType::BotKickedBallTooFast,
+            Type::BotCrashUnique => GameEventType::BotCrashUnique,
+            Type::BotCrashDrawn => GameEventType::BotCrashDrawn,
+            Type::DefenderTooCloseToKickPoint => GameEventType::DefenderTooCloseToKickPoint,
+            Type::BotTooFastInStop => GameEventType::BotTooFastInStop,
+            Type::BotInterferedPlacement => GameEventType::BotInterferedPlacement,
+            Type::PossibleGoal => GameEventType::PossibleGoal,
+            Type::Goal => GameEventType::Goal,
+            Type::InvalidGoal => GameEventType::InvalidGoal,
+            Type::AttackerDoubleTouchedBall => GameEventType::AttackerDoubleTouchedBall,
+            Type::PlacementSucceeded => GameEventType::PlacementSucceeded,
+            Type::PenaltyKickFailed => GameEventType::PenaltyKickFailed,
+            Type::NoProgressInGame => GameEventType::NoProgressInGame,
+            Type::PlacementFailed => GameEventType::PlacementFailed,
+            Type::MultipleCards => GameEventType::MultipleCards,
+            Type::MultipleFouls => GameEventType::MultipleFouls,
+            Type::BotSubstitution => GameEventType::BotSubstitution,
+            Type::TooManyRobots => GameEventType::TooManyRobots,
+            Type::ChallengeFlag => GameEventType::ChallengeFlag,
+            Type::ChallengeFlagHandled => GameEventType::ChallengeFlagHandled,
+            Type::EmergencyStop => GameEventType::EmergencyStop,
+            Type::UnsportingBehaviorMinor => GameEventType::UnsportingBehaviorMinor,
+            Type::UnsportingBehaviorMajor => GameEventType::UnsportingBehaviorMajor,
+            Type::Prepared => GameEventType::Deprecated,
+            Type::IndirectGoal => GameEventType::Deprecated,
+            Type::ChippedGoal => GameEventType::Deprecated,
+            Type::KickTimeout => GameEventType::Deprecated,
+            Type::AttackerTouchedOpponentInDefenseArea => GameEventType::Deprecated,
+            Type::AttackerTouchedOpponentInDefenseAreaSkipped => GameEventType::Deprecated,
+            Type::BotCrashUniqueSkipped => GameEventType::Deprecated,
+            Type::BotPushedBotSkipped => GameEventType::Deprecated,
+            Type::DefenderInDefenseAreaPartially => GameEventType::Deprecated,
+            Type::MultiplePlacementFailures => GameEventType::Deprecated,
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
