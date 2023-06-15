@@ -1,5 +1,4 @@
-use crate::data::referee::event::GameEvent;
-use crate::data::referee::{MatchType, Referee, RefereeCommand, Stage, TeamInfo};
+use crate::data::referee::{Referee, RefereeCommand, Stage, TeamInfo};
 use crate::data::FilterData;
 use crate::pre_filter::common::create_date_time;
 use crate::pre_filter::PreFilter;
@@ -7,44 +6,23 @@ use chrono::Duration;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 use crabe_protocol::protobuf::game_controller_packet;
-use log::{info, log};
 use nalgebra::Point2;
+
+use crabe_protocol::protobuf::game_controller_packet::referee::{
+    Command as ProtocolCommand, Command, Point as ProtocolPoint, Stage as ProtocolStage,
+};
+use crabe_protocol::protobuf::game_controller_packet::Referee as ProtocolReferee;
 
 pub struct GameControllerPreFilter;
 
 impl GameControllerPreFilter {}
 
-fn get_command(command: i32) -> RefereeCommand {
-    match command {
-        command => match command {
-            0 => RefereeCommand::Halt,
-            1 => RefereeCommand::Stop,
-            2 => RefereeCommand::NormalStart,
-            3 => RefereeCommand::ForceStart,
-            4 => RefereeCommand::PrepareKickoff(TeamColor::Yellow),
-            5 => RefereeCommand::PrepareKickoff(TeamColor::Blue),
-            6 => RefereeCommand::PreparePenalty(TeamColor::Yellow),
-            7 => RefereeCommand::PreparePenalty(TeamColor::Blue),
-            8 => RefereeCommand::DirectFree(TeamColor::Yellow),
-            9 => RefereeCommand::DirectFree(TeamColor::Blue),
-            10 => RefereeCommand::IndirectFree(TeamColor::Yellow),
-            11 => RefereeCommand::IndirectFree(TeamColor::Blue),
-            12 => RefereeCommand::Timeout(TeamColor::Yellow),
-            13 => RefereeCommand::Timeout(TeamColor::Blue),
-            14 => RefereeCommand::Goal(TeamColor::Yellow),
-            15 => RefereeCommand::Goal(TeamColor::Blue),
-            16 => RefereeCommand::BallPlacement(TeamColor::Yellow),
-            17 => RefereeCommand::BallPlacement(TeamColor::Blue),
-            _ => RefereeCommand::Unknow,
-        },
-    }
-}
-fn to_team_infos(infos: &game_controller_packet::referee::TeamInfo) -> TeamInfo {
+fn to_team_infos(infos: game_controller_packet::referee::TeamInfo) -> TeamInfo {
     let _infos = TeamInfo {
-        name: infos.name.clone(),
+        name: infos.name.into(),
         score: infos.score,
         red_cards: infos.red_cards,
-        yellow_card_times: infos.yellow_card_times.clone(),
+        yellow_card_times: infos.yellow_card_times.into(),
         yellow_cards: infos.yellow_cards,
         timeouts: infos.timeouts,
         timeout_time: infos.timeout_time,
@@ -59,110 +37,115 @@ fn to_team_infos(infos: &game_controller_packet::referee::TeamInfo) -> TeamInfo 
     };
     _infos
 }
-fn convert_referee_protobuf(
-    packet: &game_controller_packet::Referee,
+
+fn map_stage(stage: ProtocolStage) -> Stage {
+    match stage {
+        ProtocolStage::NormalFirstHalfPre => Stage::NormalFirstHalfPre,
+        ProtocolStage::NormalFirstHalf => Stage::NormalFirstHalf,
+        ProtocolStage::NormalHalfTime => Stage::NormalHalfTime,
+        ProtocolStage::NormalSecondHalfPre => Stage::NormalSecondHalfPre,
+        ProtocolStage::NormalSecondHalf => Stage::NormalSecondHalf,
+        ProtocolStage::ExtraTimeBreak => Stage::ExtraTimeBreak,
+        ProtocolStage::ExtraFirstHalfPre => Stage::ExtraFirstHalfPre,
+        ProtocolStage::ExtraFirstHalf => Stage::ExtraFirstHalf,
+        ProtocolStage::ExtraHalfTime => Stage::ExtraHalfTime,
+        ProtocolStage::ExtraSecondHalfPre => Stage::ExtraSecondHalfPre,
+        ProtocolStage::ExtraSecondHalf => Stage::ExtraSecondHalf,
+        ProtocolStage::PenaltyShootoutBreak => Stage::PenaltyShootoutBreak,
+        ProtocolStage::PenaltyShootout => Stage::PenaltyShootout,
+        ProtocolStage::PostGame => Stage::PostGame,
+    }
+}
+
+fn map_command(incoming: ProtocolCommand) -> RefereeCommand {
+    match incoming {
+        Command::Halt => RefereeCommand::Halt,
+        Command::Stop => RefereeCommand::Stop,
+        Command::NormalStart => RefereeCommand::NormalStart,
+        Command::ForceStart => RefereeCommand::ForceStart,
+        Command::PrepareKickoffYellow => RefereeCommand::PrepareKickoff(TeamColor::Yellow),
+        Command::PrepareKickoffBlue => RefereeCommand::PrepareKickoff(TeamColor::Blue),
+        Command::PreparePenaltyYellow => RefereeCommand::PreparePenalty(TeamColor::Yellow),
+        Command::PreparePenaltyBlue => RefereeCommand::PreparePenalty(TeamColor::Blue),
+        Command::DirectFreeYellow => RefereeCommand::DirectFree(TeamColor::Yellow),
+        Command::DirectFreeBlue => RefereeCommand::DirectFree(TeamColor::Blue),
+        Command::TimeoutYellow => RefereeCommand::Timeout(TeamColor::Yellow),
+        Command::TimeoutBlue => RefereeCommand::Timeout(TeamColor::Blue),
+        Command::BallPlacementYellow => RefereeCommand::BallPlacement(TeamColor::Yellow),
+        Command::BallPlacementBlue => RefereeCommand::BallPlacement(TeamColor::Blue),
+        Command::IndirectFreeYellow
+        | Command::IndirectFreeBlue
+        | Command::GoalYellow
+        | Command::GoalBlue => RefereeCommand::Deprecated,
+    }
+}
+
+fn map_point(point: ProtocolPoint) -> Point2<f64> {
+    Point2::new(point.x.into(), point.y.into())
+}
+
+struct RefereeDeserializationError;
+
+fn map_protobuf_referee(
+    packet: ProtocolReferee,
     team_color: &TeamColor,
-) -> Referee {
-    // dbg!(packet);
-    let ally = match team_color {
-        TeamColor::Yellow => to_team_infos(&packet.yellow),
-        TeamColor::Blue => to_team_infos(&packet.blue),
+) -> Result<Referee, RefereeDeserializationError> {
+    let (ally, enemy) = match team_color {
+        TeamColor::Yellow => (packet.yellow, packet.blue),
+        TeamColor::Blue => (packet.blue, packet.yellow),
     };
-    let enemy = match team_color.opposite() {
-        TeamColor::Yellow => to_team_infos(&packet.yellow),
-        TeamColor::Blue => to_team_infos(&packet.blue),
-    };
-    let _referee = Referee {
-        source_identifier: packet.source_identifier.clone(),
-        match_type: match packet.match_type {
-            Some(match_type) => match match_type {
-                1 => Some(MatchType::GroupPhase),
-                2 => Some(MatchType::EliminationPhase),
-                3 => Some(MatchType::Friendly),
-                _ => Some(MatchType::UnknownMatch),
-            },
-            None => None,
-        },
+
+    Ok(Referee {
+        source_identifier: packet.source_identifier,
+        match_type: None, // TODO : Finish
         packet_timestamp: create_date_time((packet.packet_timestamp / 1_000_000) as i64),
-        stage: match packet.stage {
-            stage => match stage {
-                0 => Stage::NormalFirstHalfPre,
-                1 => Stage::NormalFirstHalf,
-                2 => Stage::NormalHalfTime,
-                3 => Stage::NormalSecondHalfPre,
-                4 => Stage::NormalSecondHalf,
-                5 => Stage::ExtraTimeBreak,
-                6 => Stage::ExtraFirstHalfPre,
-                7 => Stage::ExtraFirstHalf,
-                8 => Stage::ExtraHalfTime,
-                9 => Stage::ExtraSecondHalfPre,
-                10 => Stage::ExtraSecondHalf,
-                11 => Stage::PenaltyShootoutBreak,
-                12 => Stage::PenaltyShootout,
-                13 => Stage::PostGame,
-                _ => Stage::Unknow,
-            },
-        },
-        stage_time_left: match packet.stage_time_left {
-            Some(duration_value) => Some(Duration::seconds(duration_value as i64)),
-            None => Some(Duration::zero()),
-        },
-        command: get_command(packet.command),
+        stage: ProtocolStage::from_i32(packet.stage)
+            .map(map_stage)
+            .ok_or(RefereeDeserializationError)?,
+        stage_time_left: packet
+            .stage_time_left
+            .map(|d| Duration::microseconds(d as i64)),
+        command: ProtocolCommand::from_i32(packet.command)
+            .map(map_command)
+            .ok_or(RefereeDeserializationError)?,
         command_counter: packet.command_counter,
-        command_timestamp: create_date_time(packet.command_timestamp as i64),
-        ally,
-        enemy,
-        designated_position: match &packet.designated_position {
-            Some(position) => match position {
-                _ => Some(Point2::new(position.x as f64, position.y as f64)),
-            },
-            None => None,
-        },
-        positive_half: match packet.blue_team_on_positive_half {
-            Some(blue_positive) => {
-                if blue_positive {
-                    Some(TeamColor::Blue)
-                } else {
-                    Some(TeamColor::Yellow)
-                }
+        command_timestamp: create_date_time((packet.command_timestamp / 1_000_000) as i64),
+        ally: to_team_infos(ally),   // TODO : Rename and check
+        enemy: to_team_infos(enemy), // TODO : Rename and check
+        designated_position: packet.designated_position.map(map_point),
+        positive_half: packet.blue_team_on_positive_half.map(|b| {
+            if b {
+                TeamColor::Blue
+            } else {
+                TeamColor::Yellow
             }
-            None => None,
-        },
-        next_command: match packet.next_command {
-            Some(command) => Some(get_command(command)),
-            None => None,
-        },
-        game_events: vec![],
-        game_event_proposals: vec![],
-        current_action_time_remaining: match packet.current_action_time_remaining {
-            Some(duration_value) => Some(Duration::seconds(duration_value as i64)),
-            None => Some(Duration::zero()),
-        },
-    };
-
-    packet.game_events.iter().for_each(|event| {
-        dbg!(GameEvent::from(event.clone()));
-    });
-
-    _referee
+        }),
+        next_command: packet
+            .next_command
+            .map(|c| ProtocolCommand::from_i32(c))
+            .flatten()
+            .map(map_command),
+        game_events: vec![],          // TODO:
+        game_event_proposals: vec![], // TODO:
+        current_action_time_remaining: packet
+            .current_action_time_remaining
+            .map(|d| Duration::microseconds(d as i64)),
+    })
+    // Ok(Referee {})
 }
 
 impl PreFilter for GameControllerPreFilter {
     fn step(
         &mut self,
-        inbound_data: &InboundData,
+        inbound_data: &mut InboundData,
         team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
-        inbound_data.gc_packet.iter().for_each(|gc_packet| {
-            filter_data
-                .referee
-                .push(convert_referee_protobuf(gc_packet, team_color));
-        });
-        // TODO: The referee message needs to be inside our own framework.
-
-        /*filter_data
-        .referee
-        .extend(inbound_data.gc_packet.iter().cloned());*/
+        filter_data.referee.extend(
+            inbound_data
+                .gc_packet
+                .drain(..)
+                .filter_map(|packet| map_protobuf_referee(packet, team_color).ok()),
+        );
     }
 }

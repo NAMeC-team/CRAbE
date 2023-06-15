@@ -9,13 +9,13 @@ pub mod event;
 #[derive(Clone, Debug)]
 pub enum MatchType {
     /// Not set
-    UnknownMatch,
+    UnknownMatch = 0,
     /// Match is part of the group phase
-    GroupPhase,
+    GroupPhase = 1,
     /// Match is part of the elimination phase
-    EliminationPhase,
+    EliminationPhase = 2,
     /// Friendly match, not part of a tournament
-    Friendly,
+    Friendly = 3,
 }
 
 /// The `Referee` struct contains various information about the referee of a match.
@@ -79,37 +79,36 @@ pub struct GameEventProposalGroup {
 }
 /// `Stage` represents different stages of a game.
 #[derive(Clone, Debug)]
+#[repr(i32)]
 pub enum Stage {
     /// Indicates that the first half is about to start.
-    NormalFirstHalfPre,
+    NormalFirstHalfPre = 0,
     /// Indicates the first half of the normal game, before half time.
-    NormalFirstHalf,
+    NormalFirstHalf = 1,
     /// Indicates the half time period between the first and second halves.
-    NormalHalfTime,
+    NormalHalfTime = 2,
     /// Indicates that the second half is about to start.
-    NormalSecondHalfPre,
+    NormalSecondHalfPre = 3,
     /// Indicates the second half of the normal game, after half time.
-    NormalSecondHalf,
+    NormalSecondHalf = 4,
     /// Represents the break before extra time.
-    ExtraTimeBreak,
+    ExtraTimeBreak = 5,
     /// Indicates that the first half of the extra time is about to start.
-    ExtraFirstHalfPre,
+    ExtraFirstHalfPre = 6,
     /// Represents the first half of the extra time.
-    ExtraFirstHalf,
+    ExtraFirstHalf = 7,
     /// Indicates the half time period between the first and second extra halves.
-    ExtraHalfTime,
+    ExtraHalfTime = 8,
     /// Indicates that the second half of extra time is about to start.
-    ExtraSecondHalfPre,
+    ExtraSecondHalfPre = 9,
     /// Represents the second half of the extra time.
-    ExtraSecondHalf,
+    ExtraSecondHalf = 10,
     /// Represents the break period before the penalty shootout.
-    PenaltyShootoutBreak,
+    PenaltyShootoutBreak = 11,
     /// Represents the penalty shootout stage.
-    PenaltyShootout,
+    PenaltyShootout = 12,
     /// Indicates that the game has ended.
-    PostGame,
-    ///Unknow state
-    Unknow,
+    PostGame = 13,
 }
 
 /// The `RefereeCommand` enum represents a set of possible commands that a referee can issue during a game.
@@ -139,8 +138,8 @@ pub enum RefereeCommand {
     Goal(TeamColor),
     /// Command equivalent to `Stop`, but the specified team must retrieve the ball and place it in a designated position.
     BallPlacement(TeamColor),
-    ///Unknown state
-    Unknow,
+    ///Deprecated state
+    Deprecated,
 }
 
 /// Information about a single team.

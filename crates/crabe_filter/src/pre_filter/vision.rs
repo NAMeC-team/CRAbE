@@ -226,11 +226,11 @@ impl VisionFilter {
 impl PreFilter for VisionFilter {
     fn step(
         &mut self,
-        inbound_data: &InboundData,
+        inbound_data: &mut InboundData,
         team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
-        inbound_data.vision_packet.iter().for_each(|packet| {
+        inbound_data.vision_packet.drain(..).for_each(|packet| {
             if let Some(detection) = packet.detection.as_ref() {
                 detection::handle_detection(detection, filter_data, team_color);
             }
