@@ -10,7 +10,7 @@ authors = ["NAMeC"]
 prost = "0.11.9"
 bytes= "1.4"
 log = "0.4.19"
-clap = { version = "4.3.3", features = ["derive"] }
+clap = { version = "4.3.4", features = ["derive"] }
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
 flume = "0.10.14"
