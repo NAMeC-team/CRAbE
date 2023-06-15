@@ -1,11 +1,13 @@
 use crate::data::referee::event::GameEvent;
 use crate::data::referee::{MatchType, Referee, RefereeCommand, Stage, TeamInfo};
 use crate::data::FilterData;
-use crate::pre_filter::{create_date_time, PreFilter};
+use crate::pre_filter::common::create_date_time;
+use crate::pre_filter::PreFilter;
 use chrono::Duration;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 use crabe_protocol::protobuf::game_controller_packet;
+use log::{info, log};
 use nalgebra::Point2;
 
 pub struct GameControllerPreFilter;
@@ -81,7 +83,7 @@ fn convert_referee_protobuf(
             },
             None => None,
         },
-        packet_timestamp: create_date_time(packet.packet_timestamp as f64),
+        packet_timestamp: create_date_time((packet.packet_timestamp / 1_000_000) as i64),
         stage: match packet.stage {
             stage => match stage {
                 0 => Stage::NormalFirstHalfPre,
@@ -107,7 +109,7 @@ fn convert_referee_protobuf(
         },
         command: get_command(packet.command),
         command_counter: packet.command_counter,
-        command_timestamp: create_date_time(packet.command_timestamp as f64),
+        command_timestamp: create_date_time(packet.command_timestamp as i64),
         ally,
         enemy,
         designated_position: match &packet.designated_position {

@@ -6,7 +6,7 @@ use crabe_framework::data::world::TeamColor;
 
 mod detection {
     use crate::data::{FilterData, FrameInfo};
-    use crate::pre_filter::create_date_time;
+    use crate::pre_filter::common::create_date_time;
     use chrono::Utc;
     use crabe_framework::data::world::TeamColor;
     use crabe_protocol::protobuf::vision_packet::SslDetectionFrame;
@@ -125,7 +125,7 @@ mod detection {
             camera_id: detection.camera_id,
             frame_number: detection.frame_number,
             // TODO: Add detection.t_capture with not UTC now + Add detection.t_sent
-            t_capture: create_date_time(Utc::now().timestamp() as f64),
+            t_capture: create_date_time(Utc::now().timestamp() as i64),
         };
 
         let mut robot_detection_info = robot::RobotDetectionInfo {
