@@ -190,7 +190,7 @@ fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
             },
             created_timestamp,
             event,
-            origin:vec![],
+            origin:vec![],//TODO
         })
     }else{
         None
@@ -497,7 +497,7 @@ impl PreFilter for GameControllerPreFilter {
         team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
-        println!("tetete");
+        println!("len: {}", inbound_data.gc_packet.len());
         filter_data.referee.extend(
             inbound_data
                 .gc_packet
