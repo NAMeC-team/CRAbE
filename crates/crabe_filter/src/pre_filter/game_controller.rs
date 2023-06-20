@@ -12,7 +12,7 @@ use crabe_protocol::protobuf::game_controller_packet::game_event::{Event as Prot
 
 use crabe_protocol::protobuf::game_controller_packet::{GameEvent as ProtocolEvent, game_event::Type as ProtocolType, MatchType as ProtocolMatchType, Referee as ProtocolReferee, Vector2 as ProtocolVector2};
 use crabe_protocol::protobuf::game_controller_packet::referee::{Command as ProtocolCommand, Command, Point as ProtocolPoint, Stage as ProtocolStage};
-use crate::data::referee::event::{Event, AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehaviorMajor, UnsportingBehaviorMinor, GameEventType};
+use crate::data::referee::event::{Event, EventOrigin,AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehaviorMajor, UnsportingBehaviorMinor, GameEventType};
 
 use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo};
 use crabe_protocol::protobuf::game_controller_packet::Team as ProtocolTeam;
@@ -175,13 +175,21 @@ fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
     }
 }
 
-fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
+fn map_origin(origin: String) -> EventOrigin{
+    match origin {
+        _ => EventOrigin::GameController
+    }
+}
+
+fn map_game_event(mut game_event: ProtocolEvent) -> Option<GameEvent> {
     println!("test game");
     let created_timestamp = game_event.created_timestamp;
     let event = game_event.event.map(map_event).flatten();
+    /* 
     for ele in game_event.origin {
         println!("{}",ele);
     }
+    */
     if let Some(event) = event {
         Some(GameEvent{
             type_event: match game_event.r#type{
@@ -191,7 +199,7 @@ fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
             },
             created_timestamp,
             event,
-            origin:vec![],//TODO
+            origin: Vec::from([EventOrigin::Autorefs(game_event.origin)])
         })
     }else{
         None
@@ -443,7 +451,6 @@ fn map_protobuf_referee(
     mut packet: ProtocolReferee,
     team_color: &TeamColor,
 ) -> Result<Referee, RefereeDeserializationError> {
-    println!("cascre");
     let (ally, enemy) = match team_color {
         TeamColor::Yellow => (packet.yellow, packet.blue),
         TeamColor::Blue => (packet.blue, packet.yellow),
