@@ -174,6 +174,7 @@ fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
         location: value.location.map(map_vector_point),
     }
 }
+
 fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
     let created_timestamp = game_event.created_timestamp;
     let event = game_event.event.map(map_event).flatten();
