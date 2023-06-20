@@ -176,9 +176,9 @@ fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
 }
 
 fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
+    println!("test game");
     let created_timestamp = game_event.created_timestamp;
     let event = game_event.event.map(map_event).flatten();
-    println!("test game");
     for ele in game_event.origin {
         println!("{}",ele);
     }
@@ -448,6 +448,7 @@ fn map_protobuf_referee(
         TeamColor::Yellow => (packet.yellow, packet.blue),
         TeamColor::Blue => (packet.blue, packet.yellow),
     };
+    println!("cascre2 : {:?}",packet.game_events);
 
     Ok(Referee {
         source_identifier: packet.source_identifier,
@@ -488,6 +489,7 @@ fn map_protobuf_referee(
             .current_action_time_remaining
             .map(|d| Duration::microseconds(d as i64)),
     })
+    
     // Ok(Referee {})
 }
 

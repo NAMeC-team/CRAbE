@@ -2,7 +2,7 @@ use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use log::error;
 
 pub fn create_date_time(t_capture: i64) -> DateTime<Utc> {
-    dbg!(t_capture);
+    //dbg!(t_capture);
     match Utc.timestamp_opt(t_capture, 0) {
         LocalResult::Single(dt) => dt,
         LocalResult::None => {
