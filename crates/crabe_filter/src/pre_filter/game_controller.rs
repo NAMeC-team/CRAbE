@@ -14,7 +14,7 @@ use crabe_protocol::protobuf::game_controller_packet::{GameEvent as ProtocolEven
 use crabe_protocol::protobuf::game_controller_packet::referee::{Command as ProtocolCommand, Command, Point as ProtocolPoint, Stage as ProtocolStage};
 use crate::data::referee::event::{Event, AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehavior};
 
-use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage};
+use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo};
 use crabe_protocol::protobuf::game_controller_packet::Team as ProtocolTeam;
 pub struct GameControllerPreFilter;
 
