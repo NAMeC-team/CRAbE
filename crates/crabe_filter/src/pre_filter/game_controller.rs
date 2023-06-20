@@ -175,25 +175,30 @@ fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
     }
 }
 fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
-    return if let Some(event) = map_event(game_event) {
+    let created_timestamp = game_event.created_timestamp;
+    let event = game_event.event.map(map_event).flatten();
+    println!("test game");
+    for ele in game_event.origin {
+        println!("{}",ele);
+    }
+    if let Some(event) = event {
         Some(GameEvent{
             type_event: match game_event.r#type{
                 Some(r#type) => ProtocolType::from_i32(r#type)
                     .map(map_type),
                 None => None
             },
-            created_timestamp:game_event.created_timestamp,
-            origin:todo!(),
+            created_timestamp,
             event,
+            origin:vec![],
         })
     }else{
         None
-    };
+    }
 }
 
-fn map_event(event: ProtocolEvent) -> Option<Event> {
-    return if let Some(event) = event.event {
-        match event {
+fn map_event(event: ProtocolEventData) -> Option<Event> {
+    match event {
             ProtocolEventData::BallLeftFieldTouchLine(data) => {
                 Some(Event::BallLeftFieldTouchLine(map_ball_left_field(data)))
             }
@@ -306,7 +311,7 @@ fn map_event(event: ProtocolEvent) -> Option<Event> {
                     crash_speed: data.crash_speed.map(|s| s as f64),
                     speed_diff: data.speed_diff.map(|d| d as f64),
                     crash_angle: data.crash_angle.map(|a| a as f64),
-                    location: todo!(),
+                    location: None,
                 }))
             }
             ProtocolEventData::BotTooFastInStop(data) => {
@@ -358,7 +363,7 @@ fn map_event(event: ProtocolEvent) -> Option<Event> {
                 Some(Event::PenaltyKickFailed(PenaltyKickFailed {
                     by_team: map_team_color_i32(data.by_team),
                     location: data.location.map(map_vector_point),
-                    reason: todo!(),
+                    reason: None,
                 }))
             }
             ProtocolEventData::NoProgressInGame(data) => {
@@ -429,17 +434,15 @@ fn map_event(event: ProtocolEvent) -> Option<Event> {
                 None
             }
         }
-    } else {
-        None
-    };
 }
 
 struct RefereeDeserializationError;
 
 fn map_protobuf_referee(
-    packet: &ProtocolReferee,
+    mut packet: ProtocolReferee,
     team_color: &TeamColor,
 ) -> Result<Referee, RefereeDeserializationError> {
+    println!("cascre");
     let (ally, enemy) = match team_color {
         TeamColor::Yellow => (packet.yellow, packet.blue),
         TeamColor::Blue => (packet.blue, packet.yellow),
@@ -494,11 +497,12 @@ impl PreFilter for GameControllerPreFilter {
         team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
+        println!("tetete");
         filter_data.referee.extend(
             inbound_data
                 .gc_packet
                 .drain(..)
-                .filter_map(|packet| map_protobuf_referee(&packet, team_color).ok()),
+                .filter_map(|packet| map_protobuf_referee(packet, team_color).ok()),
         );
     }
 }
