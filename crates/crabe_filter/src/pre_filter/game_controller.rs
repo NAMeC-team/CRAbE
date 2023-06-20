@@ -10,9 +10,9 @@ use nalgebra::Point2;
 use crabe_protocol::protobuf::game_controller_packet::game_event as protocol_event;
 use crabe_protocol::protobuf::game_controller_packet::game_event::{Event as ProtocolEventData, Goal as ProtocolGoal};
 
-use crabe_protocol::protobuf::game_controller_packet::{GameEvent as ProtocolEvent, MatchType as ProtocolMatchType, Referee as ProtocolReferee, Vector2 as ProtocolVector2};
+use crabe_protocol::protobuf::game_controller_packet::{GameEvent as ProtocolEvent, game_event::Type as ProtocolType, MatchType as ProtocolMatchType, Referee as ProtocolReferee, Vector2 as ProtocolVector2};
 use crabe_protocol::protobuf::game_controller_packet::referee::{Command as ProtocolCommand, Command, Point as ProtocolPoint, Stage as ProtocolStage};
-use crate::data::referee::event::{Event, AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehavior};
+use crate::data::referee::event::{Event, AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehaviorMajor, UnsportingBehaviorMinor, GameEventType};
 
 use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo};
 use crabe_protocol::protobuf::game_controller_packet::Team as ProtocolTeam;
@@ -116,6 +116,57 @@ fn map_goal(goal: ProtocolGoal) -> Goal {
     }
 }
 
+fn map_type(event_type: ProtocolType) -> GameEventType{
+    match event_type {
+        ProtocolType::BallLeftFieldTouchLine=>GameEventType::BallLeftFieldTouchLine,
+        ProtocolType::BallLeftFieldGoalLine=>GameEventType::BallLeftFieldGoalLine,
+        ProtocolType::AimlessKick=>GameEventType::AimlessKick,
+        ProtocolType::AttackerTooCloseToDefenseArea=>GameEventType::AttackerTooCloseToDefenseArea,
+        ProtocolType::DefenderInDefenseArea=>GameEventType::DefenderInDefenseArea,
+        ProtocolType::BoundaryCrossing=>GameEventType::BoundaryCrossing,
+        ProtocolType::KeeperHeldBall=>GameEventType::KeeperHeldBall,
+        ProtocolType::BotDribbledBallTooFar=>GameEventType::BotDribbledBallTooFar,
+        ProtocolType::BotPushedBot=>GameEventType::BotPushedBot,
+        ProtocolType::BotHeldBallDeliberately=>GameEventType::BotHeldBallDeliberately,
+        ProtocolType::BotTippedOver=>GameEventType::BotTippedOver,
+        ProtocolType::AttackerTouchedBallInDefenseArea=>GameEventType::AttackerTouchedBallInDefenseArea,
+        ProtocolType::BotKickedBallTooFast=>GameEventType::BotKickedBallTooFast,
+        ProtocolType::BotCrashUnique=>GameEventType::BotCrashUnique,
+        ProtocolType::BotCrashDrawn=>GameEventType::BotCrashDrawn,
+        ProtocolType::DefenderTooCloseToKickPoint=>GameEventType::DefenderTooCloseToKickPoint,
+        ProtocolType::BotTooFastInStop=>GameEventType::BotTooFastInStop,
+        ProtocolType::BotInterferedPlacement=>GameEventType::BotInterferedPlacement,
+        ProtocolType::PossibleGoal=>GameEventType::PossibleGoal,
+        ProtocolType::Goal=>GameEventType::Goal,
+        ProtocolType::InvalidGoal=>GameEventType::InvalidGoal,
+        ProtocolType::AttackerDoubleTouchedBall=>GameEventType::AttackerDoubleTouchedBall,
+        ProtocolType::PlacementSucceeded=>GameEventType::PlacementSucceeded,
+        ProtocolType::PenaltyKickFailed=>GameEventType::PenaltyKickFailed,
+        ProtocolType::NoProgressInGame=>GameEventType::NoProgressInGame,
+        ProtocolType::PlacementFailed=>GameEventType::PlacementFailed,
+        ProtocolType::MultipleCards=>GameEventType::MultipleCards,
+        ProtocolType::MultipleFouls=>GameEventType::MultipleFouls,
+        ProtocolType::BotSubstitution=>GameEventType::BotSubstitution,
+        ProtocolType::TooManyRobots=>GameEventType::TooManyRobots,
+        ProtocolType::ChallengeFlag=>GameEventType::ChallengeFlag,
+        ProtocolType::ChallengeFlagHandled=>GameEventType::ChallengeFlagHandled,
+        ProtocolType::EmergencyStop=>GameEventType::EmergencyStop,
+        ProtocolType::UnsportingBehaviorMinor=>GameEventType::UnsportingBehaviorMinor,
+        ProtocolType::UnsportingBehaviorMajor=>GameEventType::UnsportingBehaviorMajor,
+        ProtocolType::UnknownGameEventType => todo!(),
+        ProtocolType::Prepared => todo!(),
+        ProtocolType::IndirectGoal => todo!(),
+        ProtocolType::ChippedGoal => todo!(),
+        ProtocolType::KickTimeout => todo!(),
+        ProtocolType::AttackerTouchedOpponentInDefenseArea => todo!(),
+        ProtocolType::AttackerTouchedOpponentInDefenseAreaSkipped => todo!(),
+        ProtocolType::BotCrashUniqueSkipped => todo!(),
+        ProtocolType::BotPushedBotSkipped => todo!(),
+        ProtocolType::DefenderInDefenseAreaPartially => todo!(),
+        ProtocolType::MultiplePlacementFailures => todo!(),
+    }
+}
+
 fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
     BallLeftField {
         by_team: map_team_color_i32(value.by_team),
@@ -123,18 +174,34 @@ fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
         location: value.location.map(map_vector_point),
     }
 }
+fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
+    return if let Some(event) = map_event(game_event) {
+        Some(GameEvent{
+            type_event: match game_event.r#type{
+                Some(r#type) => ProtocolType::from_i32(r#type)
+                    .map(map_type),
+                None => None
+            },
+            created_timestamp:game_event.created_timestamp,
+            origin:todo!(),
+            event,
+        })
+    }else{
+        None
+    };
+}
 
-fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
+fn map_event(event: ProtocolEvent) -> Option<Event> {
     return if let Some(event) = event.event {
         match event {
             ProtocolEventData::BallLeftFieldTouchLine(data) => {
-                Some(GameEvent::BallLeftFieldTouchLine(map_ball_left_field(data)))
+                Some(Event::BallLeftFieldTouchLine(map_ball_left_field(data)))
             }
             ProtocolEventData::BallLeftFieldGoalLine(data) => {
-                Some(GameEvent::BallLeftFieldTouchLine(map_ball_left_field(data)))
+                Some(Event::BallLeftFieldTouchLine(map_ball_left_field(data)))
             }
             ProtocolEventData::AimlessKick(data) => {
-                Some(GameEvent::AimlessKick(AimlessKick {
+                Some(Event::AimlessKick(AimlessKick {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -142,7 +209,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::AttackerTooCloseToDefenseArea(data) => {
-                Some(GameEvent::AttackerTooCloseToDefenseArea(AttackerTooCloseToDefenseArea {
+                Some(Event::AttackerTooCloseToDefenseArea(AttackerTooCloseToDefenseArea {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -151,7 +218,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::DefenderInDefenseArea(data) => {
-                Some(GameEvent::DefenderInDefenseArea(DefenderInDefenseArea {
+                Some(Event::DefenderInDefenseArea(DefenderInDefenseArea {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -159,20 +226,20 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BoundaryCrossing(data) => {
-                Some(GameEvent::BoundaryCrossing(BoundaryCrossing {
+                Some(Event::BoundaryCrossing(BoundaryCrossing {
                     by_team: map_team_color_i32(data.by_team),
                     location: data.location.map(map_vector_point),
                 }))
             }
             ProtocolEventData::KeeperHeldBall(data) => {
-                Some(GameEvent::KeeperHeldBall(KeeperHeldBall {
+                Some(Event::KeeperHeldBall(KeeperHeldBall {
                     by_team: map_team_color_i32(data.by_team),
                     location: data.location.map(map_vector_point),
                     duration: data.duration.map(|d| Duration::seconds(d as i64)), // TODO: More precision?
                 }))
             }
             ProtocolEventData::BotDribbledBallTooFar(data) => {
-                Some(GameEvent::BotDribbledBallTooFar(BotDribbledBallTooFar {
+                Some(Event::BotDribbledBallTooFar(BotDribbledBallTooFar {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     start: data.start.map(map_vector_point),
@@ -180,7 +247,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotPushedBot(data) => {
-                Some(GameEvent::BotPushedBot(BotPushedBot {
+                Some(Event::BotPushedBot(BotPushedBot {
                     by_team: map_team_color_i32(data.by_team),
                     violator: data.violator,
                     victim: data.victim,
@@ -189,7 +256,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotHeldBallDeliberately(data) => {
-                Some(GameEvent::BotHeldBallDeliberately(BotHeldBallDeliberately {
+                Some(Event::BotHeldBallDeliberately(BotHeldBallDeliberately {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -197,7 +264,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotTippedOver(data) => {
-                Some(GameEvent::BotTippedOver(BotTippedOver {
+                Some(Event::BotTippedOver(BotTippedOver {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -205,7 +272,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::AttackerTouchedBallInDefenseArea(data) => {
-                Some(GameEvent::AttackerTouchedBallInDefenseArea(AttackerTouchedBallInDefenseArea {
+                Some(Event::AttackerTouchedBallInDefenseArea(AttackerTouchedBallInDefenseArea {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -213,7 +280,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotKickedBallTooFast(data) => {
-                Some(GameEvent::BotKickedBallTooFast(BotKickedBallTooFast {
+                Some(Event::BotKickedBallTooFast(BotKickedBallTooFast {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -222,7 +289,7 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotCrashUnique(data) => {
-                Some(GameEvent::BotCrashUnique(BotCrashUnique {
+                Some(Event::BotCrashUnique(BotCrashUnique {
                     by_team: map_team_color_i32(data.by_team),
                     violator: data.violator,
                     victim: data.victim,
@@ -233,16 +300,17 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotCrashDrawn(data) => {
-                Some(GameEvent::BotCrashDrawn(BotCrashDrawn {
+                Some(Event::BotCrashDrawn(BotCrashDrawn {
                     bot_blue: data.bot_blue,
                     bot_yellow: data.bot_yellow,
                     crash_speed: data.crash_speed.map(|s| s as f64),
                     speed_diff: data.speed_diff.map(|d| d as f64),
                     crash_angle: data.crash_angle.map(|a| a as f64),
+                    location: todo!(),
                 }))
             }
             ProtocolEventData::BotTooFastInStop(data) => {
-                Some(GameEvent::BotTooFastInStop(BotTooFastInStop {
+                Some(Event::BotTooFastInStop(BotTooFastInStop {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -250,68 +318,69 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::BotInterferedPlacement(data) => {
-                Some(GameEvent::BotInterferedPlacement(BotInterferedPlacement {
+                Some(Event::BotInterferedPlacement(BotInterferedPlacement {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
                 }))
             }
             ProtocolEventData::PossibleGoal(data) => {
-                Some(GameEvent::PossibleGoal(map_goal(data)))
+                Some(Event::PossibleGoal(map_goal(data)))
             }
             ProtocolEventData::Goal(data) => {
-                Some(GameEvent::Goal(map_goal(data)))
+                Some(Event::Goal(map_goal(data)))
             }
             ProtocolEventData::InvalidGoal(data) => {
-                Some(GameEvent::InvalidGoal(map_goal(data)))
+                Some(Event::InvalidGoal(map_goal(data)))
             }
             ProtocolEventData::AttackerDoubleTouchedBall(data) => {
-                Some(GameEvent::AttackerDoubleTouchedBall(AttackerDoubleTouchedBall {
+                Some(Event::AttackerDoubleTouchedBall(AttackerDoubleTouchedBall {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
                 }))
             }
             ProtocolEventData::PlacementSucceeded(data) => {
-                Some(GameEvent::PlacementSucceeded(PlacementSucceeded {
+                Some(Event::PlacementSucceeded(PlacementSucceeded {
                     by_team: map_team_color_i32(data.by_team),
-                    time_taken: data.time_taken.map(|d| Duration::seconds(d as i64)),
+                    time_taken: data.time_taken.map(|d| d as f64),
                     precision: data.precision.map(|p| p as f64),
                     distance: data.distance.map(|d| d as f64),
                 }))
             }
             ProtocolEventData::PlacementFailed(data) => {
-                Some(GameEvent::PlacementFailed(PlacementFailed {
+                Some(Event::PlacementFailed(PlacementFailed {
                     by_team: map_team_color_i32(data.by_team),
                     remaining_distance: data.remaining_distance.map(|d| d as f64),
                 }))
             }
             ProtocolEventData::PenaltyKickFailed(data) => {
-                Some(GameEvent::PenaltyKickFailed(PenaltyKickFailed {
+                Some(Event::PenaltyKickFailed(PenaltyKickFailed {
                     by_team: map_team_color_i32(data.by_team),
                     location: data.location.map(map_vector_point),
+                    reason: todo!(),
                 }))
             }
             ProtocolEventData::NoProgressInGame(data) => {
-                Some(GameEvent::NoProgressInGame(NoProgressInGame {
+                Some(Event::NoProgressInGame(NoProgressInGame {
                     location: data.location.map(map_vector_point),
                     time: data.time.map(|d| Duration::seconds(d as i64)),
                 }))
             }
             ProtocolEventData::MultipleCards(data) => {
-                Some(GameEvent::MultipleCards(map_team_color_i32(data.by_team)))
+                Some(Event::MultipleCards(map_team_color_i32(data.by_team)))
             }
             ProtocolEventData::MultipleFouls(data) => {
-                Some(GameEvent::MultipleFouls(MultipleFouls {
+                Some(Event::MultipleFouls(MultipleFouls {
                     by_team: map_team_color_i32(data.by_team),
                     caused_game_events: vec![], // TODO
                 }))
             }
             ProtocolEventData::BotSubstitution(data) => {
-                Some(GameEvent::BotSubstitution(map_team_color_i32(data.by_team)))
+                Some(Event::BotSubstitution(map_team_color_i32(data.by_team)))
             }
             ProtocolEventData::TooManyRobots(data) => {
-                Some(GameEvent::TooManyRobots(TooManyRobots {
+                Some(Event::TooManyRobots(TooManyRobots {
                     by_team: map_team_color_i32(data.by_team),
                     num_robots_allowed: data.num_robots_allowed.map(|n| if n < 0 { 0 } else { n as u32 }),
                     num_robots_on_field: data.num_robots_on_field.map(|n| if n < 0 { 0 } else { n as u32 }),
@@ -319,25 +388,25 @@ fn map_event(event: ProtocolEvent) -> Option<GameEvent> {
                 }))
             }
             ProtocolEventData::ChallengeFlag(data) => {
-                Some(GameEvent::ChallengeFlag(map_team_color_i32(data.by_team)))
+                Some(Event::ChallengeFlag(map_team_color_i32(data.by_team)))
             }
             ProtocolEventData::EmergencyStop(data) => {
-                Some(GameEvent::EmergencyStop(map_team_color_i32(data.by_team)))
+                Some(Event::EmergencyStop(map_team_color_i32(data.by_team)))
             }
             ProtocolEventData::UnsportingBehaviorMinor(data) => {
-                Some(GameEvent::UnsportingBehaviorMinor(UnsportingBehavior {
+                Some(Event::UnsportingBehaviorMinor(UnsportingBehaviorMinor {
                     by_team: map_team_color_i32(data.by_team),
                     reason: data.reason,
                 }))
             }
             ProtocolEventData::UnsportingBehaviorMajor(data) => {
-                Some(GameEvent::UnsportingBehaviorMajor(UnsportingBehavior {
+                Some(Event::UnsportingBehaviorMajor(UnsportingBehaviorMajor {
                     by_team: map_team_color_i32(data.by_team),
                     reason: data.reason,
                 }))
             }
             ProtocolEventData::DefenderTooCloseToKickPoint(data) => {
-                Some(GameEvent::DefenderTooCloseToKickPoint(DefenderTooCloseToKickPoint {
+                Some(Event::DefenderTooCloseToKickPoint(DefenderTooCloseToKickPoint {
                     by_team: map_team_color_i32(data.by_team),
                     by_bot: data.by_bot,
                     location: data.location.map(map_vector_point),
@@ -406,9 +475,9 @@ fn map_protobuf_referee(
             .map(|c| ProtocolCommand::from_i32(c))
             .flatten()
             .map(map_command),
-        game_events: packet.game_events.drain(..).filter_map(map_event).collect(),
+        game_events: packet.game_events.drain(..).filter_map(map_game_event).collect(),
         game_event_proposals: packet.game_event_proposals.drain(..).map(|mut p| GameEventProposalGroup {
-            game_event: p.game_event.drain(..).filter_map(map_event).collect(),
+            game_event: p.game_event.drain(..).filter_map(map_game_event).collect(),
             accepted: p.accepted,
         }).collect(),
         current_action_time_remaining: packet

@@ -488,7 +488,7 @@ pub struct PlacementFailed {
     /// The team that failed.
     pub by_team: TeamColor,
     /// The remaining distance from ball to placement position (in meter).
-    pub remaining_distance: f64,
+    pub remaining_distance: Option<f64>,
 }
 
 /// Represents an event where a team collected multiple fouls, which results in a yellow card.
