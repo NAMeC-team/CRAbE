@@ -455,7 +455,7 @@ fn map_protobuf_referee(
         TeamColor::Yellow => (packet.yellow, packet.blue),
         TeamColor::Blue => (packet.blue, packet.yellow),
     };
-    println!("cascre2 : {:?}",packet.game_events);
+    //println!("packet events : {:?}",packet.game_events);
 
     Ok(Referee {
         source_identifier: packet.source_identifier,
@@ -507,7 +507,7 @@ impl PreFilter for GameControllerPreFilter {
         team_color: &TeamColor,
         filter_data: &mut FilterData,
     ) {
-        println!("len: {}", inbound_data.gc_packet.len());
+        //println!("len: {}", inbound_data.gc_packet.len());
         filter_data.referee.extend(
             inbound_data
                 .gc_packet

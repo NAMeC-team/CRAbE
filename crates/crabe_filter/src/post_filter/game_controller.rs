@@ -51,40 +51,74 @@ impl GameControllerPostFilter {
     fn stop_state_branch(
         previous_event_opt: &Option<Event>,
         world: &mut World,
-        mut kicked_off_once: bool,
+        mut _kicked_off_once: bool,
     ) {
-        // TODO: 3/4 ?
+        //dbg!("w",&world);
+        // TODO: the "world.team_color" isn't right I think
         if let Some(previous_event) = previous_event_opt {
             match previous_event {
                 // Goal has been scored, prepare for next kickoff phase
                 Event::Goal { .. } => {
-                    world.data.state = GameState::Stopped(StoppedState::PrepareKickoff);
+                    world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(world.team_color));
                     println!("Prepare for kickoff");
                 }
 
                 Event::BallLeftFieldTouchLine { .. } => {
-                    world.data.state = GameState::Stopped(StoppedState::BallPlacement);
+                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
                     println!("Ball got out of the field by the touch lines !");
                 }
 
                 Event::BallLeftFieldGoalLine { .. } => {
-                    world.data.state = GameState::Stopped(StoppedState::BallPlacement);
+                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
                     println!("Ball got out of the field by the goal lines !");
                 }
-
-                &_ => {}
+                //TODO : check if all these events have to be stopped
+                Event::AimlessKick(_) |
+                Event::AttackerTooCloseToDefenseArea(_) |
+                Event::DefenderInDefenseArea(_) |
+                Event::BoundaryCrossing(_) |
+                Event::KeeperHeldBall(_) |
+                Event::BotDribbledBallTooFar(_) |
+                Event::BotPushedBot(_) |
+                Event::BotHeldBallDeliberately(_) |
+                Event::BotTippedOver(_) |
+                Event::AttackerTouchedBallInDefenseArea(_) |
+                Event::BotKickedBallTooFast(_) |
+                Event::BotCrashUnique(_) |
+                Event::BotCrashDrawn(_) |
+                Event::DefenderTooCloseToKickPoint(_) |
+                Event::BotTooFastInStop(_) |
+                Event::BotInterferedPlacement(_) |
+                Event::PossibleGoal(_) |
+                Event::InvalidGoal(_) |
+                Event::AttackerDoubleTouchedBall(_) |
+                Event::PlacementSucceeded(_) |
+                Event::PenaltyKickFailed(_) |
+                Event::NoProgressInGame(_) |
+                Event::PlacementFailed(_) |
+                Event::MultipleCards(_) |
+                Event::MultipleFouls(_) |
+                Event::TooManyRobots(_) |
+                Event::BotSubstitution(_) |
+                Event::ChallengeFlag(_) |
+                Event::EmergencyStop(_) |
+                Event::UnsportingBehaviorMinor(_) |
+                Event::UnsportingBehaviorMajor(_) |
+                Event::DeprecatedEvent => {
+                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
+                }
             }
         } else {
             // Particularly, it should be None when we just started the match
             // Thus, it's a kickoff
-            if !kicked_off_once {
-                world.data.state = GameState::Stopped(StoppedState::PrepareKickoff);
-                kicked_off_once = true;
+            if !_kicked_off_once {
+                world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(world.team_color));
+                _kicked_off_once = true;
             } else {
                 // this one's totally arbitrary
                 // i don't understand how we can fetch a forced free kick from the commands
                 // todo: fix what's mentioned above me (fix me !)
-                world.data.state = GameState::Running(RunningState::FreeKick(TeamColor::Blue));
+                world.data.state = GameState::Running(RunningState::FreeKick(world.team_color));
             }
         }
     }
@@ -92,34 +126,33 @@ impl GameControllerPostFilter {
     fn force_start_state_branch(
         previous_event_opt: &Option<Event>,
         world: &mut World,
-        mut chrono: Option<Instant>,
+        mut _chrono: Option<Instant>,
     ) {
-        GameControllerPostFilter::normal_start_state_branch(previous_event_opt, world, chrono)
+        GameControllerPostFilter::normal_start_state_branch(previous_event_opt, world, _chrono)
     }
     fn normal_start_state_branch(
         previous_event_opt: &Option<Event>,
         world: &mut World,
-        mut chrono: Option<Instant>,
+        mut _chrono: Option<Instant>,
     ) {
         //TODO team color
         if let Some(previous_event) = previous_event_opt {
             match previous_event {
                 Event::Goal(g) => {
-                    dbg!(g.by_team);
                     // Kickoff is in progress by a team, place accordingly on your side
                     // 10s until we go into normal state
-                    if let Some(chrono) = chrono {
+                    if let Some(chrono) = _chrono {
                         println!("Kickoff in progress ! It lasts for 10s at most");
                         if chrono.elapsed() > std::time::Duration::from_secs(10) {
                             //let kickoff_team = g.by_team as TeamColor;
                             //world.data.state = GameState::Running(RunningState::KickOff(kickoff_team));
                             world.data.state =
-                                GameState::Running(RunningState::KickOff(TeamColor::Blue));
+                                GameState::Running(RunningState::KickOff(g.by_team.opposite()));
                         }
                     } else {
                         println!("Running normally after kickoff");
                         // start chrono
-                        chrono = Some(Instant::now());
+                        _chrono = Some(Instant::now());
                         world.data.state = GameState::Running(RunningState::Run);
                     }
                 }
@@ -133,79 +166,50 @@ impl GameControllerPostFilter {
                 }
             }
         } else {
-            println!("Play by default");
+            //println!("Play by default");
             world.data.state = GameState::Running(RunningState::Run);
         }
     }
 
     //TODO : color different state
-    fn timeout_yellow_branch(world: &mut World) {
-        world.data.state = GameState::Halted(HaltedState::Timeout);
-    }
-    fn timeout_blue_branch(world: &mut World) {
+    fn timeout_branch(world: &mut World, _team:TeamColor) {
         world.data.state = GameState::Halted(HaltedState::Timeout);
     }
 
-    fn freekick_blue_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
-        if let Some(chrono) = chrono_opt {
-            // if 10s have passed, game runs normally
+    fn freekick_branch(world: &mut World, mut _chrono_opt: Option<Instant>, team:TeamColor) {
+        if let Some(chrono) = _chrono_opt {
             if chrono.elapsed() > std::time::Duration::from_secs(10) {
-                world.data.state = GameState::Running(RunningState::Run);
-                chrono_opt = Some(Instant::now());
-            } else {
-                // otherwise, we are still in the FreeKick state
-                world.data.state = GameState::Running(RunningState::FreeKick(TeamColor::Blue));
-            }
-        }
-    }
-
-    fn freekick_yellow_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
-        if let Some(chrono) = chrono_opt {
-            if chrono.elapsed() > std::time::Duration::from_secs(10) {
+                dbg!("ya");
                 // if 10s have passed, game runs normally
                 world.data.state = GameState::Running(RunningState::Run);
-                chrono_opt = Some(Instant::now());
+                _chrono_opt = Some(Instant::now());
             } else {
                 // otherwise, we are still in the FreeKick state
-                world.data.state = GameState::Running(RunningState::FreeKick(TeamColor::Yellow));
+                world.data.state = GameState::Running(RunningState::FreeKick(team));
             }
         }
     }
 
-    fn prepare_penalty_yellow_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
-        //TODO : idk the penalty comportement
-        world.data.state = GameState::Running(RunningState::Penalty(TeamColor::Yellow));
+    fn prepare_penalty_branch(world: &mut World, mut _chrono_opt: Option<Instant>, team:TeamColor) {
+        //TODO : the penalty comportement is complex, maybe we're missing a penalty RunningState
+        world.data.state = GameState::Stopped(StoppedState::PreparePenalty(team));
     }
 
-    fn prepare_penalty_blue_branch(world: &mut World, mut chrono_opt: Option<Instant>) {
-        //TODO : idk the penalty comportement
-        world.data.state = GameState::Running(RunningState::Penalty(TeamColor::Blue));
+    fn prepare_kickoff_branch(world: &mut World, mut _chrono_opt: Option<Instant>, team: TeamColor) {
+        world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(team));
     }
 
-    fn ball_placement_yellow_branch(world: &mut World, chrono_opt: Option<Instant>) {
+    fn ball_placement_branch(world: &mut World, chrono_opt: Option<Instant>, team:TeamColor) {
         if let Some(chrono) = chrono_opt {
             // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
             if chrono.elapsed() >= std::time::Duration::from_secs(30) {
                 world.data.state = GameState::Running(RunningState::Run);
             } else {
-                world.data.state = GameState::Stopped(StoppedState::BallPlacement);
+                world.data.state = GameState::Stopped(StoppedState::BallPlacement(team));
             }
         }
         // The chrono should always be available to us
-        unreachable!();
-    }
-
-    fn ball_placement_blue_branch(world: &mut World, chrono_opt: Option<Instant>) {
-        if let Some(chrono) = chrono_opt {
-            // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
-            if chrono.elapsed() >= std::time::Duration::from_secs(30) {
-                world.data.state = GameState::Running(RunningState::Run);
-            } else {
-                world.data.state = GameState::Stopped(StoppedState::BallPlacement);
-            }
-        }
-        // The chrono should always be available to us
-        unreachable!();
+        unreachable!(); // todo remove
     }
 }
 
@@ -221,54 +225,36 @@ impl PostFilter for GameControllerPostFilter {
         };
 
         let ref_command = last_referee_packet.command.clone();
-
+        //dbg!(&ref_command);
+        //TODO : i'm not sure about the indirect free kick and goal refCommand 
         match ref_command {
             RefereeCommand::Halt => GameControllerPostFilter::halt_state_branch(world),
-            RefereeCommand::Stop => GameControllerPostFilter::stop_state_branch(
-                &self.previous_event,
-                world,
-                self.kicked_off_once,
-            ),
-            RefereeCommand::NormalStart => GameControllerPostFilter::normal_start_state_branch(
-                &self.previous_event,
-                world,
-                self.chrono,
-            ),
-            RefereeCommand::ForceStart => GameControllerPostFilter::force_start_state_branch(
-                &self.previous_event,
-                world,
-                self.chrono,
-            ),
+            RefereeCommand::Deprecated |
+            RefereeCommand::IndirectFree(_) |
+            RefereeCommand::Goal(_) |
+            RefereeCommand::Stop => {
+                GameControllerPostFilter::stop_state_branch(&self.previous_event, world, self.kicked_off_once,)
+            },
+            RefereeCommand::NormalStart => {
+                GameControllerPostFilter::normal_start_state_branch(&self.previous_event, world, self.chrono,)
+            },
+            RefereeCommand::ForceStart => {
+                GameControllerPostFilter::force_start_state_branch(&self.previous_event, world, self.chrono,)
+            },
             RefereeCommand::Timeout(team) => {
-                if team == TeamColor::Yellow {
-                    GameControllerPostFilter::timeout_yellow_branch(world)
-                } else {
-                    GameControllerPostFilter::timeout_blue_branch(world)
-                }
+                GameControllerPostFilter::timeout_branch(world, team)
             }
             RefereeCommand::DirectFree(team) => {
-                if team == TeamColor::Yellow {
-                    GameControllerPostFilter::freekick_yellow_branch(world, self.chrono)
-                } else {
-                    GameControllerPostFilter::freekick_blue_branch(world, self.chrono)
-                }
+                GameControllerPostFilter::freekick_branch(world, self.chrono, team)
             }
             RefereeCommand::BallPlacement(team) => {
-                if team == TeamColor::Yellow {
-                    GameControllerPostFilter::ball_placement_yellow_branch(world, self.chrono)
-                } else {
-                    GameControllerPostFilter::ball_placement_blue_branch(world, self.chrono)
-                }
+                GameControllerPostFilter::ball_placement_branch(world, self.chrono, team)
             }
             RefereeCommand::PreparePenalty(team) => {
-                if team == TeamColor::Yellow {
-                    GameControllerPostFilter::prepare_penalty_yellow_branch(world, self.chrono)
-                } else {
-                    GameControllerPostFilter::prepare_penalty_blue_branch(world, self.chrono)
-                }
+                GameControllerPostFilter::prepare_penalty_branch(world, self.chrono, team)
             }
-            state => {
-                println!("untreated state {:?}", state);
+            RefereeCommand::PrepareKickoff(team) => {
+                GameControllerPostFilter::prepare_kickoff_branch(world, self.chrono, team)
             }
         }
 

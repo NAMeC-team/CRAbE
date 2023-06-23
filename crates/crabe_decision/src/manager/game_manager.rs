@@ -1,6 +1,7 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
+use crate::strategy::testing::Square;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_framework::data::world::World;
@@ -51,14 +52,14 @@ impl Manager for GameManager {
                     StoppedState::Stop => {
                         println!("stop");
                     }
-                    StoppedState::PrepareKickoff => {
-                        println!("prepare kick off");
+                    StoppedState::PrepareKickoff(team) => {
+                        println!("prepare kick off {:?}",team);
                     }
-                    StoppedState::PreparePenalty => {
-                        println!("prepare penalty");
+                    StoppedState::PreparePenalty(team) => {
+                        println!("prepare penalty {:?}",team);
                     }
-                    StoppedState::BallPlacement => {
-                        println!("ball placement");
+                    StoppedState::BallPlacement(team) => {
+                        println!("ball placement {:?}",team);
                     }
                 },
                 GameState::Running(running_state) => match running_state {
@@ -73,6 +74,7 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
+                        self.strategies.push(Box::new(Square::new(1)));
                     }
                 },
             }
