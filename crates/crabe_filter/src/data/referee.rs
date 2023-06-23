@@ -113,7 +113,7 @@ pub enum Stage {
 
 /// The `RefereeCommand` enum represents a set of possible commands that a referee can issue during a game.
 /// These commands control the state of the game and dictate the actions that robots are allowed to perform at any given moment.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum RefereeCommand {
     /// Command indicating that all robots must halt movement immediately.
     Halt,

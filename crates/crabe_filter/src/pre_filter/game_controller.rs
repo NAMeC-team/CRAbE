@@ -455,8 +455,6 @@ fn map_protobuf_referee(
         TeamColor::Yellow => (packet.yellow, packet.blue),
         TeamColor::Blue => (packet.blue, packet.yellow),
     };
-    //println!("packet events : {:?}",packet.game_events);
-
     Ok(Referee {
         source_identifier: packet.source_identifier,
         match_type: None, // TODO : Finish

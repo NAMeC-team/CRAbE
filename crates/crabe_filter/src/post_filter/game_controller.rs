@@ -7,12 +7,15 @@ use crabe_framework::data::world::{TeamColor, World};
 
 use crate::data::referee::event::{Event, GameEvent};
 use crate::data::referee::RefereeCommand;
+use std::cell::Ref;
 use std::time::Instant;
 
 #[derive(Debug)]
 pub struct GameControllerPostFilter {
     previous_game_event: Option<GameEvent>,
     previous_event: Option<Event>,
+    previous_command: RefereeCommand,
+    last_command: RefereeCommand,
     chrono: Option<Instant>, // TODO: Need to have an option here ?
     kicked_off_once: bool,
 }
@@ -22,6 +25,8 @@ impl Default for GameControllerPostFilter {
         GameControllerPostFilter {
             previous_game_event: None,
             previous_event: None,
+            previous_command: RefereeCommand::Halt,
+            last_command: RefereeCommand::Halt,
             chrono: Option::from(Instant::now()),
             kicked_off_once: false,
         }
@@ -42,20 +47,20 @@ impl GameControllerPostFilter {
 
     fn halt_state_branch(world: &mut World) {
         // Halt event, all robots should stop
-        // Done: 2/2
         // consider that timeout is equivalent to normal halt
         world.data.state = GameState::Halted(HaltedState::Halt);
-        println!("Stop all robots");
     }
 
     fn stop_state_branch(
-        previous_event_opt: &Option<Event>,
+        previous_game_event_opt: &Option<GameEvent>,
+        previous_command: &RefereeCommand,
         world: &mut World,
-        mut _kicked_off_once: bool,
+        _kicked_off_once: &mut bool,
     ) {
-        //dbg!("w",&world);
-        // TODO: the "world.team_color" isn't right I think
-        if let Some(previous_event) = previous_event_opt {
+        // TODO: the "world.team_color" isn't right
+        if let Some(previous_game_event) = previous_game_event_opt {
+            let previous_event = &previous_game_event.event;
+            dbg!(previous_event);
             match previous_event {
                 // Goal has been scored, prepare for next kickoff phase
                 Event::Goal { .. } => {
@@ -111,14 +116,17 @@ impl GameControllerPostFilter {
         } else {
             // Particularly, it should be None when we just started the match
             // Thus, it's a kickoff
-            if !_kicked_off_once {
+            if !*_kicked_off_once {
+                //TODO : when we launch the code in the middle of a game this code goes wrong because it's not everytime kick off 
                 world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(world.team_color));
-                _kicked_off_once = true;
+                *_kicked_off_once = true;
             } else {
                 // this one's totally arbitrary
                 // i don't understand how we can fetch a forced free kick from the commands
                 // todo: fix what's mentioned above me (fix me !)
-                world.data.state = GameState::Running(RunningState::FreeKick(world.team_color));
+                //world.data.state = GameState::Running(RunningState::FreeKick(world.team_color));
+
+                world.data.state = GameState::Stopped(StoppedState::Stop);
             }
         }
     }
@@ -130,6 +138,7 @@ impl GameControllerPostFilter {
     ) {
         GameControllerPostFilter::normal_start_state_branch(previous_event_opt, world, _chrono)
     }
+
     fn normal_start_state_branch(
         previous_event_opt: &Option<Event>,
         world: &mut World,
@@ -171,15 +180,14 @@ impl GameControllerPostFilter {
         }
     }
 
-    //TODO : color different state
     fn timeout_branch(world: &mut World, _team:TeamColor) {
         world.data.state = GameState::Halted(HaltedState::Timeout);
     }
 
     fn freekick_branch(world: &mut World, mut _chrono_opt: Option<Instant>, team:TeamColor) {
         if let Some(chrono) = _chrono_opt {
+            //dbg!(chrono);
             if chrono.elapsed() > std::time::Duration::from_secs(10) {
-                dbg!("ya");
                 // if 10s have passed, game runs normally
                 world.data.state = GameState::Running(RunningState::Run);
                 _chrono_opt = Some(Instant::now());
@@ -225,15 +233,13 @@ impl PostFilter for GameControllerPostFilter {
         };
 
         let ref_command = last_referee_packet.command.clone();
-        //dbg!(&ref_command);
-        //TODO : i'm not sure about the indirect free kick and goal refCommand 
+        //TODO : not sure about the indirect free kick and goal refCommand 
         match ref_command {
             RefereeCommand::Halt => GameControllerPostFilter::halt_state_branch(world),
             RefereeCommand::Deprecated |
             RefereeCommand::IndirectFree(_) |
-            RefereeCommand::Goal(_) |
             RefereeCommand::Stop => {
-                GameControllerPostFilter::stop_state_branch(&self.previous_event, world, self.kicked_off_once,)
+                GameControllerPostFilter::stop_state_branch(&self.previous_game_event, &self.previous_command, world, &mut self.kicked_off_once,)
             },
             RefereeCommand::NormalStart => {
                 GameControllerPostFilter::normal_start_state_branch(&self.previous_event, world, self.chrono,)
@@ -253,6 +259,9 @@ impl PostFilter for GameControllerPostFilter {
             RefereeCommand::PreparePenalty(team) => {
                 GameControllerPostFilter::prepare_penalty_branch(world, self.chrono, team)
             }
+            RefereeCommand::Goal(team) => {//TODO : It's recommended to use the score field from the team infos instead for goal detection and revoked goals.
+                GameControllerPostFilter::prepare_kickoff_branch(world, self.chrono, team.opposite())
+            }
             RefereeCommand::PrepareKickoff(team) => {
                 GameControllerPostFilter::prepare_kickoff_branch(world, self.chrono, team)
             }
@@ -264,6 +273,10 @@ impl PostFilter for GameControllerPostFilter {
             self.previous_event = Option::from(previous_game_event.event.clone());
             //todo: don't clone this, specify lifetime
         }
+        if ref_command != self.last_command{
+            self.previous_command = self.last_command.clone();
+        }
+        self.last_command = ref_command.clone();
 
         // todo: Don't forget to update positive half
         // if let Some(blue_team_on_positive_half) = last_referee_packet.blue_team_on_positive_half {
