@@ -182,7 +182,6 @@ fn map_origin(origin: String) -> EventOrigin{
 }
 
 fn map_game_event(mut game_event: ProtocolEvent) -> Option<GameEvent> {
-    println!("test game");
     let created_timestamp = game_event.created_timestamp;
     let event = game_event.event.map(map_event).flatten();
     /* 
