@@ -58,21 +58,20 @@ impl GameControllerPostFilter {
         _kicked_off_once: &mut bool,
         mut _chrono: Option<Instant>,
     ) {
-        // TODO: the "world.team_color" isn't right
         if let Some(previous_game_event) = previous_game_event_opt {
             let previous_event = &previous_game_event.event;
             match previous_event {
                 // Goal has been scored, prepare for next kickoff phase
-                Event::Goal { .. } => {
-                    world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(world.team_color));
+                Event::Goal(goal_infos)=> {
+                    world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(goal_infos.by_team.opposite()));
+                }
+                //TODO : team color idk if it's opposite or ?
+                Event::BallLeftFieldTouchLine(left_field_infos) => {
+                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
 
-                Event::BallLeftFieldTouchLine { .. } => {
-                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
-                }
-
-                Event::BallLeftFieldGoalLine { .. } => {
-                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
+                Event::BallLeftFieldGoalLine(left_field_infos) => {
+                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
                 //TODO : check if all these events have to be stopped
                 Event::AimlessKick(_) |
@@ -107,6 +106,7 @@ impl GameControllerPostFilter {
                 Event::UnsportingBehaviorMinor(_) |
                 Event::UnsportingBehaviorMajor(_) |
                 Event::DeprecatedEvent => {
+                    // TODO: the "world.team_color" isn't right
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
                 }
             }
@@ -228,7 +228,7 @@ impl PostFilter for GameControllerPostFilter {
         };
 
         let ref_command = last_referee_packet.command.clone();
-        //TODO : not sure about the indirect free kick and goal refCommand 
+        //TODO : not sure about the indirect free kick refCommand 
         match ref_command {
             RefereeCommand::Halt => GameControllerPostFilter::halt_state_branch(world),
             RefereeCommand::Deprecated |
