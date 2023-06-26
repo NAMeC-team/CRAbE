@@ -52,7 +52,7 @@ impl GameControllerPostFilter {
     }
 
     fn stop_state_branch(
-        previous_game_event_opt: &Option<GameEvent>,
+        previous_game_event_opt: &Option<&GameEvent>,
         _previous_command: &RefereeCommand,
         world: &mut World,
         _kicked_off_once: &mut bool,
@@ -243,12 +243,13 @@ impl PostFilter for GameControllerPostFilter {
 
         let ref_command = last_referee_packet.command.clone();
         //TODO : not sure about the indirect free refCommand
+        //dbg!(&ref_command);
         match ref_command {
             RefereeCommand::Halt => GameControllerPostFilter::halt_state_branch(world),
             RefereeCommand::Deprecated |
             RefereeCommand::IndirectFree(_) |
             RefereeCommand::Stop => {
-                GameControllerPostFilter::stop_state_branch(&self.previous_game_event, &self.previous_command, world, &mut self.kicked_off_once, self.chrono,)
+                GameControllerPostFilter::stop_state_branch(&last_referee_packet.game_events.last(), &self.previous_command, world, &mut self.kicked_off_once, self.chrono,)
             },
             RefereeCommand::NormalStart => {
                 GameControllerPostFilter::normal_start_state_branch(&self.previous_event, self.previous_command.clone(), world, self.chrono,)
