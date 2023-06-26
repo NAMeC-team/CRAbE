@@ -216,8 +216,9 @@ impl GameControllerPostFilter {
         world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(team));
     }
 
-    fn ball_placement_branch(world: &mut World, chrono_opt: Option<Instant>, team:TeamColor) {
-        if let Some(chrono) = chrono_opt {
+    fn ball_placement_branch(world: &mut World,game_controller: &mut GameControllerPostFilter, team:TeamColor) {
+        println!("Ball placement branch");
+        if let Some(chrono) = game_controller.chrono {
             // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
             if chrono.elapsed() >= std::time::Duration::from_secs(30) {
                 world.data.state = GameState::Running(RunningState::Run);
@@ -225,8 +226,8 @@ impl GameControllerPostFilter {
                 world.data.state = GameState::Stopped(StoppedState::BallPlacement(team));
             }
         }
-        // The chrono should always be available to us
-        unreachable!(); // todo remove
+        //reseting the chrono
+        game_controller.fix_yourself();
     }
 }
 
@@ -263,7 +264,7 @@ impl PostFilter for GameControllerPostFilter {
                 GameControllerPostFilter::freekick_branch(world, self.chrono, team)
             }
             RefereeCommand::BallPlacement(team) => {
-                GameControllerPostFilter::ball_placement_branch(world, self.chrono, team)
+                GameControllerPostFilter::ball_placement_branch(world, self, team)
             }
             RefereeCommand::PreparePenalty(team) => {
                 GameControllerPostFilter::prepare_penalty_branch(world, self.chrono, team)
