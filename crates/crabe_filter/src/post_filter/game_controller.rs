@@ -71,6 +71,11 @@ impl GameControllerPostFilter {
                 Event::BallLeftFieldGoalLine(left_field_infos) => {
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
+                Event::NoProgressInGame(_) => {
+                    // TODO? : change strategy if no progress
+                    // Switches from Stop to ForceStart
+                    world.data.state = GameState::Stopped(StoppedState::Stop);
+                }
                 //TODO : check if all these events have to be stopped
                 Event::AimlessKick(_) |
                 Event::AttackerTooCloseToDefenseArea(_) |
@@ -93,7 +98,6 @@ impl GameControllerPostFilter {
                 Event::AttackerDoubleTouchedBall(_) |
                 Event::PlacementSucceeded(_) |
                 Event::PenaltyKickFailed(_) |
-                Event::NoProgressInGame(_) |
                 Event::PlacementFailed(_) |
                 Event::MultipleCards(_) |
                 Event::MultipleFouls(_) |
