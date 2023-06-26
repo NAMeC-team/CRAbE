@@ -72,11 +72,14 @@ impl GameControllerPostFilter {
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
                 //TODO : check if all these events have to be stopped
+                Event::KeeperHeldBall(keeper_held_ball_infos) => {
+                    //TODO : we don't know if we just take a yellow card of if we have to go in halt
+                    world.data.state = GameState::Halted(HaltedState::Halt);
+                }
                 Event::AimlessKick(_) |
                 Event::AttackerTooCloseToDefenseArea(_) |
                 Event::DefenderInDefenseArea(_) |
                 Event::BoundaryCrossing(_) |
-                Event::KeeperHeldBall(_) |
                 Event::BotDribbledBallTooFar(_) |
                 Event::BotPushedBot(_) |
                 Event::BotHeldBallDeliberately(_) |
