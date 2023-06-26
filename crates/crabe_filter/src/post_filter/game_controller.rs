@@ -207,7 +207,7 @@ impl GameControllerPostFilter {
             // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
             if chrono.elapsed() >= std::time::Duration::from_secs(30) {
                 //TODO : when ball placement isn't done in 30 sec, what happen ?
-                world.data.state = GameState::Stopped(StoppedState::BallPlacement(team));
+                world.data.state = GameState::Stopped(StoppedState::BallPlacement(team.opposite()));
                 //world.data.state = GameState::Running(RunningState::Run);
             } else {
                 world.data.state = GameState::Stopped(StoppedState::BallPlacement(team));
