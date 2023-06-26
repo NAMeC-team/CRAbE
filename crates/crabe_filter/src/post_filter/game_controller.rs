@@ -107,7 +107,7 @@ impl GameControllerPostFilter {
                 Event::UnsportingBehaviorMajor(_) |
                 Event::DeprecatedEvent => {
                     // TODO: the "world.team_color" isn't right
-                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(world.team_color));
+                    world.data.state = GameState::Stopped(StoppedState::Stop);
                 }
             }
         } else {
@@ -122,7 +122,7 @@ impl GameControllerPostFilter {
         world: &mut World,
         mut _chrono: Option<Instant>,
     ) {
-        GameControllerPostFilter::normal_start_state_branch(previous_event_opt, previous_command, world, _chrono)
+        world.data.state = GameState::Running(RunningState::Run);
     }
 
     fn normal_start_state_branch(
@@ -206,7 +206,9 @@ impl GameControllerPostFilter {
         if let Some(chrono) = game_controller.chrono {
             // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
             if chrono.elapsed() >= std::time::Duration::from_secs(30) {
-                world.data.state = GameState::Running(RunningState::Run);
+                //TODO : when ball placement isn't done in 30 sec, what happen ?
+                world.data.state = GameState::Stopped(StoppedState::BallPlacement(team));
+                //world.data.state = GameState::Running(RunningState::Run);
             } else {
                 world.data.state = GameState::Stopped(StoppedState::BallPlacement(team));
             }
@@ -228,7 +230,7 @@ impl PostFilter for GameControllerPostFilter {
         };
 
         let ref_command = last_referee_packet.command.clone();
-        //TODO : not sure about the indirect free kick refCommand 
+        //TODO : not sure about the indirect free refCommand
         match ref_command {
             RefereeCommand::Halt => GameControllerPostFilter::halt_state_branch(world),
             RefereeCommand::Deprecated |
