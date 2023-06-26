@@ -111,20 +111,7 @@ impl GameControllerPostFilter {
                 }
             }
         } else {
-            // Particularly, it should be None when we just started the match
-            // Thus, it's a kickoff
-            if !*_kicked_off_once {
-                //TODO : when we launch the code in the middle of a game this code goes wrong because it's not everytime kick off 
-                world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(world.team_color));
-                *_kicked_off_once = true;
-            } else {
-                // this one's totally arbitrary
-                // i don't understand how we can fetch a forced free kick from the commands
-                // todo: fix what's mentioned above me (fix me !)
-                //world.data.state = GameState::Running(RunningState::FreeKick(world.team_color));
-
-                world.data.state = GameState::Stopped(StoppedState::Stop);
-            }
+            world.data.state = GameState::Stopped(StoppedState::Stop);
         }
         _chrono = Some(Instant::now());
     }
@@ -144,7 +131,10 @@ impl GameControllerPostFilter {
         world: &mut World,
         mut _chrono: Option<Instant>,
     ) {
-        //TODO team color
+        _chrono = match _chrono{
+            Some(_) => _chrono,
+            None => Some(Instant::now())
+        };
         if let Some(chrono) = _chrono {
             if previous_command == RefereeCommand::PrepareKickoff(TeamColor::Blue){
                 if chrono.elapsed() >= std::time::Duration::from_secs(10) {
@@ -171,8 +161,6 @@ impl GameControllerPostFilter {
                     if let Some(chrono) = _chrono {
                         println!("Kickoff in progress ! It lasts for 10s at most");
                         if chrono.elapsed() > std::time::Duration::from_secs(10) {
-                            //let kickoff_team = g.by_team as TeamColor;
-                            //world.data.state = GameState::Running(RunningState::KickOff(kickoff_team));
                             world.data.state =
                                 GameState::Running(RunningState::KickOff(g.by_team.opposite()));
                         }
@@ -186,7 +174,6 @@ impl GameControllerPostFilter {
                 &_ => {}
             }
         } 
-        world.data.state = GameState::Running(RunningState::Run);
     }
 
     fn timeout_branch(world: &mut World, _team:TeamColor) {
@@ -195,7 +182,6 @@ impl GameControllerPostFilter {
 
     fn freekick_branch(world: &mut World, mut _chrono_opt: Option<Instant>, team:TeamColor) {
         if let Some(chrono) = _chrono_opt {
-            //dbg!(chrono);
             if chrono.elapsed() > std::time::Duration::from_secs(10) {
                 // if 10s have passed, game runs normally
                 world.data.state = GameState::Running(RunningState::Run);
@@ -217,7 +203,6 @@ impl GameControllerPostFilter {
     }
 
     fn ball_placement_branch(world: &mut World,game_controller: &mut GameControllerPostFilter, team:TeamColor) {
-        println!("Ball placement branch");
         if let Some(chrono) = game_controller.chrono {
             // [ALLEMAGNE] chrono check peut être enlevé si pas de ball placement auto
             if chrono.elapsed() >= std::time::Duration::from_secs(30) {
