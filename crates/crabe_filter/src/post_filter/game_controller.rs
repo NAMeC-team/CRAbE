@@ -274,13 +274,11 @@ impl PostFilter for GameControllerPostFilter {
         }
         self.last_command = ref_command.clone();
 
-        // todo: Don't forget to update positive half
-        // if let Some(blue_team_on_positive_half) = last_referee_packet.blue_team_on_positive_half {
-        //     if blue_team_on_positive_half {
-        //        world.data.positive_half = TeamColor::Blue
-        //     } else {
-        //         world.data.positive_half = TeamColor::Yellow
-        //     }
-        // };
+        //update positive half team
+        if let Some(team_on_positive_half) = last_referee_packet.positive_half {
+            world.data.positive_half = team_on_positive_half
+        }
+
+        //TODO : ally and enemy
     }
 }
