@@ -4,6 +4,7 @@ use crabe_framework::data::world::game_state::{
     GameState, HaltedState, RunningState, StoppedState,
 };
 use crabe_framework::data::world::{TeamColor, World};
+use log::warn;
 
 use crate::data::referee::event::{Event, GameEvent};
 use crate::data::referee::RefereeCommand;
@@ -61,28 +62,42 @@ impl GameControllerPostFilter {
         if let Some(previous_game_event) = previous_game_event_opt {
             let previous_event = &previous_game_event.event;
             match previous_event {
-                // Goal has been scored, prepare for next kickoff phase
+                //Stopped events
                 Event::Goal(goal_infos)=> {
+                    // Goal has been scored, prepare for next kickoff phase
                     world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(goal_infos.by_team.opposite()));
                 }
-                Event::BallLeftFieldTouchLine(left_field_infos) => {
-                    world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
-                }
+                Event::BallLeftFieldTouchLine(left_field_infos) |
                 Event::BallLeftFieldGoalLine(left_field_infos) => {
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
-                //TODO : check if all these events have to be stopped
-                Event::AttackerTooCloseToDefenseArea(_) |
-                Event::BoundaryCrossing(_) |
-                Event::BotDribbledBallTooFar(_) |
-                Event::KeeperHeldBall(_) => {
-                    world.data.state = GameState::Stopped(StoppedState::Stop);
-                }
+                Event::NoProgressInGame(_) |
+                Event::AttackerDoubleTouchedBall(_) |
                 Event::AimlessKick(_) |
                 Event::DefenderInDefenseArea(_) |
-                Event::BotPushedBot(_) |
+                Event::KeeperHeldBall(_) |
+                Event::BoundaryCrossing(_) |
+                Event::BotDribbledBallTooFar(_) |
+                Event::PenaltyKickFailed(_) |
+                Event::AttackerTooCloseToDefenseArea(_) |
+                Event::PlacementFailed(_) |
+                Event::TooManyRobots(_) |
+                Event::InvalidGoal(_) |
                 Event::BotHeldBallDeliberately(_) |
-                Event::BotTippedOver(_) |
+                Event::UnsportingBehaviorMinor(_) |
+                Event::UnsportingBehaviorMajor(_) |
+                Event::BotPushedBot(_) => {
+                    world.data.state = GameState::Stopped(StoppedState::Stop);
+                }
+                Event::BotTippedOver(infos) => {
+                    // Precaution : stopping robots if there was an accident
+                    // Robot has to be substituted
+                    if infos.by_team.eq(&world.team_color) {
+                        warn!("[IRL ACCIDENT] Robot {}", infos.by_bot.unwrap());
+                    }
+                    world.data.state = GameState::Halted(HaltedState::Halt);
+                }
+                
                 Event::AttackerTouchedBallInDefenseArea(_) |
                 Event::BotKickedBallTooFast(_) |
                 Event::BotCrashUnique(_) |
@@ -91,20 +106,12 @@ impl GameControllerPostFilter {
                 Event::BotTooFastInStop(_) |
                 Event::BotInterferedPlacement(_) |
                 Event::PossibleGoal(_) |
-                Event::InvalidGoal(_) |
-                Event::AttackerDoubleTouchedBall(_) |
                 Event::PlacementSucceeded(_) |
-                Event::PenaltyKickFailed(_) |
-                Event::NoProgressInGame(_) |
-                Event::PlacementFailed(_) |
                 Event::MultipleCards(_) |
                 Event::MultipleFouls(_) |
-                Event::TooManyRobots(_) |
                 Event::BotSubstitution(_) |
                 Event::ChallengeFlag(_) |
                 Event::EmergencyStop(_) |
-                Event::UnsportingBehaviorMinor(_) |
-                Event::UnsportingBehaviorMajor(_) |
                 Event::DeprecatedEvent => {
                     // TODO: the "world.team_color" isn't right
                     world.data.state = GameState::Stopped(StoppedState::Stop);
@@ -273,6 +280,7 @@ impl PostFilter for GameControllerPostFilter {
         if ref_command != self.last_command{
             self.previous_command = self.last_command.clone();
             self.chrono = Option::from(Instant::now());
+            dbg!(&ref_command);
         }
         self.last_command = ref_command.clone();
 
