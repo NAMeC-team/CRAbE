@@ -65,11 +65,9 @@ impl GameControllerPostFilter {
                 Event::Goal(goal_infos)=> {
                     world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(goal_infos.by_team.opposite()));
                 }
-                //TODO : team color idk if it's opposite or ?
                 Event::BallLeftFieldTouchLine(left_field_infos) => {
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
-
                 Event::BallLeftFieldGoalLine(left_field_infos) => {
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
