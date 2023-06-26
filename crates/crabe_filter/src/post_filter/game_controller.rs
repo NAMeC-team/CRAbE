@@ -72,14 +72,14 @@ impl GameControllerPostFilter {
                     world.data.state = GameState::Stopped(StoppedState::BallPlacement(left_field_infos.by_team.opposite()));
                 }
                 //TODO : check if all these events have to be stopped
-                Event::KeeperHeldBall(keeper_held_ball_infos) => {
+                Event::AttackerTooCloseToDefenseArea(_) |
+                Event::BoundaryCrossing(_) |
+                Event::BotDribbledBallTooFar(_) |
+                Event::KeeperHeldBall(_) => {
                     world.data.state = GameState::Stopped(StoppedState::Stop);
                 }
                 Event::AimlessKick(_) |
-                Event::AttackerTooCloseToDefenseArea(_) |
                 Event::DefenderInDefenseArea(_) |
-                Event::BoundaryCrossing(_) |
-                Event::BotDribbledBallTooFar(_) |
                 Event::BotPushedBot(_) |
                 Event::BotHeldBallDeliberately(_) |
                 Event::BotTippedOver(_) |
