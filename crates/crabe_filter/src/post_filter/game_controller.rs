@@ -98,16 +98,14 @@ impl GameControllerPostFilter {
                     world.data.state = GameState::Halted(HaltedState::Halt);
                 }
                 
+                //Non stopping fouls
                 Event::AttackerTouchedBallInDefenseArea(_) => {
-                    //Non stopping fouls
                     dbg!("AttackerTouchedBallInDefenseArea");
                 }
                 Event::BotKickedBallTooFast(_) => {
-                    //Non stopping fouls
                     dbg!("BotKickedBallTooFast");
                 }
                 Event::BotCrashUnique(_) => {
-                    //Non stopping fouls
                     dbg!("BotCrashUnique");
                 }
                 Event::BotCrashDrawn(_) |
@@ -122,7 +120,6 @@ impl GameControllerPostFilter {
                 Event::ChallengeFlag(_) |
                 Event::EmergencyStop(_) |
                 Event::DeprecatedEvent => {
-                    // TODO: the "world.team_color" isn't right
                     world.data.state = GameState::Stopped(StoppedState::Stop);
                 }
             }
