@@ -14,7 +14,7 @@ use crabe_protocol::protobuf::game_controller_packet::{GameEvent as ProtocolEven
 use crabe_protocol::protobuf::game_controller_packet::referee::{Command as ProtocolCommand, Command, Point as ProtocolPoint, Stage as ProtocolStage};
 use crate::data::referee::event::{Event, EventOrigin,AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehaviorMajor, UnsportingBehaviorMinor, GameEventType};
 
-use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo};
+use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo, MatchType};
 use crabe_protocol::protobuf::game_controller_packet::Team as ProtocolTeam;
 pub struct GameControllerPreFilter;
 
@@ -41,6 +41,14 @@ fn to_team_infos(infos: game_controller_packet::referee::TeamInfo) -> TeamInfo {
     _infos
 }
 
+fn map_match_type(match_type: ProtocolMatchType) -> MatchType {
+    match match_type {
+        ProtocolMatchType::UnknownMatch => MatchType::UnknownMatch,
+        ProtocolMatchType::GroupPhase => MatchType::GroupPhase,
+        ProtocolMatchType::EliminationPhase => MatchType::EliminationPhase,
+        ProtocolMatchType::Friendly => MatchType::Friendly,
+    }
+}
 fn map_stage(stage: ProtocolStage) -> Stage {
     match stage {
         ProtocolStage::NormalFirstHalfPre => Stage::NormalFirstHalfPre,
@@ -175,13 +183,7 @@ fn map_ball_left_field(value: protocol_event::BallLeftField) -> BallLeftField {
     }
 }
 
-fn map_origin(origin: String) -> EventOrigin{
-    match origin {
-        _ => EventOrigin::GameController
-    }
-}
-
-fn map_game_event(mut game_event: ProtocolEvent) -> Option<GameEvent> {
+fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
     let created_timestamp = game_event.created_timestamp;
     let event = game_event.event.map(map_event).flatten();
     /* 
@@ -456,7 +458,9 @@ fn map_protobuf_referee(
     };
     Ok(Referee {
         source_identifier: packet.source_identifier,
-        match_type: None, // TODO : Finish
+        match_type: Some(ProtocolMatchType::from_i32(packet.stage)
+            .map(map_match_type)
+            .ok_or(RefereeDeserializationError)?),
         packet_timestamp: create_date_time((packet.packet_timestamp / 1_000_000) as i64),
         stage: ProtocolStage::from_i32(packet.stage)
             .map(map_stage)

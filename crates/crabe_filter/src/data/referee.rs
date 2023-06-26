@@ -6,7 +6,12 @@ use nalgebra::Point2;
 pub mod event;
 
 /// MatchType is a meta information about the current match for easier log processing.
-#[derive(Clone, Debug)]
+#[derive(
+    Clone,
+    Copy,
+    Debug
+)]
+#[repr(i32)]
 pub enum MatchType {
     /// Not set
     UnknownMatch = 0,

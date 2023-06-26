@@ -8,7 +8,6 @@ use log::warn;
 
 use crate::data::referee::event::{Event, GameEvent};
 use crate::data::referee::RefereeCommand;
-use std::cell::Ref;
 use std::time::Instant;
 
 #[derive(Debug)]
@@ -54,7 +53,7 @@ impl GameControllerPostFilter {
 
     fn stop_state_branch(
         previous_game_event_opt: &Option<GameEvent>,
-        previous_command: &RefereeCommand,
+        _previous_command: &RefereeCommand,
         world: &mut World,
         _kicked_off_once: &mut bool,
         mut _chrono: Option<Instant>,
@@ -130,8 +129,8 @@ impl GameControllerPostFilter {
     }
 
     fn force_start_state_branch(
-        previous_event_opt: &Option<Event>,
-        previous_command: RefereeCommand,
+        _previous_event_opt: &Option<Event>,
+        _previous_command: RefereeCommand,
         world: &mut World,
         mut _chrono: Option<Instant>,
     ) {
