@@ -54,8 +54,11 @@ impl Manager for GameManager {
                         println!("stop");
                     }
                     StoppedState::PrepareKickoff(team) => {
-                        //self.strategies.push(Box::new(PrepareKickOffAlly::new(0)));
-                        self.strategies.push(Box::new(PrepareKickOffEnemy::new(0)));
+                        if team == world.team_color {
+                            self.strategies.push(Box::new(PrepareKickOffAlly::new(0)));
+                        }else{
+                            self.strategies.push(Box::new(PrepareKickOffEnemy::new(0)));
+                        }
                         println!("prepare kick off {:?}",team);
                     }
                     StoppedState::PreparePenalty(team) => {
@@ -68,16 +71,19 @@ impl Manager for GameManager {
                 GameState::Running(running_state) => match running_state {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
+                        self.strategies.push(Box::new(Shooter::new(3)));
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
+                        self.strategies.push(Box::new(Shooter::new(3)));
                     }
                     RunningState::FreeKick(team) => {
                         println!("free kick for {:#?}", team);
+                        self.strategies.push(Box::new(Shooter::new(3)));
                     }
                     RunningState::Run => {
                         println!("run");
-                        self.strategies.push(Box::new(Shooter::new(0)));
+                        self.strategies.push(Box::new(Shooter::new(3)));
                     }
                 },
             }
