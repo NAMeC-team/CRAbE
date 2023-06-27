@@ -6,23 +6,23 @@ use crabe_framework::data::world::World;
 use nalgebra::Point2;
 use std::f64::consts::PI;
 
-/// The KickOffAlly struct represents a strategy that commands the team to set in the KickOffAlly formation
+/// The PrepareKickOffAlly struct represents a strategy that commands the team to set in the PrepareKickOffAlly formation
 /// It is used when the team is in favor of the kick-off
 #[derive(Default)]
-pub struct KickOffAlly {
+pub struct PrepareKickOffAlly {
     /// The id of the robot to move.
     id: u8,
 }
 
-impl KickOffAlly {
-    /// Creates a new KickOffAlly instance with the desired robot id.
+impl PrepareKickOffAlly {
+    /// Creates a new PrepareKickOffAlly instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id }
     }
 }
 
-impl Strategy for KickOffAlly {
-    /// Executes the KickOffAlly strategy.
+impl Strategy for PrepareKickOffAlly {
+    /// Executes the PrepareKickOffAlly strategy.
     ///
     /// This strategy commands all the robots to move in position for
     ///
