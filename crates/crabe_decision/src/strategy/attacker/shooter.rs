@@ -4,7 +4,7 @@ use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use nalgebra::{Point2, Point3};
+use nalgebra::{Point2, Point3, Vector2};
 use std::f64::consts::PI;
 use std::ops::{Sub, Add, Mul};
 use crabe_math::vectors;
@@ -94,10 +94,12 @@ impl Strategy for Shooter {
         let robot_to_ball = ball_pos - robot_pos;
         let dist_to_ball = robot_to_ball.norm();
         let mut dir_shooting_line = Line::new(robot_pos, robot_pos.add(robot_to_ball.mul(100.)));
-        dbg!(dir_shooting_line.intersect(&world.geometry.ally_goal.front_line));
-        if dist_to_ball < 0.115 {//TODO replace with IR (robot.has_ball)
-            let kick = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {Some(Kick::StraightKick { power: 4. })
-                            }else {None};
+        let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
+        let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
+        if dist_to_ball < 0.115 && dot_with_ball > 0.9{//TODO replace with IR (robot.has_ball)
+            let kick = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {
+                Some(Kick::ChipKick { power: 4. }) 
+            }else {None};
             action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., kick));
         }else if dist_to_ball < 0.8 {
             action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1., None));
