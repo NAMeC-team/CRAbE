@@ -71,7 +71,6 @@ impl Strategy for Shooter {
         // }
         // false
 
-
         action_wrapper.clean(self.id);
         let goal_pos: Point2<f64> = Point2::new(-world.geometry.field.length/2., 0.0);//[Warning] TODO:for testing we are kicking in our own goal
         let ball_pos = match world.ball.clone() {
@@ -96,7 +95,7 @@ impl Strategy for Shooter {
         let mut dir_shooting_line = Line::new(robot_pos, robot_pos.add(robot_to_ball.mul(100.)));
         let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
-        if dist_to_ball < 0.115 && dot_with_ball > 0.9{//TODO replace with IR (robot.has_ball)
+        if dist_to_ball < 0.115 && dot_with_ball > 0.95{//TODO replace with IR (robot.has_ball)
             let kick = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {
                 Some(Kick::ChipKick { power: 4. }) 
             }else {None};
