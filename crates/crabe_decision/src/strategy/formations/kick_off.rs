@@ -42,12 +42,12 @@ impl Strategy for KickOffAlly {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.push(0, MoveTo::new(Point2::new(-0.25, 2.5), -PI / 4.0));
-        action_wrapper.push(1, MoveTo::new(Point2::new(-1.5, -1.5), -PI / 4.0));
-        action_wrapper.push(2, MoveTo::new(Point2::new(-0.25, -2.5), -PI / 4.0));
-        action_wrapper.push(3, MoveTo::new(Point2::new(-0.2, 0.0), -PI / 4.0));
-        action_wrapper.push(4, MoveTo::new(Point2::new(-1.5, 1.5), -PI / 4.0));
-        action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0));
+        action_wrapper.push(0, MoveTo::new(Point2::new(-0.25, 2.5), -PI / 4.0, 0.0,None));
+        action_wrapper.push(1, MoveTo::new(Point2::new(-1.5, -1.5), -PI / 4.0, 0.0,None));
+        action_wrapper.push(2, MoveTo::new(Point2::new(-0.25, -2.5), -PI / 4.0, 0.0,None));
+        action_wrapper.push(3, MoveTo::new(Point2::new(-0.2, 0.0), -PI / 4.0, 0.0,None));
+        action_wrapper.push(4, MoveTo::new(Point2::new(-1.5, 1.5), -PI / 4.0, 0.0,None));
+        action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None));
         true
     }
 }

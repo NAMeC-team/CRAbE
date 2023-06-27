@@ -2,6 +2,7 @@ use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
+use crate::strategy::formations::KickOffAlly;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_framework::data::world::World;
@@ -54,6 +55,7 @@ impl Manager for GameManager {
                     }
                     StoppedState::PrepareKickoff(team) => {
                         println!("prepare kick off {:?}",team);
+                        self.strategies.push(Box::new(KickOffAlly::new(0)));
                     }
                     StoppedState::PreparePenalty(team) => {
                         println!("prepare penalty {:?}",team);
