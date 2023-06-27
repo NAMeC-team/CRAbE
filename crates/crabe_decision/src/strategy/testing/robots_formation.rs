@@ -43,19 +43,19 @@ impl Strategy for RobotsFormation {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         for i in 0..=3 {
-        action_wrapper.push(0, MoveTo::new(Point2::new(-1.0, 1.5), -PI / 4.0));
-        action_wrapper.push(1, MoveTo::new(Point2::new(-1.0, -1.5), -PI / 4.0));
-        action_wrapper.push(2, MoveTo::new(Point2::new(-2.0, 1.5), -PI / 4.0));
-        action_wrapper.push(3, MoveTo::new(Point2::new(-2.0, -1.5), -PI / 4.0));
-        action_wrapper.push(4, MoveTo::new(Point2::new(-3.0, 1.5), -PI / 4.0));
-        action_wrapper.push(5, MoveTo::new(Point2::new(-3.0, -1.5), -PI / 4.0));
+        action_wrapper.push(0, MoveTo::new(Point2::new(-1.0, 1.5), -PI / 4.0, 0., None));
+        action_wrapper.push(1, MoveTo::new(Point2::new(-1.0, -1.5), -PI / 4.0, 0., None));
+        action_wrapper.push(2, MoveTo::new(Point2::new(-2.0, 1.5), -PI / 4.0, 0., None));
+        action_wrapper.push(3, MoveTo::new(Point2::new(-2.0, -1.5), -PI / 4.0, 0., None));
+        action_wrapper.push(4, MoveTo::new(Point2::new(-3.0, 1.5), -PI / 4.0, 0., None));
+        action_wrapper.push(5, MoveTo::new(Point2::new(-3.0, -1.5), -PI / 4.0, 0., None));
 
-        action_wrapper.push(0, MoveTo::new(Point2::new(-1.0, 0.5), -PI / 4.0));
-        action_wrapper.push(1, MoveTo::new(Point2::new(-1.0, -0.5), -PI / 4.0));
-        action_wrapper.push(2, MoveTo::new(Point2::new(-2.0, 0.5), -PI / 4.0));
-        action_wrapper.push(3, MoveTo::new(Point2::new(-2.0, -0.5), -PI / 4.0));
-        action_wrapper.push(4, MoveTo::new(Point2::new(-3.0, 0.5), -PI / 4.0));
-        action_wrapper.push(5, MoveTo::new(Point2::new(-3.0, -0.5), -PI / 4.0));
+        action_wrapper.push(0, MoveTo::new(Point2::new(-1.0, 0.5), -PI / 4.0, 0., None));
+        action_wrapper.push(1, MoveTo::new(Point2::new(-1.0, -0.5), -PI / 4.0, 0., None));
+        action_wrapper.push(2, MoveTo::new(Point2::new(-2.0, 0.5), -PI / 4.0, 0., None));
+        action_wrapper.push(3, MoveTo::new(Point2::new(-2.0, -0.5), -PI / 4.0, 0., None));
+        action_wrapper.push(4, MoveTo::new(Point2::new(-3.0, 0.5), -PI / 4.0, 0., None));
+        action_wrapper.push(5, MoveTo::new(Point2::new(-3.0, -0.5), -PI / 4.0, 0., None));
         }
         true
     }
