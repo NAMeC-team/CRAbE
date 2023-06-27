@@ -52,6 +52,11 @@ impl Manager for GameManager {
                 GameState::Stopped(stopped_state) => match stopped_state {
                     StoppedState::Stop => {
                         println!("stop");
+                        // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
+                        // let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        // for id in rest {
+                        //     self.strategies.push(Box::new(Stand::new(id)));
+                        // }
                     }
                     StoppedState::PrepareKickoff(team) => {
                         if team == world.team_color {
@@ -60,6 +65,25 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(PrepareKickOffEnemy::new(0)));
                         }
                         println!("prepare kick off {:?}",team);
+                        // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
+
+                        // let closest_robot_to_ball_id = world.allies_bot
+                        //     .iter()
+                        //     .filter(|(id, _)| **id != KEEPER_ID)
+                        //     .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+                        //     .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
+                        //     .map(|(id, _, _)| id);
+
+                        // let mut rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        // if let Some(kicker_id) = closest_robot_to_ball_id {
+                        //     self.strategies.push(Box::new(PrepareKickoffStrategy::new(*kicker_id)));
+
+                        //     rest = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID && *id != *kicker_id).collect();
+                        // }
+
+                        // for id in rest {
+                        //     self.strategies.push(Box::new(Stand::new(id)));
+                        // }
                     }
                     StoppedState::PreparePenalty(team) => {
                         println!("prepare penalty {:?}",team);
@@ -71,6 +95,29 @@ impl Manager for GameManager {
                 GameState::Running(running_state) => match running_state {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
+                        // if team != world.team_color {
+                        //     return;
+                        // }
+
+                        // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
+
+                        // let closest_robot_to_ball_id = world.allies_bot
+                        //     .iter()
+                        //     .filter(|(id, _)| **id != KEEPER_ID)
+                        //     .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+                        //     .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
+                        //     .map(|(id, _, _)| id);
+
+                        // let mut rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        // if let Some(bappe_id) = closest_robot_to_ball_id {
+                        //     self.strategies.push(Box::new(Mbappe::new(*bappe_id)));
+
+                        //     rest = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID && *id != *bappe_id).collect();
+                        // }
+
+                        // for id in rest {
+                        //     self.strategies.push(Box::new(Stand::new(id)));
+                        // }
                         self.strategies.push(Box::new(Shooter::new(3)));
                     }
                     RunningState::Penalty(team) => {
@@ -83,6 +130,25 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
+                        // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
+
+                        // let closest_robot_to_ball_id = world.allies_bot
+                        //     .iter()
+                        //     .filter(|(id, _)| **id != KEEPER_ID)
+                        //     .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+                        //     .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
+                        //     .map(|(id, _, _)| id);
+
+                        // let mut rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        // if let Some(bappe_id) = closest_robot_to_ball_id {
+                        //     self.strategies.push(Box::new(Mbappe::new(*bappe_id)));
+
+                        //     rest = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID && *id != *bappe_id).collect();
+                        // }
+
+                        // for id in rest {
+                        //     self.strategies.push(Box::new(Stand::new(id)));
+                        // }
                         self.strategies.push(Box::new(Shooter::new(3)));
                     }
                 },
