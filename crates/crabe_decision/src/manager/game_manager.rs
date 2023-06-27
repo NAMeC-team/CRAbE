@@ -66,6 +66,7 @@ impl Manager for GameManager {
                 },
                 GameState::Running(running_state) => match running_state {
                     RunningState::KickOff(team) => {
+                        self.strategies.push(Box::new(KickOffAlly::new(0)));
                         println!("kickoff for {:#?}", team);
                     }
                     RunningState::Penalty(team) => {
