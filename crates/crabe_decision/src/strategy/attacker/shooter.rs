@@ -1,6 +1,7 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
+use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::{Point2, Point3};
@@ -103,17 +104,15 @@ impl Strategy for Shooter {
                 if dbg!((behind_ball_pos - robot_pos).norm()) < 0.1 {
                     self.internal_state = ShooterState::GoingShoot;
                 } else {
-                    action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, robot_to_goal_angle));
+                    action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, robot_to_goal_angle, 0., None));
                 }
             }
             ShooterState::GoingShoot => {
                 if dbg!(robot_to_ball_distance) < 0.098 && dbg!(robot_to_ball_angle.abs()) < 3.0 {
-                    //action_wrapper.push(self.id, Kick::new(KickType::StraightKick {power: 10.0}));
-                    action_wrapper.push(self.id, MoveTo::new_kicking(close_behind_ball_pos, robot_to_goal_angle));
-                    println!("kicik");
+                    action_wrapper.push(self.id, MoveTo::new(close_behind_ball_pos, robot_to_goal_angle, 1., Some(Kick::StraightKick { power: 3. })));
                     self.internal_state = ShooterState::GoingBehindBall;
                 } else {
-                    action_wrapper.push(self.id, MoveTo::new(close_behind_ball_pos, robot_to_goal_angle));
+                    action_wrapper.push(self.id, MoveTo::new(close_behind_ball_pos, robot_to_goal_angle, 1., None));
                 }
             }
         }

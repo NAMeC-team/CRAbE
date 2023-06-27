@@ -15,7 +15,8 @@ pub struct MoveTo {
     target: Point2<f64>,
     /// The target orientation of the robot.
     orientation: f64,
-    kick: Option<Kick>
+    kick: Option<Kick>,
+    dribble: f32
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -24,7 +25,8 @@ impl From<&mut MoveTo> for MoveTo {
             state: other.state,
             target: other.target,
             orientation: other.orientation,
-            kick: other.kick
+            kick: other.kick,
+            dribble: other.dribble
         }
     }
 }
@@ -36,20 +38,13 @@ impl MoveTo {
     ///
     /// * `target`: The target position on the field to move the robot to.
     /// * `orientation`: The target orientation of the robot.
-    pub fn new_kicking(target: Point2<f64>, orientation: f64) -> Self {
+    pub fn new(target: Point2<f64>, orientation: f64, dribble: f32, kick: Option<Kick>) -> Self {
         Self {
             state: State::Running,
             target,
             orientation,
-            kick: Some(Kick::StraightKick { power: 1.0 }),
-        }
-    }
-    pub fn new(target: Point2<f64>, orientation: f64) -> Self {
-        Self {
-            state: State::Running,
-            target,
-            orientation,
-            kick: None,
+            kick,
+            dribble
         }
     }
 }
@@ -119,13 +114,15 @@ impl Action for MoveTo {
                 GOTO_ROTATION * error_orientation,
             );
 
+            let dribble = self.dribble.clamp(0., 1.);
+
             Command {
                 forward_velocity: order.x as f32,
                 left_velocity: order.y as f32,
                 angular_velocity: order.z as f32,
                 charge: true,
                 kick: self.kick,
-                dribbler: 1.0,
+                dribbler: dribble,
             }
         } else {
             Command::default()
