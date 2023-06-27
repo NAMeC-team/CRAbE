@@ -6,7 +6,7 @@ use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::{Point2, Point3};
 use std::f64::consts::PI;
-use std::ops::Sub;
+use std::ops::{Sub, Add, Mul};
 use crabe_math::vectors;
 use crabe_math::shape::Line;
 
@@ -93,8 +93,11 @@ impl Strategy for Shooter {
         let robot_pos = robot.pose.position;
         let robot_to_ball = ball_pos - robot_pos;
         let dist_to_ball = robot_to_ball.norm();
+        let mut dir_shooting_line = Line::new(robot_pos, robot_pos.add(robot_to_ball.mul(100.)));
+        dbg!(dir_shooting_line.intersect(&world.geometry.ally_goal.front_line));
         if dist_to_ball < 0.115 {//TODO replace with IR (robot.has_ball)
-            let kick = None;
+            let kick = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {Some(Kick::StraightKick { power: 3. })
+                            }else {None};
             action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., kick));
         }else if dist_to_ball < 0.8 {
             action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1., None));

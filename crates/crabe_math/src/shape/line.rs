@@ -20,7 +20,7 @@ impl Line{
             end
         }
     }
-    pub fn intersect(&mut self, line: Line) -> bool{
+    pub fn intersect(&mut self, line: &Line) -> bool{
         let a = self.start;
         let b = self.end;
         let c = line.start;
