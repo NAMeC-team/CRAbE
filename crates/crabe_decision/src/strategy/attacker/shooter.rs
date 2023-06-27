@@ -7,6 +7,8 @@ use crabe_framework::data::world::World;
 use nalgebra::{Point2, Point3};
 use std::f64::consts::PI;
 use std::ops::Sub;
+use crabe_math::vectors;
+use crabe_math::shape::Line;
 
 #[derive(Default)]
 pub struct Shooter {
@@ -71,7 +73,7 @@ impl Strategy for Shooter {
 
 
         action_wrapper.clean(self.id);
-        let goal_pos: Point2<f64> = Point2::new(-4.5, 0.0);
+        let goal_pos: Point2<f64> = Point2::new(-world.geometry.field.length/2., 0.0);//[Warning] TODO:for testing we are kicking in our own goal
         let ball_pos = match world.ball.clone() {
             None => {
                 return false;
@@ -80,41 +82,24 @@ impl Strategy for Shooter {
                 ball.position.xy()
             }
         };
-        let robot_pos = match world.allies_bot.get(&self.id) {
+        let robot = match world.allies_bot.get(&self.id) {
             None => {
                 return false;
             }
             Some(robot) => {
-                robot.pose.position
+                robot
             }
         };
-
+        let robot_pos = robot.pose.position;
         let robot_to_ball = ball_pos - robot_pos;
-        let robot_to_ball_angle = robot_to_ball.y.atan2(robot_to_ball.y);
-        let robot_to_goal = goal_pos - robot_pos;
-        let robot_to_goal_angle = robot_to_goal.y.atan2(robot_to_goal.x);
-        let ball_to_goal = goal_pos - ball_pos;
-        let behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.4;
-        let close_behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.1;
-
-        let robot_to_ball_distance = robot_to_ball.norm();
-
-        match dbg!(&self.internal_state) {
-            ShooterState::GoingBehindBall => {
-                if dbg!((behind_ball_pos - robot_pos).norm()) < 0.1 {
-                    self.internal_state = ShooterState::GoingShoot;
-                } else {
-                    action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, robot_to_goal_angle, 0., None));
-                }
-            }
-            ShooterState::GoingShoot => {
-                if dbg!(robot_to_ball_distance) < 0.098 && dbg!(robot_to_ball_angle.abs()) < 3.0 {
-                    action_wrapper.push(self.id, MoveTo::new(close_behind_ball_pos, robot_to_goal_angle, 1., Some(Kick::StraightKick { power: 3. })));
-                    self.internal_state = ShooterState::GoingBehindBall;
-                } else {
-                    action_wrapper.push(self.id, MoveTo::new(close_behind_ball_pos, robot_to_goal_angle, 1., None));
-                }
-            }
+        let dist_to_ball = robot_to_ball.norm();
+        if dist_to_ball < 0.115 {//TODO replace with IR (robot.has_ball)
+            let kick = None;
+            action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., kick));
+        }else if dist_to_ball < 0.8 {
+            action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1., None));
+        }else{
+            action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 0., None));
         }
 
         false

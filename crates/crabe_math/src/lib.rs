@@ -7,3 +7,9 @@
 /// The `shape` module contains geometric primitives, such as `Line` and `Circle`,
 /// which are used in various parts of the system to represent and manipulate shapes.
 pub mod shape;
+
+
+
+
+
+pub mod vectors;
