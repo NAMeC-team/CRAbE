@@ -2,6 +2,7 @@ use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
+use crate::strategy::keeper::Keep;
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
@@ -52,6 +53,7 @@ impl Manager for GameManager {
                 GameState::Stopped(stopped_state) => match stopped_state {
                     StoppedState::Stop => {
                         println!("stop");
+                        self.strategies.push(Box::new(Keep::new(0)));
                         // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
                         // let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
@@ -118,15 +120,18 @@ impl Manager for GameManager {
                         // for id in rest {
                         //     self.strategies.push(Box::new(Stand::new(id)));
                         // }
-                        self.strategies.push(Box::new(Shooter::new(3)));
+                        self.strategies.push(Box::new(Keep::new(0)));
+                        self.strategies.push(Box::new(Shooter::new(5)));
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
-                        self.strategies.push(Box::new(Shooter::new(3)));
+                        self.strategies.push(Box::new(Keep::new(0)));
+                        self.strategies.push(Box::new(Shooter::new(5)));
                     }
                     RunningState::FreeKick(team) => {
                         println!("free kick for {:#?}", team);
-                        self.strategies.push(Box::new(Shooter::new(3)));
+                        self.strategies.push(Box::new(Keep::new(0)));
+                        self.strategies.push(Box::new(Shooter::new(5)));
                     }
                     RunningState::Run => {
                         println!("run");
@@ -149,7 +154,8 @@ impl Manager for GameManager {
                         // for id in rest {
                         //     self.strategies.push(Box::new(Stand::new(id)));
                         // }
-                        self.strategies.push(Box::new(Shooter::new(3)));
+                        self.strategies.push(Box::new(Keep::new(0)));
+                        self.strategies.push(Box::new(Shooter::new(5)));
                     }
                 },
             }
