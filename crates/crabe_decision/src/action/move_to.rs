@@ -3,8 +3,9 @@ use crate::action::Action;
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
-use nalgebra::{distance, Isometry2, Point2, Vector2, Vector3};
+use nalgebra::{Const, distance, Dyn, IsDynamic, Isometry2, Matrix, matrix, Matrix2, Matrix2x1, OMatrix, Point2, U1, U2, Vector2, Vector3};
 use std::f64::consts::PI;
+use std::ops::{Div, Mul};
 
 /// The `MoveTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
 #[derive(Clone)]
@@ -69,68 +70,94 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-            const ATTRACTIVE_COEFFICIENT: f64 = 1.0;
+            const K_A: f64 = 1.0; // Attractive coefficient
             const OBSTACLE_RADIUS: f64 = 0.5;
-            const REPULSIVE_COEFFICIENT: f64 = 1.0;
+            const K_B: f64 = 1.0; // Repulsive coefficient
 
-            // let distance_goal = 1;
-            // let distance_obstacle = 2;
-
-            let mut result = Vector2::new(0.0, 0.0);
+            let mut f = Vector2::new(0.0, 0.0);
 
             // Attractive field
-            // let attract_force = self.target - robot.pose.position;
-            let dist_target_robot = distance(&self.target, &robot.pose.position);
+            // q  : Coordinates of the robot
+            // qd : Coordinates of the target
+            let q = robot.pose.position;
+            let q_d = self.target;
 
-            let force_magnitude = dist_target_robot * ATTRACTIVE_COEFFICIENT;
-            let target_robot = self.target - robot.pose.position;
+            // implementation of (4) in paper
+            let f_att = -K_A * (q - q_d);
+            // let f_att = K_A * (q_d - q);
+            f += f_att;
 
-            let attractive_force = (target_robot / dist_target_robot) * force_magnitude;
-
-            result += attractive_force;
 
             // Repulsive field
-
             if self.avoid_ball {
                 println!("[TODO] : AVOID BALL")
             }
 
+            let d_0 = OBSTACLE_RADIUS;
+            let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);//OMatrix::new::<f64, U2, Dyn>();
             world.allies_bot.iter().for_each(|(id, ally)| {
                 // Our robot id is not an obstacle
                 if robot.id == *id {
                     return;
                 }
 
-                let dist_ally_robot = distance(&robot.pose.position, &ally.pose.position);
+                // Location of the ally obstacle
+                let q_c = &ally.pose.position;
+                // Distance from our robot and the ally obstacle
+                let d_q = distance(&q, q_c);
 
-                if dist_ally_robot < OBSTACLE_RADIUS {
-                    let force_magnitude = REPULSIVE_COEFFICIENT / dist_ally_robot;
-                    let ally_robot = ally.pose.position - robot.pose.position;
+                if d_q < OBSTACLE_RADIUS {
 
-                    let repulsive_force = (ally_robot / dist_ally_robot) * force_magnitude;
-                    result -= repulsive_force;
+                    // implementation of (8) in the paper
+                    let repulsive_force = K_B *
+                        (1.0.div(d_q) - 1.0.div(d_0))
+                        *
+                        (1.0.div(d_q.powi(2)))
+                        *
+                        ((q-q_c).div(distance(&q, q_c)))
+                    ;
+                    repulsive_strength_sum += repulsive_force;
                 }
             });
 
             world.enemies_bot.iter().for_each(|(_, enemy)| {
-                let dist_enemy_robot = distance(&robot.pose.position, &enemy.pose.position);
-                dbg!(dist_enemy_robot);
+                // Location of the ally obstacle
+                let q_c = &enemy.pose.position;
+                // Distance from our robot and the ally obstacle
+                let d_q = distance(&q, q_c);
 
-                if dist_enemy_robot < OBSTACLE_RADIUS {
-                    dbg!(dist_enemy_robot);
-                    let force_magnitude =  REPULSIVE_COEFFICIENT / dist_enemy_robot;
-                    let enemy_robot = enemy.pose.position - robot.pose.position;
+                if d_q < OBSTACLE_RADIUS {
 
-                    let repulsive_force = (enemy_robot / dist_enemy_robot) * force_magnitude;
-                    result -= repulsive_force;
+                    // implementation of (8) in the paper
+                    let repulsive_force = K_B *
+                        (1.0.div(d_q) - 1.0.div(d_0))
+                        *
+                        (1.0.div(d_q.powi(2)))
+                        *
+                        ((q-q_c).div(distance(&q, q_c)))
+                        ;
+                    repulsive_strength_sum += repulsive_force;
                 }
+
+                // let dist_enemy_robot = distance(&robot.pose.position, &enemy.pose.position);
+                // dbg!(dist_enemy_robot);
+                //
+                // if dist_enemy_robot < OBSTACLE_RADIUS {
+                //     dbg!(dist_enemy_robot);
+                //     let force_magnitude =  K_B / dist_enemy_robot;
+                //     let enemy_robot = enemy.pose.position - robot.pose.position;
+                //
+                //     let repulsive_force = (enemy_robot / dist_enemy_robot) * force_magnitude;
+                //     f -= repulsive_force;
+                // }
+
             });
 
-            result *= 1.0;
+            f += dbg!(repulsive_strength_sum);
 
             Command {
-                forward_velocity: result.x as f32,
-                left_velocity: result.y as f32,
+                forward_velocity: f.x as f32,
+                left_velocity: f.y as f32,
                 angular_velocity: 0.0,
                 charge: false,
                 kick: None,
