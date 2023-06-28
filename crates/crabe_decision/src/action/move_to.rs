@@ -155,6 +155,12 @@ impl Action for MoveTo {
 
             f += dbg!(repulsive_strength_sum);
 
+            // Normalizing the strength vector to avoid super Sonic speed
+            // but only if not close to target, otherwise leads to oscillation
+            if distance(&q, &q_d) > 1.0 {
+                f = f.normalize();
+            }
+
             Command {
                 forward_velocity: f.x as f32,
                 left_velocity: f.y as f32,
