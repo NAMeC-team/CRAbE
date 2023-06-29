@@ -4,29 +4,20 @@ use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use nalgebra::{Point2, Point3, Vector2};
-use std::f64::consts::PI;
-use std::ops::{Sub, Add, Mul};
-use crabe_math::vectors;
+use nalgebra::{Point2};
+use std::ops::{Add, Mul};
+use crabe_math::vectors::{self, vector_from_angle};
 use crabe_math::shape::Line;
 
 #[derive(Default)]
 pub struct Shooter {
     /// The id of the robot to move.
-    id: u8,
-    internal_state: ShooterState
-}
-
-#[derive(Debug, Default)]
-enum ShooterState {
-    #[default]
-    GoingBehindBall,
-    GoingShoot
+    id: u8
 }
 impl Shooter {
     /// Creates a new Square instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id, internal_state: ShooterState::GoingBehindBall }
+        Self { id}
     }
 }
 
@@ -92,10 +83,10 @@ impl Strategy for Shooter {
         let robot_pos = robot.pose.position;
         let robot_to_ball = ball_pos - robot_pos;
         let dist_to_ball = robot_to_ball.norm();
-        let mut dir_shooting_line = Line::new(robot_pos, robot_pos.add(robot_to_ball.mul(100.)));
+        let dir_shooting_line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
         let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
-        if (dist_to_ball < 0.115 && dot_with_ball > 0.9) || robot.has_ball{//TODO replace with IR (robot.has_ball)
+        if (dist_to_ball < 0.115 && dot_with_ball > 0.97) || robot.has_ball{//TODO replace with IR (robot.has_ball)
             let kick: Option<Kick> = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {
                 Some(Kick::StraightKick {  power: 4. }) 
             }else {None};
