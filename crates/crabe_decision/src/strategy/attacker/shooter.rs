@@ -44,10 +44,10 @@ impl Strategy for Shooter {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
+        action_wrapper.clean(self.id);
         if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
             if bappe.id != self.id {return false}
         };
-        action_wrapper.clean(self.id);
         let goal_pos: Point2<f64> = Point2::new(-world.geometry.field.length/2., 0.0);//[Warning] TODO:here for testing we are kicking in our own goal so pls change this before real match lol
         let ball_pos = match world.ball.clone() {
             None => {

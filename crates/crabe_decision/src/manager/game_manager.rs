@@ -117,9 +117,9 @@ impl Manager for GameManager {
                 GameState::Running(running_state) => match running_state {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
-                        // if team != world.team_color {
-                        //     return;
-                        // }
+                        if team != world.team_color {
+                            return;
+                        }
 
                         // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
 
@@ -140,8 +140,11 @@ impl Manager for GameManager {
                         // for id in rest {
                         //     self.strategies.push(Box::new(Stand::new(id)));
                         // }
-                        self.strategies.push(Box::new(Keep::new(0)));
-                        self.strategies.push(Box::new(Shooter::new(5)));
+                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        for id in rest {
+                            self.strategies.push(Box::new(Shooter::new(id)));
+                        }
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
@@ -150,21 +153,23 @@ impl Manager for GameManager {
                     }
                     RunningState::FreeKick(team) => {
                         println!("free kick for {:#?}", team);
-                        self.strategies.push(Box::new(Keep::new(0)));
-                        self.strategies.push(Box::new(Shooter::new(5)));
+                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        for id in rest {
+                            self.strategies.push(Box::new(Shooter::new(id)));
+                        }
                     }
                     RunningState::Run => {
                         println!("run");
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-
-                        let mut rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                        if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
-                            self.strategies.push(Box::new(Shooter::new(bappe.id)));
-                            rest = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID && *id != bappe.id).collect();
-                        }
+                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        // if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
+                        //     self.strategies.push(Box::new(Shooter::new(bappe.id)));
+                        //     rest = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID && *id != bappe.id).collect();
+                        // }
 
                         for id in rest {
-                            self.strategies.push(Box::new(Stand::new(id)));
+                            self.strategies.push(Box::new(Shooter::new(id)));
                         }
                     }
                 },
