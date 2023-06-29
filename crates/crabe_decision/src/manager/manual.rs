@@ -4,6 +4,8 @@ use crate::strategy::testing::{GoToCenter, Square};
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
+use crate::strategy::attacker::Shooter;
+use crate::strategy::keeper::Keep;
 
 /// The `Manual` struct represents a decision manager that executes strategies manually
 /// added to its list.

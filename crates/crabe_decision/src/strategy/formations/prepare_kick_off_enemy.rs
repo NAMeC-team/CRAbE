@@ -10,14 +10,12 @@ use std::f64::consts::PI;
 /// It is used when the team is not in favor of the kick-off
 #[derive(Default)]
 pub struct PrepareKickOffEnemy {
-    /// The id of the robot to move.
-    id: u8,
 }
 
 impl PrepareKickOffEnemy {
     /// Creates a new PrepareKickOffEne instance with the desired robot id.
-    pub fn new(id: u8) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
@@ -42,12 +40,12 @@ impl Strategy for PrepareKickOffEnemy {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.push(0, MoveTo::new(Point2::new(-1.5, 1.1), -PI / 4.0, 0.0,None));
+        action_wrapper.push(5, MoveTo::new(Point2::new(-1.5, 1.1), -PI / 4.0, 0.0,None));
         action_wrapper.push(1, MoveTo::new(Point2::new(-1.0, -0.0), -PI / 4.0, 0.0,None));
         action_wrapper.push(2, MoveTo::new(Point2::new(-1.5, -1.1), -PI / 4.0, 0.0,None));
         action_wrapper.push(3, MoveTo::new(Point2::new(-1.2, 0.7), -PI / 4.0, 0.0,None));
         action_wrapper.push(4, MoveTo::new(Point2::new(-1.2, -0.7), -PI / 4.0, 0.0,None));
-        action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None));
+        action_wrapper.push(0, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None));
         true
     }
 }

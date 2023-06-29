@@ -1,32 +1,24 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
+use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use nalgebra::{Point2, Point3, Vector2};
-use std::f64::consts::PI;
-use std::ops::{Sub, Add, Mul};
-use crabe_math::vectors;
+use nalgebra::{Point2};
+use std::ops::{Add, Mul};
+use crabe_math::vectors::{self, vector_from_angle};
 use crabe_math::shape::Line;
 
 #[derive(Default)]
 pub struct Shooter {
     /// The id of the robot to move.
-    id: u8,
-    internal_state: ShooterState
-}
-
-#[derive(Debug, Default)]
-enum ShooterState {
-    #[default]
-    GoingBehindBall,
-    GoingShoot
+    id: u8
 }
 impl Shooter {
     /// Creates a new Square instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id, internal_state: ShooterState::GoingBehindBall }
+        Self { id}
     }
 }
 
@@ -52,27 +44,11 @@ impl Strategy for Shooter {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        // action_wrapper.clean(self.id);
-        // if let Some(ball) = &world.ball {
-        //     let target = Point3::new(-world.geometry.field.length/2.,0.,0.);
-        //     let mut dir = ball.position.sub(target);
-        //     dir = dir.normalize();
-        //     dir = dir * 0.2;
-        //     match &self.internal_state {
-        //         ShooterState::GoingBehindBall => {
-        //             action_wrapper.push(self.id, MoveTo::new(Point2::new(ball.position.x + dir.x, ball.position.y + dir.y), PI / 4.0));
-        //             self.internal_state = ShooterState::GoingShoot;
-        //         },
-        //         ShooterState::GoingShoot => {
-        //             action_wrapper.push(self.id, MoveTo::new(Point2::new(ball.position.x, ball.position.y), PI / 4.0));
-        //         },
-        //     }
-            
-        // }
-        // false
-
         action_wrapper.clean(self.id);
-        let goal_pos: Point2<f64> = Point2::new(-world.geometry.field.length/2., 0.0);//[Warning] TODO:for testing we are kicking in our own goal
+        if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
+            if bappe.id != self.id {return false}
+        };
+        let goal_pos: Point2<f64> = Point2::new(-world.geometry.field.length/2., 0.0);//[Warning] TODO:here for testing we are kicking in our own goal so pls change this before real match lol
         let ball_pos = match world.ball.clone() {
             None => {
                 return false;
@@ -92,10 +68,10 @@ impl Strategy for Shooter {
         let robot_pos = robot.pose.position;
         let robot_to_ball = ball_pos - robot_pos;
         let dist_to_ball = robot_to_ball.norm();
-        let mut dir_shooting_line = Line::new(robot_pos, robot_pos.add(robot_to_ball.mul(100.)));
+        let dir_shooting_line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
         let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
-        if (dist_to_ball < 0.115 && dot_with_ball > 0.9) || robot.has_ball{//TODO replace with IR (robot.has_ball)
+        if (dist_to_ball < 0.115 && dot_with_ball > 0.97) || robot.has_ball{//TODO replace with IR (robot.has_ball)
             let kick: Option<Kick> = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {
                 Some(Kick::StraightKick {  power: 4. }) 
             }else {None};

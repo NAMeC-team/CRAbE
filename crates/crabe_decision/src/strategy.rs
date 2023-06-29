@@ -9,6 +9,7 @@ pub mod testing;
 pub mod attacker;
 pub mod formations;
 pub mod keeper;
+pub mod defender;
 
 
 /// The `Strategy` trait defines the interface for a behavior that one or multiple robots can adopt to achieve a certain goal.
