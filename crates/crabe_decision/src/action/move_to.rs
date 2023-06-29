@@ -2,8 +2,8 @@ use crate::action::state::State;
 use crate::action::Action;
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{AllyInfo, EnemyInfo, Robot, RobotMap, World};
-use nalgebra::{distance, IsDynamic, Isometry2, Matrix, matrix, Matrix2, Matrix2x1, min, OMatrix, Point2, U1, U2, Vector2, Vector3};
+use crabe_framework::data::world::{RobotMap, World};
+use nalgebra::{distance, Matrix, matrix, Matrix2, Matrix2x1, min, OMatrix, Point2, Rotation2, U1, U2, Vector2, Vector3};
 use std::ops::{Div};
 
 /// The `MoveTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
@@ -162,10 +162,22 @@ impl Action for MoveTo {
                 f = f.normalize();
             }
 
+            // Compute angle of the resulting vector
+            let obj_theta = f.y.atan2(f.x);
+            let robot_theta = robot.pose.orientation;
+            let mut angular_accel_sign: f32 = 1.0;
+
+            let angle_diff = obj_theta - robot_theta;
+            if angle_diff < 0.0 {
+                angular_accel_sign = -1.0;
+            }
+
+            dbg!(&robot_theta);
+
             Command {
                 forward_velocity: f.x as f32,
                 left_velocity: f.y as f32,
-                angular_velocity: 0.0,
+                angular_velocity: angular_accel_sign * angle_diff.abs() as f32 * 5.0,
                 charge: false,
                 kick: None,
                 dribbler: 0.0,
