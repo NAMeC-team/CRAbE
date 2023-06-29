@@ -62,9 +62,9 @@ impl Manager for GameManager {
                     }
                     StoppedState::PrepareKickoff(team) => {
                         if team == world.team_color {
-                            self.strategies.push(Box::new(PrepareKickOffAlly::new(0)));
+                            self.strategies.push(Box::new(PrepareKickOffAlly::new()));
                         }else{
-                            self.strategies.push(Box::new(PrepareKickOffEnemy::new(0)));
+                            self.strategies.push(Box::new(PrepareKickOffEnemy::new()));
                         }
                         println!("prepare kick off {:?}",team);
                         // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));

@@ -10,14 +10,12 @@ use std::f64::consts::PI;
 /// It is used when the team is in favor of the kick-off
 #[derive(Default)]
 pub struct PrepareKickOffAlly {
-    /// The id of the robot to move.
-    id: u8,
 }
 
 impl PrepareKickOffAlly {
     /// Creates a new PrepareKickOffAlly instance with the desired robot id.
-    pub fn new(id: u8) -> Self {
-        Self { id }
+    pub fn new() -> Self {
+        Self {}
     }
 }
 
