@@ -48,6 +48,25 @@ impl Line{
         let y = det(d, ydiff) / div;
         Some(Point2::new(x, y))
     }
+    pub fn intersection_line(&self, line: &Line) -> Option<Point2<f64>>{
+        let xdiff = (self.start.x - self.end.x, line.start.x - line.end.x);
+        let ydiff = (self.start.y - self.end.y, line.start.y - line.end.y);
+    
+        fn det(a: (f64, f64), b: (f64, f64)) -> f64 {
+            a.0 * b.1 - a.1 * b.0
+        }
+    
+        let div = det(xdiff, ydiff);
+        if div.abs() < 1e-6 {
+            println!("Lines do not intersect");
+            return None;
+        }
+    
+        let d = (det((self.start.x, self.start.y), (self.end.x, self.end.y)), det((line.start.x, line.start.y), (line.end.x, line.end.y)));
+        let x = det(d, xdiff) / div;
+        let y = det(d, ydiff) / div;
+        Some(Point2::new(x, y))
+    }
 }
 
 fn ccw(a: Point2<f64>, b: Point2<f64>, c: Point2<f64>) -> bool {

@@ -22,6 +22,7 @@ use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
+use filter::velocity_acceleration::VelocityAccelerationFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -39,6 +40,7 @@ impl FilterPipeline {
         let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
         let filters: Vec<Box<dyn Filter>> = vec![
             Box::new(PassthroughFilter),
+            Box::new(VelocityAccelerationFilter),
             Box::<InactiveFilter>::default(),
         ];
         let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
