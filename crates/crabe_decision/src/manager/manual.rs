@@ -1,7 +1,6 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
-// use crate::strategy::testing::Square;
-use crate::strategy::testing::RobotsFormation;
+use crate::strategy::testing::{GoToCenter, Square};
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -21,7 +20,7 @@ impl Manual {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(RobotsFormation::new(0))],
+            strategies: vec![Box::new(GoToCenter::new(0))],
         }
     }
 }

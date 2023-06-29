@@ -7,6 +7,7 @@ use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_framework::data::world::World;
+use crate::strategy::testing::GoToCenter;
 
 /// The `Manual` struct represents a decision manager that executes strategies manually
 /// added to its list.
@@ -154,12 +155,12 @@ impl Manager for GameManager {
                         // for id in rest {
                         //     self.strategies.push(Box::new(Stand::new(id)));
                         // }
-                        self.strategies.push(Box::new(Keep::new(0)));
-                        self.strategies.push(Box::new(Shooter::new(5)));
+                        self.strategies.push(Box::new(GoToCenter::new(0)));
                     }
                 },
             }
         }
+        self.strategies.push(Box::new(GoToCenter::new(0)));
 
         for strategy in &mut self.strategies {
             strategy.step(world, tools_data, action_wrapper);
