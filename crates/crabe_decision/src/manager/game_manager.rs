@@ -6,7 +6,7 @@ use crate::strategy::keeper::Keep;
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
-use crabe_framework::data::world::World;
+use crabe_framework::data::world::{World, Robot, AllyInfo};
 
 /// The `Manual` struct represents a decision manager that executes strategies manually
 /// added to its list.
@@ -20,6 +20,8 @@ pub struct GameManager {
     strategies: Vec<Box<dyn Strategy>>,
 }
 
+const KEEPER_ID: u8 = 0;
+
 impl GameManager {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
@@ -27,6 +29,15 @@ impl GameManager {
             last_game_state: None,
             strategies: vec![],
         }
+    }
+
+    pub fn closest_robot_to_ball(world: &World) -> Option<Robot<AllyInfo>>{
+        world.allies_bot
+            .iter()
+            .filter(|(id, _)| **id != KEEPER_ID)
+            .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+            .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
+            .map(|(id, _, _)| id)
     }
 }
 
@@ -135,7 +146,7 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
-                        // self.strategies.push(Box::new(Goalkeeper::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
 
                         // let closest_robot_to_ball_id = world.allies_bot
                         //     .iter()
@@ -154,7 +165,6 @@ impl Manager for GameManager {
                         // for id in rest {
                         //     self.strategies.push(Box::new(Stand::new(id)));
                         // }
-                        self.strategies.push(Box::new(Keep::new(0)));
                         self.strategies.push(Box::new(Shooter::new(5)));
                     }
                 },
