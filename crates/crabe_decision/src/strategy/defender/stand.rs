@@ -9,19 +9,19 @@ use std::f64::consts::PI;
 /// The penaltyPrepKeeper struct represents a strategy that commands the keeper to set in the penalty formation
 /// It is used when there is a penalty for the opponent team
 #[derive(Default)]
-pub struct PenaltyPrepKeeper {
+pub struct Stand {
     /// The id of the robot to move.
     id: u8,
 }
 
-impl PenaltyPrepKeeper {
+impl Stand {
     /// Creates a new penaltyPrepKeeper instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id }
     }
 }
 
-impl Strategy for PenaltyPrepKeeper {
+impl Strategy for Stand {
     /// Executes the penaltyPrepKeeper strategy.
     ///
     /// This strategy commands all the robots to move in position for
@@ -42,7 +42,6 @@ impl Strategy for PenaltyPrepKeeper {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.push(0, MoveTo::new(Point2::new(-4.5, 0.0), -PI / 4.0, 0.0,None));
         true
     }
 }

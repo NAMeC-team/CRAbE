@@ -1,5 +1,6 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
+use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World, Robot, EnemyInfo, AllyInfo};
@@ -21,28 +22,6 @@ impl Keep {
     /// Creates a new Keep instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id }
-    }
-
-    pub fn enemy_shooter(world: &World,) -> Option<Robot<AllyInfo>>{
-        let mut closest_bot = None;
-        let mut min_dist = f64::INFINITY;
-        let ball_pos = match world.ball.clone() {
-            None => {
-                return None;
-            }
-            Some(ball) => {
-                ball.position.xy()
-            }
-        };
-        for (_id, bot) in world.allies_bot.clone().into_iter(){
-            let to_ball = ball_pos - bot.pose.position;
-            let dist_to_ball = to_ball.norm();
-            if dist_to_ball < min_dist{
-                min_dist = dist_to_ball;
-                closest_bot = Some(bot);
-            }
-        } 
-        closest_bot
     }
 }
 
@@ -71,7 +50,7 @@ impl Strategy for Keep {
                 let ball_dir = ball.position + ball.velocity * 1000.;
                 shoot_dir.end = ball_dir.xy();
             }
-            else if let Some(closest_enemy) = Keep::enemy_shooter(world){
+            else if let Some(closest_enemy) = GameManager::closest_enemy_to_ball(world){
                 let enemy_dir = closest_enemy.pose.position + vector_from_angle(closest_enemy.pose.orientation) * 1000.;
                 shoot_dir.end = enemy_dir.xy();
             }
