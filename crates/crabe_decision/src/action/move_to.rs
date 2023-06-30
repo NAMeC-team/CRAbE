@@ -178,13 +178,17 @@ impl Action for MoveTo {
                 angular_accel_sign = -1.0;
             }
 
-            dbg!(&robot_theta);
+            // Change the basis of the resulting vector to the basis of the robot
+            // i'm not exactly sure why it's `-robot_theta`
+            let rob_rotation_basis = Rotation2::new(-robot_theta);
+            // println!("Before transformation : {}", &f);
+            f = rob_rotation_basis.transform_vector(&f);
+            // println!("After transformation : {}", &f);
 
             Command {
                 forward_velocity: f.x as f32,
                 left_velocity: f.y as f32,
-                // angular_velocity: angular_accel_sign * angle_diff.abs() as f32 * 5.0,
-                angular_velocity: 0.0,
+                angular_velocity: 0.0, // angular_accel_sign * angle_diff.abs() as f32 * 5.0,
                 charge: false,
                 kick: self.kick,
                 dribbler: dribble_clamped,
