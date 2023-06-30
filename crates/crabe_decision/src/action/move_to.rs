@@ -1,6 +1,6 @@
 use crate::action::state::State;
 use crate::action::Action;
-use crabe_framework::data::output::Command;
+use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{RobotMap, World};
 use nalgebra::{distance, Matrix, matrix, Matrix2, Matrix2x1, min, OMatrix, Point2, Rotation2, U1, U2, Vector2, Vector3};
@@ -17,6 +17,8 @@ pub struct MoveTo {
     orientation: f64,
     /// Dribble strength
     dribble: f32,
+    /// Whether to kick or not. None if no kick required
+    kick: Option<Kick>,
     /// Avoid the ball
     avoid_ball: bool,
     /// Attraction factor
@@ -34,6 +36,7 @@ impl From<&mut MoveTo> for MoveTo {
             target: other.target,
             orientation: other.orientation,
             dribble: other.dribble,
+            kick: other.kick,
             avoid_ball: other.avoid_ball,
             k_attraction: other.k_attraction,
             k_repulsion: other.k_repulsion,
@@ -45,7 +48,7 @@ impl From<&mut MoveTo> for MoveTo {
 impl MoveTo {
     /// Creates a new `MoveTo` instance, avoiding any obstacles in the way.
     /// Speed is limited by normalizing the movement vector
-    /// Based on this paper : https://www.researchgate.net/publication/313389747_Potential_field_methods_and_their_inherent_approaches_for_path_planning
+    /// Implementation of this paper : https://www.researchgate.net/publication/313389747_Potential_field_methods_and_their_inherent_approaches_for_path_planning
     ///
     /// # Arguments
     ///
@@ -53,13 +56,14 @@ impl MoveTo {
     /// * `orientation` : The target orientation of the robot.
     /// * `avoid_ball` : Set to true to make the MoveTo avoid the ball as well as the other robots
     /// * `charge_when_near_target` : Set to true to charge the kickers when we're near the target (about 0.3 meter)
-    pub fn new(target: Point2<f64>, orientation: f64, dribble: f32, avoid_ball: bool, charge_when_near_target: bool) -> Self {
+    pub fn new(target: Point2<f64>, orientation: f64, dribble: f32, kick: Option<Kick>, avoid_ball: bool, charge_when_near_target: bool) -> Self {
         Self {
             state: State::Running,
             target,
             orientation,
             avoid_ball,
             dribble,
+            kick,
             k_attraction: 1.0,
             k_repulsion: 1.0,
             chg_near_arrival: charge_when_near_target,
@@ -215,7 +219,7 @@ impl Action for MoveTo {
                 left_velocity: f.y as f32,
                 angular_velocity,
                 charge,
-                kick: None,
+                kick: self.kick,
                 dribbler: self.dribble,
             }
         } else {
