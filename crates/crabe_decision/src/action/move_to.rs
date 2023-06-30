@@ -21,6 +21,8 @@ pub struct MoveTo {
     k_attraction: f64,
     /// Repulsion factor
     k_repulsion: f64,
+    /// Set to true if we should charge the capacitors for kicking when being near target
+    chg_near_arrival: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -32,6 +34,7 @@ impl From<&mut MoveTo> for MoveTo {
             avoid_ball: other.avoid_ball,
             k_attraction: other.k_attraction,
             k_repulsion: other.k_repulsion,
+            chg_near_arrival: other.chg_near_arrival,
         }
     }
 }
@@ -43,10 +46,11 @@ impl MoveTo {
     ///
     /// # Arguments
     ///
-    /// * `target`: The target position on the field to move the robot to.
-    /// * `orientation`: The target orientation of the robot.
-    /// * `avoid_ball`
-    pub fn new(target: Point2<f64>, orientation: f64, avoid_ball: bool) -> Self {
+    /// * `target` : The target position on the field to move the robot to.
+    /// * `orientation` : The target orientation of the robot.
+    /// * `avoid_ball` : Set to true to make the MoveTo avoid the ball as well as the other robots
+    /// * `charge_when_near_target` : Set to true to charge the kickers when we're near the target (about 0.3 meter)
+    pub fn new(target: Point2<f64>, orientation: f64, avoid_ball: bool, charge_when_near_target: bool) -> Self {
         Self {
             state: State::Running,
             target,
@@ -54,6 +58,7 @@ impl MoveTo {
             avoid_ball,
             k_attraction: 1.0,
             k_repulsion: 1.0,
+            chg_near_arrival: charge_when_near_target,
         }
     }
 
@@ -189,7 +194,7 @@ impl Action for MoveTo {
             }
 
             // -- Compute angle of the resulting vector
-            let angular_vel = self.angular_speed(&robot.pose.orientation);
+            let angular_velocity = self.angular_speed(&robot.pose.orientation);
 
             // -- Change the basis of the resulting vector to the basis of the robot
             //    I'm not exactly sure why it's `-robot_theta` and not `robot_theta`
@@ -198,12 +203,14 @@ impl Action for MoveTo {
             f = rob_rotation_basis * f;
             // println!("After transformation : {}", &f);
 
+            // -- Determine whether we need to charge
+            let mut charge = self.chg_near_arrival && distance(&robot.pose.position, &self.target) <= 0.3;
 
             Command {
                 forward_velocity: f.x as f32,
                 left_velocity: f.y as f32,
-                angular_velocity: angular_vel,
-                charge: false,
+                angular_velocity,
+                charge,
                 kick: None,
                 dribbler: 0.0,
             }
