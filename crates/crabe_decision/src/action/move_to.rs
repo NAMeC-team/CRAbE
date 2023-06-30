@@ -140,6 +140,12 @@ impl Action for MoveTo {
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
             const OBSTACLE_RADIUS: f64 = 0.4;
+            let dist_to_target = distance(&robot.pose.position, &self.target);
+
+            if dist_to_target <= 0.02 {
+                self.state = State::Done;
+                return Command::default();
+            }
 
             let d_0 = OBSTACLE_RADIUS;
 
@@ -157,7 +163,7 @@ impl Action for MoveTo {
             // -- Repulsive field
 
             // Don't compute any repulsion if robot is already near target
-            if distance(&robot.pose.position, &self.target) >= 0.15 {
+            if dist_to_target >= 0.15 {
                 let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
                 world.allies_bot.iter().for_each(|(id, ally)| {
                     // Our robot id is not an obstacle
@@ -197,7 +203,7 @@ impl Action for MoveTo {
 
             // -- Normalizing the strength vector to avoid super Sonic speed
             //    but only if not close to target, otherwise leads to oscillation
-            if distance(&q, &q_d) > 1.0 {
+            if dist_to_target > 1.0 {
                 f = f.normalize();
             }
 
