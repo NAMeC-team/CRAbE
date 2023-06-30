@@ -142,9 +142,6 @@ impl Action for MoveTo {
             f += self.attractive_force(&q, &q_d);
 
             // -- Repulsive field
-            if self.avoid_ball {
-                println!("[TODO] : AVOID BALL")
-            }
 
             // Don't compute any repulsion if robot is already near target
             if distance(&robot.pose.position, &self.target) >= 0.15 {
@@ -170,6 +167,18 @@ impl Action for MoveTo {
                         repulsive_strength_sum += self.repulsive_force(&d_0, &d_q, &q, &enemy.pose.position);
                     }
                 });
+
+                // avoid ball if tasked
+                if self.avoid_ball {
+                    if let Some(ball) = &world.ball {
+                        let ball_position = &ball.position.xy();
+                        if distance(ball_position, &robot.pose.position) <= d_0 {
+                            let d_q = distance(&robot.pose.position, ball_position);
+                            repulsive_strength_sum += self.repulsive_force(&d_0, &d_q, &q, ball_position);
+                        }
+                    }
+                }
+
                 f += dbg!(repulsive_strength_sum);
             }
 
@@ -183,7 +192,7 @@ impl Action for MoveTo {
             let angular_vel = self.angular_speed(&robot.pose.orientation);
 
             // -- Change the basis of the resulting vector to the basis of the robot
-            //    i'm not exactly sure why it's `-robot_theta`
+            //    I'm not exactly sure why it's `-robot_theta` and not `robot_theta`
             let rob_rotation_basis = Rotation2::new(-&robot.pose.orientation);
             // println!("Before transformation : {}", &f);
             f = rob_rotation_basis * f;
