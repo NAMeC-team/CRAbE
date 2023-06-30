@@ -15,6 +15,8 @@ pub struct MoveTo {
     target: Point2<f64>,
     /// The target orientation of the robot.
     orientation: f64,
+    /// Dribble strength
+    dribble: f32,
     /// Avoid the ball
     avoid_ball: bool,
     /// Attraction factor
@@ -31,6 +33,7 @@ impl From<&mut MoveTo> for MoveTo {
             state: other.state,
             target: other.target,
             orientation: other.orientation,
+            dribble: other.dribble,
             avoid_ball: other.avoid_ball,
             k_attraction: other.k_attraction,
             k_repulsion: other.k_repulsion,
@@ -50,12 +53,13 @@ impl MoveTo {
     /// * `orientation` : The target orientation of the robot.
     /// * `avoid_ball` : Set to true to make the MoveTo avoid the ball as well as the other robots
     /// * `charge_when_near_target` : Set to true to charge the kickers when we're near the target (about 0.3 meter)
-    pub fn new(target: Point2<f64>, orientation: f64, avoid_ball: bool, charge_when_near_target: bool) -> Self {
+    pub fn new(target: Point2<f64>, orientation: f64, dribble: f32, avoid_ball: bool, charge_when_near_target: bool) -> Self {
         Self {
             state: State::Running,
             target,
             orientation,
             avoid_ball,
+            dribble,
             k_attraction: 1.0,
             k_repulsion: 1.0,
             chg_near_arrival: charge_when_near_target,
@@ -212,7 +216,7 @@ impl Action for MoveTo {
                 angular_velocity,
                 charge,
                 kick: None,
-                dribbler: 0.0,
+                dribbler: self.dribble,
             }
         } else {
             Command::default()
