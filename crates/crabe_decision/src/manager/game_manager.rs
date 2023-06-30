@@ -1,8 +1,10 @@
+use std::f32::consts::PI;
+
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
-use crate::strategy::defender::Stand;
+use crate::strategy::defender::{Stand, Defend};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
@@ -22,6 +24,11 @@ pub struct GameManager {
 }
 
 const KEEPER_ID: u8 = 0;
+const PIVOT_ID: u8 = 1;
+const DEFENDER1_ID: u8 = 2;
+const DEFENDER2_ID: u8 = 3;
+const ATTACKER1_ID: u8 = 4;
+const ATTACKER2_ID: u8 = 5;
 
 impl GameManager {
     /// Creates a new `Manual` instance with the desired strategies to test.
@@ -125,19 +132,19 @@ impl Manager for GameManager {
                     RunningState::Run => {
                         println!("run");
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                        // if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
-                        //     self.strategies.push(Box::new(Shooter::new(bappe.id)));
-                        //     rest = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID && *id != bappe.id).collect();
+                        self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
+                        self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
+                        self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
+                        self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
+                        self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
+                        //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
+                        // for id in rest {
+                        //     self.strategies.push(Box::new(Shooter::new(id)));
                         // }
-                        for id in rest {
-                            self.strategies.push(Box::new(Shooter::new(id)));
-                        }
                     }
                 },
             }
         }
-
         for strategy in &mut self.strategies {
             strategy.step(world, tools_data, action_wrapper);
         }
