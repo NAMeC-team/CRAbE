@@ -172,7 +172,9 @@ impl Action for MoveTo {
                 angular_accel_sign = -1.0;
             }
 
-            dbg!(&robot_theta);
+            // Change the basis of the resulting vector to the basis of the robot
+            let rob_rotation_basis = Rotation2::new(robot_theta);
+            f = rob_rotation_basis.transform_vector(&f);
 
             Command {
                 forward_velocity: f.x as f32,
