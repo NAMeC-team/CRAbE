@@ -37,8 +37,6 @@ impl From<&mut MoveTo> for MoveTo {
 }
 
 impl MoveTo {
-    const INVALID_POINT: Point2<f64> = Point2::new(100.0, 100.0);
-
     /// Creates a new `MoveTo` instance, avoiding any obstacles in the way.
     /// Speed is limited by normalizing the movement vector
     /// Based on this paper : https://www.researchgate.net/publication/313389747_Potential_field_methods_and_their_inherent_approaches_for_path_planning
@@ -76,7 +74,7 @@ impl MoveTo {
     /// # Arguments
     ///
     /// * `d_0` : Constant, radius of the obstacle
-    /// * `d_q` : Considering all obstacles, the shortest distance of a robot/obstacle duo (i.e. the distance of the obstacle the robot is closest to)
+    /// * `d_q` : Euclidean distance between the robot and the obstacle
     /// * `q`   : The robot's vector position (or coordinates)
     /// * `q_c` : The obstacle's vector position (or coordinates)
     fn repulsive_force(&self, d_0: &f64, d_q: &f64, q: &Point2<f64>, q_c: &Point2<f64>) -> Vector2<f64> {
@@ -86,6 +84,25 @@ impl MoveTo {
         ((q-q_c).div(distance(&q, q_c)))
     }
 
+    /// Computes the angular speed required to adjust the robot's orientation to the required orientation
+    ///
+    /// # Arguments
+    ///
+    /// * `robot_theta` : The current orientation of the robot
+    fn angular_speed(&self, robot_theta: &f64) -> f32 {
+        let mut angular_accel_sign: f32 = 1.;
+
+        let angle_diff = self.orientation - robot_theta;
+        if angle_diff.abs() < 0.2 {
+            angular_accel_sign = 0.;
+        }
+        else if angle_diff < 0. {
+            angular_accel_sign = -1.;
+        }
+
+        // apply a factor of 5 to increase
+        angular_accel_sign * angle_diff.abs() as f32 * 5.0
+    }
 }
 
 impl Action for MoveTo {
@@ -156,33 +173,27 @@ impl Action for MoveTo {
                 f += dbg!(repulsive_strength_sum);
             }
 
-            // Normalizing the strength vector to avoid super Sonic speed
-            // but only if not close to target, otherwise leads to oscillation
+            // -- Normalizing the strength vector to avoid super Sonic speed
+            //    but only if not close to target, otherwise leads to oscillation
             if distance(&q, &q_d) > 1.0 {
                 f = f.normalize();
             }
 
-            // Compute angle of the resulting vector
-            let obj_theta = f.y.atan2(f.x);
-            let robot_theta = robot.pose.orientation;
-            let mut angular_accel_sign: f32 = 1.0;
+            // -- Compute angle of the resulting vector
+            let angular_vel = self.angular_speed(&robot.pose.orientation);
 
-            let angle_diff = obj_theta - robot_theta;
-            if angle_diff < 0.0 {
-                angular_accel_sign = -1.0;
-            }
-
-            // Change the basis of the resulting vector to the basis of the robot
-            // i'm not exactly sure why it's `-robot_theta`
-            let rob_rotation_basis = Rotation2::new(-robot_theta);
+            // -- Change the basis of the resulting vector to the basis of the robot
+            //    i'm not exactly sure why it's `-robot_theta`
+            let rob_rotation_basis = Rotation2::new(-&robot.pose.orientation);
             // println!("Before transformation : {}", &f);
-            f = rob_rotation_basis.transform_vector(&f);
+            f = rob_rotation_basis * f;
             // println!("After transformation : {}", &f);
+
 
             Command {
                 forward_velocity: f.x as f32,
                 left_velocity: f.y as f32,
-                angular_velocity: 0.0, // angular_accel_sign * angle_diff.abs() as f32 * 5.0,
+                angular_velocity: angular_vel,
                 charge: false,
                 kick: None,
                 dribbler: 0.0,
