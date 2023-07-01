@@ -2,8 +2,8 @@ use crate::action::state::State;
 use crate::action::Action;
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{RobotMap, World};
-use nalgebra::{distance, Matrix, matrix, Matrix2, Matrix2x1, min, OMatrix, Point2, Rotation2, U1, U2, Vector2, Vector3};
+use crabe_framework::data::world::{World};
+use nalgebra::{distance, Point2, Rotation2, Vector2};
 use std::ops::{Div};
 
 const OBSTACLE_RADIUS: f64 = 0.7;
