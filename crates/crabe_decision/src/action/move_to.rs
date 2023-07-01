@@ -144,18 +144,11 @@ impl Action for MoveTo {
                 return Command::default();
             }
 
-            let d_0 = OBSTACLE_RADIUS;
-
             // Resulting movement vector
             let mut f = Vector2::new(0.0, 0.0);
 
-            // Coordinates of the robot
-            let q = robot.pose.position;
-            // Coordinates of the target
-            let q_d = self.target;
-
             // -- Attractive field
-            f += self.attractive_force(&q, &q_d);
+            f += self.attractive_force(&robot.pose.position, &self.target);
 
             // -- Repulsive field
 
@@ -168,10 +161,10 @@ impl Action for MoveTo {
                         return;
                     }
 
-                    let d_q = distance(&robot.pose.position, &ally.pose.position);
+                    let dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
 
-                    if d_q < d_0 {
-                        repulsive_strength_sum += self.repulsive_force(&d_0, &d_q, &q, &ally.pose.position);
+                    if dist_to_obst < OBSTACLE_RADIUS {
+                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
                     }
                 });
 
@@ -179,8 +172,8 @@ impl Action for MoveTo {
                     // Distance from our robot and the ally obstacle
                     let d_q = distance(&robot.pose.position, &enemy.pose.position);
 
-                    if d_q < d_0 {
-                        repulsive_strength_sum += self.repulsive_force(&d_0, &d_q, &q, &enemy.pose.position);
+                    if d_q < OBSTACLE_RADIUS {
+                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &d_q, &robot.pose.position, &enemy.pose.position);
                     }
                 });
 
@@ -188,9 +181,9 @@ impl Action for MoveTo {
                 if self.avoid_ball {
                     if let Some(ball) = &world.ball {
                         let ball_position = &ball.position.xy();
-                        if distance(ball_position, &robot.pose.position) <= d_0 {
+                        if distance(ball_position, &robot.pose.position) <= OBSTACLE_RADIUS {
                             let d_q = distance(&robot.pose.position, ball_position);
-                            repulsive_strength_sum += self.repulsive_force(&d_0, &d_q, &q, ball_position);
+                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &d_q, &robot.pose.position, ball_position);
                         }
                     }
                 }
