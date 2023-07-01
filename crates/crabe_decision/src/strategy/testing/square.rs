@@ -45,23 +45,23 @@ impl Strategy for Square {
     ) -> bool {
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, false),
+            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, 0.0, None, false, false),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(1.0, 1.0), -3.0 * PI / 4.0, false),
+            MoveTo::new(Point2::new(1.0, 1.0), -3.0 * PI / 4.0, 0.0, None, false, false),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(1.0, -1.0), 3.0 * PI / 4.0, false),
+            MoveTo::new(Point2::new(1.0, -1.0), 3.0 * PI / 4.0, 0.0, None, false, false),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0, false),
+            MoveTo::new(Point2::new(-1.0, -1.0), PI / 4.0, 0.0, None, false, false),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, false),
+            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, 0.0, None, false, false),
         );
         true
     }

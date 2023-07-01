@@ -50,7 +50,8 @@ impl Strategy for GoToCenter {
                     world.geometry.center.center.y,
                 ),
                 0.0,
-                false,
+                0.0, None,
+                false, false,
             ),
         );
         true
