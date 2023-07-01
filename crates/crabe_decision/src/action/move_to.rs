@@ -152,31 +152,33 @@ impl Action for MoveTo {
             f += self.attractive_force(&robot.pose.position, &self.target);
 
             // -- Repulsive field
-
+            let mut dist_to_obst = 0.;
             // Don't compute any repulsion if robot is already near target
             if dist_to_target >= 0.15 {
                 let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
-                world.allies_bot.iter().for_each(|(id, ally)| {
+                world.allies_bot.iter()
                     // Our robot id is not an obstacle
-                    if robot.id == *id {
-                        return;
+                    .filter(|(id, _)| **id != robot.id)
+                    .for_each(|(_, ally)| {
+
+                        dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
+
+                        if dist_to_obst < OBSTACLE_RADIUS {
+                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
+                        }
                     }
+                );
 
-                    let dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
+                world.enemies_bot.iter()
+                    .for_each(|(_, enemy)| {
+                        // Distance from our robot and the ally obstacle
+                        dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
 
-                    if dist_to_obst < OBSTACLE_RADIUS {
-                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
+                        if dist_to_obst < OBSTACLE_RADIUS {
+                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
+                        }
                     }
-                });
-
-                world.enemies_bot.iter().for_each(|(_, enemy)| {
-                    // Distance from our robot and the ally obstacle
-                    let d_q = distance(&robot.pose.position, &enemy.pose.position);
-
-                    if d_q < OBSTACLE_RADIUS {
-                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &d_q, &robot.pose.position, &enemy.pose.position);
-                    }
-                });
+                );
 
                 // avoid ball if tasked
                 if self.avoid_ball {
@@ -209,7 +211,7 @@ impl Action for MoveTo {
             // println!("After transformation : {}", &f);
 
             // -- Determine whether we need to charge
-            let mut charge = self.chg_near_arrival && distance(&robot.pose.position, &self.target) <= 0.3;
+            let charge = self.chg_near_arrival && distance(&robot.pose.position, &self.target) <= 0.3;
 
             Command {
                 forward_velocity: f.x as f32,
