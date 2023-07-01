@@ -1,3 +1,4 @@
+use std::f64::consts::FRAC_PI_6;
 use crate::action::state::State;
 use crate::action::Action;
 use crabe_framework::data::output::{Command, Kick};
@@ -10,7 +11,7 @@ const OBSTACLE_RADIUS: f64 = 0.7;
 const K_ATTRACTION: f64 = 1.0;
 const K_REPULSION: f64 = 1.0;
 const DIST_CHECK_FINISHED: f64 = 0.02;
-const MAX_ANGLE_ERROR: f64 = (30.0 as f32).to_radians() as f64;
+const MAX_ANGLE_ERROR: f64 = FRAC_PI_6;
 
 /// The `MoveTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
 #[derive(Clone)]
