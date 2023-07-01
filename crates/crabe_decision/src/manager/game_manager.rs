@@ -100,7 +100,7 @@ impl Manager for GameManager {
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                         let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         for id in rest {
-                            self.strategies.push(Box::new(Shooter::new(id)));
+                            self.strategies.push(Box::new(GoToCenter::new(1)));
                         }
                     }
                     RunningState::Penalty(team) => {
@@ -140,7 +140,7 @@ impl Manager for GameManager {
                 },
             }
         }
-        self.strategies.push(Box::new(GoToCenter::new(0)));
+        self.strategies.push(Box::new(GoToCenter::new(1)));
 
         for strategy in &mut self.strategies {
             strategy.step(world, tools_data, action_wrapper);

@@ -60,7 +60,7 @@ impl Strategy for PenaltyPrepKeeper {
             if let Some(intersection) = world.geometry.ally_goal.front_line.intersection_line(&shoot_dir) {
                 let x = world.geometry.ally_goal.bottom_left_position.x+0.1;
                 let y = clamp(intersection.y, world.geometry.ally_goal.bottom_left_position.y, world.geometry.ally_goal.bottom_right_position.y);
-                action_wrapper.push(self.id, MoveTo::new(Point2::new(x, y), -PI / 4.0, 0., None));
+                action_wrapper.push(self.id, MoveTo::new(Point2::new(x, y), -PI / 4.0, 0., None, false, false));
             }
         }
         true

@@ -44,10 +44,15 @@ impl Strategy for GoToCenter {
     ) -> bool {
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(
-                world.geometry.center.center.x,
-                world.geometry.center.center.y,
-            ), 0.0, 0.0, None),
+            MoveTo::new(
+                Point2::new(
+                    world.geometry.center.center.x,
+                    world.geometry.center.center.y,
+                ),
+                0.0,
+                0.0, None,
+                false, false,
+            ),
         );
         true
     }
