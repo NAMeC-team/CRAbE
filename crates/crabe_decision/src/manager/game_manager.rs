@@ -24,11 +24,11 @@ pub struct GameManager {
     strategies: Vec<Box<dyn Strategy>>,
 }
 
-const KEEPER_ID: u8 = 0;
+const KEEPER_ID: u8 = 4;
 const PIVOT_ID: u8 = 1;
 const DEFENDER1_ID: u8 = 2;
 const DEFENDER2_ID: u8 = 3;
-const ATTACKER1_ID: u8 = 4;
+const ATTACKER1_ID: u8 = 0  ;
 const ATTACKER2_ID: u8 = 5;
 
 impl GameManager {
