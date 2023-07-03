@@ -70,7 +70,7 @@ impl Strategy for Shooter {
         let robot_to_ball = ball_pos - robot_pos;
         let dist_to_ball = robot_to_ball.norm();
         let dir_shooting_line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
-        let robot_current_dir = dbg!(vectors::vector_from_angle(robot.pose.orientation));
+        let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
         if (dist_to_ball < 0.115 && dbg!(dot_with_ball) > 0.9) || robot.has_ball{//TODO replace with IR (robot.has_ball)
             let kick: Option<Kick> = if dir_shooting_line.intersect(&world.geometry.enemy_goal.front_line) {
