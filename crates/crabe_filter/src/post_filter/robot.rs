@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use crate::data::{FilterData, TrackedRobot};
 use crabe_framework::data::world::{RobotMap, World};
 
@@ -18,6 +20,7 @@ fn insert_tracked<'a, T: Clone + 'a>(
     for (_i,robot) in robot_map{
         robot.pose.position.x = -robot.pose.position.x;
         robot.pose.position.y = -robot.pose.position.y;
+        robot.pose.orientation = (robot.pose.orientation + std::f64::consts::PI).rem_euclid(2.0 * std::f64::consts::PI);
     };
 }
 
