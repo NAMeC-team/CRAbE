@@ -1,5 +1,4 @@
 use crate::action::move_to::MoveTo;
-use crate::manager::game_manager::Manager;
 use crate::action::ActionWrapper;
 use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
@@ -46,6 +45,7 @@ impl Strategy for Shooter {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         action_wrapper.clean(self.id);
+
         let robot = match world.allies_bot.get(&self.id) {
             None => {
                 return false;
