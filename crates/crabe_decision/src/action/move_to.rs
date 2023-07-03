@@ -1,6 +1,7 @@
 use std::f64::consts::FRAC_PI_6;
 use crate::action::state::State;
 use crate::action::Action;
+use crate::manager::game_manager::GameManager;
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World};
@@ -147,13 +148,11 @@ impl Action for MoveTo {
             };
             //prevent going in the goal zone
             if id != KEEPER_ID{
-                dbg!(&target.y.abs(),&(&world.geometry.ally_penalty.width / 2.));
                 if &target.y.abs() < &(&world.geometry.ally_penalty.width / 2.) && &world.geometry.field.length>&0.{
-                    let penalty_y = dbg!(&world.geometry.field.length/2.) - dbg!(&world.geometry.ally_penalty.depth);
+                    let penalty_y = &world.geometry.field.length/2. - &world.geometry.ally_penalty.depth;
                     target.x = target.x.clamp(-penalty_y, penalty_y);
                 }
             }
-
             let dist_to_target = distance(&robot.pose.position, &target);
             if dist_to_target <= DIST_CHECK_FINISHED {
                 self.state = State::Done;
@@ -206,7 +205,7 @@ impl Action for MoveTo {
                     }
                 }
 
-                f += dbg!(repulsive_strength_sum);
+                f += repulsive_strength_sum;
             }
 
             // -- Normalizing the strength vector to avoid super Sonic speed

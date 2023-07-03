@@ -45,6 +45,7 @@ impl Strategy for Shooter {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         action_wrapper.clean(self.id);
+
         let robot = match world.allies_bot.get(&self.id) {
             None => {
                 return false;

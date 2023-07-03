@@ -7,6 +7,8 @@ use crate::strategy::keeper::{Keep, PenaltyPrepKeeper};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
+use crabe_math::shape::Line;
+use nalgebra::Point2;
 use crate::strategy::testing::GoToCenter;
 use crabe_framework::data::world::{World, Robot, AllyInfo, EnemyInfo};
 use crate::constants::{KEEPER_ID, ATTACKER1_ID, ATTACKER2_ID, DEFENDER1_ID, DEFENDER2_ID, PIVOT_ID};
@@ -47,6 +49,26 @@ impl GameManager {
             .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
             .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
             .map(|(_, bot, _)| bot)
+    }
+
+    pub fn bot_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
+        let robot = match world.allies_bot.get(&id) {
+            None => {
+                return false;
+            }
+            Some(robot) => {
+                robot
+            }
+        };
+        let trajectory = Line::new(robot.pose.position, target);
+
+        let closest_dist = world.allies_bot
+            .iter().filter(|(id, _)| id != id)
+            .map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy())))
+            .chain(world.enemies_bot.iter().map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy()))))
+            .min_by(|(_, d1), (_, d2)| d1.total_cmp(d2))
+            .map(|(_, d)| d);
+        return closest_dist < Some(0.2)
     }
 }
 

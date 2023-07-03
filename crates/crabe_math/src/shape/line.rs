@@ -67,6 +67,29 @@ impl Line{
         let y = det(d, ydiff) / div;
         Some(Point2::new(x, y))
     }
+    pub fn dist_to_point(&self, point: &Point2<f64>) -> f64{
+        let line_direction = self.end - self.start;
+        let point_direction = *point - self.start;
+    
+        let line_length_squared = line_direction.norm_squared();
+        if line_length_squared == 0.0 {
+            // The line segment has zero length, return distance to the start point.
+            return point_direction.norm();
+        }
+    
+        let t = point_direction.dot(&line_direction) / line_length_squared;
+        if t < 0.0 {
+            // The point is closest to the start of the line segment.
+            return point_direction.norm();
+        } else if t > 1.0 {
+            // The point is closest to the end of the line segment.
+            return (*point - self.end).norm();
+        }
+    
+        // The point is closest to a point on the line segment.
+        let closest_point = self.start + t * line_direction;
+        (*point - closest_point).norm()
+    }
 }
 
 fn ccw(a: Point2<f64>, b: Point2<f64>, c: Point2<f64>) -> bool {
