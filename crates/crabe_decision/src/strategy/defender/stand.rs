@@ -61,7 +61,7 @@ impl Strategy for Stand {
             }
         };
         let robot_pos = robot.pose.position;
-        action_wrapper.push(self.id, MoveTo::new(robot.pose.position, vectors::angle_to_point(ball_pos, robot_pos), 0., None));
+        action_wrapper.push(self.id, MoveTo::new(robot.pose.position, vectors::angle_to_point(ball_pos, robot_pos), 0., None,false,true));
         false
     }
 }

@@ -55,7 +55,7 @@ impl Strategy for Defend {
         };
         let ball_pos = match world.ball.clone() {
             None => {
-                action_wrapper.push(self.id, MoveTo::new(robot.pose.position, robot.pose.orientation, 0., None));
+                action_wrapper.push(self.id, MoveTo::new(robot.pose.position, robot.pose.orientation, 0., None,false,true));
                 return false;
             }
             Some(ball) => {
@@ -64,7 +64,7 @@ impl Strategy for Defend {
         };
         let to_ball_angle = vectors::angle_to_point(ball_pos, robot.pose.position);
         let follow_ball = Point2::new(-3., ball_pos.y);
-        action_wrapper.push(self.id, MoveTo::new(follow_ball, to_ball_angle, 0., None));
+        action_wrapper.push(self.id, MoveTo::new(follow_ball, to_ball_angle, 0., None,false,true));
         false
     }
 }
