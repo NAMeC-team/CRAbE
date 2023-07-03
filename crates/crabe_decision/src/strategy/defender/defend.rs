@@ -44,7 +44,7 @@ impl Strategy for Defend {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.clear();
+        action_wrapper.clean(self.id);
         let robot = match world.allies_bot.get(&self.id) {
             None => {
                 return false;

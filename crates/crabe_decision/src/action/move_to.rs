@@ -97,8 +97,13 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
+            let target = if &world.data.positive_half == &world.team_color {
+                Point2::new(-self.target.x, self.target.y)
+            }else{
+                self.target
+            };
             let ti = frame_inv(robot_frame(robot));
-            let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
+            let target_in_robot = ti * Point2::new(target.x, target.y);
 
             let error_orientation = angle_wrap(self.orientation - robot.pose.orientation);
             let error_x = target_in_robot[0];
@@ -107,7 +112,6 @@ impl Action for MoveTo {
             if arrived {
                 self.state = State::Done;
             }
-
             let order = Vector3::new(
                 GOTO_SPEED * error_x,
                 GOTO_SPEED * error_y,

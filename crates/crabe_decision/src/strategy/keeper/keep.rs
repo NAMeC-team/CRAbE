@@ -45,7 +45,6 @@ impl Strategy for Keep {
         action_wrapper.clean(self.id);
         if let Some(ball) = &world.ball{
             let mut shoot_dir = Line::new(ball.position_2d(),Point2::new(-10.,ball.position.y));
-            dbg!(ball.velocity);
             if ball.velocity.norm() > 0.{//TODO : ball velocity is equal to 0
                 let ball_dir = ball.position + ball.velocity * 1000.;
                 shoot_dir.end = ball_dir.xy();
