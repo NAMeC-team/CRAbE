@@ -1,11 +1,11 @@
-use std::f64::consts::FRAC_PI_6;
+use std::f64::consts::{FRAC_PI_6, PI};
 use crate::action::state::State;
 use crate::action::Action;
 use crate::manager::game_manager::GameManager;
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{World};
-use nalgebra::{distance, Point2, Rotation2, Vector2};
+use crabe_framework::data::world::{World, AllyInfo, Robot};
+use nalgebra::{distance, Point2, Rotation2, Vector2, Isometry2, Vector3};
 use std::ops::{Div};
 
 const OBSTACLE_RADIUS: f64 = 0.7;
@@ -118,7 +118,148 @@ impl MoveTo {
         // apply a factor of 5 to increase
         angular_accel_sign * angle_diff.abs() as f32 * 5.0
     }
+
+    pub fn dumb_moveto(&mut self, robot: &Robot<AllyInfo>, _world: &World, target: Point2<f64>) -> Command {
+        let ti = frame_inv(robot_frame(robot));
+        let target_in_robot = ti * Point2::new(target.x, target.y);
+
+        let error_orientation = angle_wrap(self.orientation - robot.pose.orientation);
+        let error_x = target_in_robot[0];
+        let error_y = target_in_robot[1];
+        let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
+        if arrived {
+            self.state = State::Done;
+        }
+        let order = Vector3::new(
+            GOTO_SPEED * error_x,
+            GOTO_SPEED * error_y,
+            GOTO_ROTATION * error_orientation,
+        );
+
+        let dribble = self.dribble.clamp(0., 1.);
+
+        Command {
+            forward_velocity: order.x as f32,
+            left_velocity: order.y as f32,
+            angular_velocity: order.z as f32,
+            charge: true,
+            kick: self.kick,
+            dribbler: dribble,
+        }
+    }
+    pub fn smart_moveto(&mut self, robot: &Robot<AllyInfo>, world: &World, target: Point2<f64>) -> Command {
+        
+        let dist_to_target = distance(&robot.pose.position, &target);
+        if dist_to_target <= DIST_CHECK_FINISHED {
+            self.state = State::Done;
+            return Command::default();
+        }
+
+        // Resulting movement vector
+        let mut f = Vector2::new(0.0, 0.0);
+
+        // -- Attractive field
+        f += self.attractive_force(&robot.pose.position, &target);
+
+        // -- Repulsive field
+        let mut dist_to_obst = 0.;
+        // Don't compute any repulsion if robot is already near target
+        if dist_to_target >= 0.15 {
+            let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
+            world.allies_bot.iter()
+                // Our robot id is not an obstacle
+                .filter(|(id, _)| **id != robot.id)
+                .for_each(|(_, ally)| {
+
+                    dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
+
+                    if dist_to_obst < OBSTACLE_RADIUS {
+                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
+                    }
+                }
+            );
+
+            world.enemies_bot.iter()
+                .for_each(|(_, enemy)| {
+                    // Distance from our robot and the ally obstacle
+                    dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
+
+                    if dist_to_obst < OBSTACLE_RADIUS {
+                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
+                    }
+                }
+            );
+
+            // avoid ball if tasked
+            if self.avoid_ball {
+                if let Some(ball) = &world.ball {
+                    let ball_position = &ball.position.xy();
+                    if distance(ball_position, &robot.pose.position) <= OBSTACLE_RADIUS {
+                        let d_q = distance(&robot.pose.position, ball_position);
+                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &d_q, &robot.pose.position, ball_position);
+                    }
+                }
+            }
+
+            f += repulsive_strength_sum;
+        }
+
+        // -- Normalizing the strength vector to avoid super Sonic speed
+        //    but only if not close to target, otherwise leads to oscillation
+        if dist_to_target > 1.0 {
+            f = f.normalize();
+        }
+
+        // -- Compute angle of the resulting vector
+        let angular_velocity = self.angular_speed(&robot.pose.orientation);
+
+        // -- Change the basis of the resulting vector to the basis of the robot
+        //    I'm not exactly sure why it's `-robot_theta` and not `robot_theta`
+        let rob_rotation_basis = Rotation2::new(-&robot.pose.orientation);
+        // println!("Before transformation : {}", &f);
+        f = rob_rotation_basis * f;
+        // println!("After transformation : {}", &f);
+
+        // -- Determine whether we need to charge
+        let charge = self.chg_near_arrival && distance(&robot.pose.position, &self.target) <= 0.3;
+
+        Command {
+            forward_velocity: f.x as f32,
+            left_velocity: f.y as f32,
+            angular_velocity,
+            charge,
+            kick: self.kick,
+            dribbler: self.dribble,
+        }
+    }
 }
+
+fn frame(x: f64, y: f64, orientation: f64) -> Isometry2<f64> {
+    Isometry2::new(Vector2::new(x, y), orientation)
+}
+
+fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
+    frame.inverse()
+}
+
+fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
+    frame(
+        robot.pose.position.x,
+        robot.pose.position.y,
+        robot.pose.orientation,
+    )
+}
+
+fn angle_wrap(alpha: f64) -> f64 {
+    (alpha + PI) % (2.0 * PI) - PI
+}
+
+/// The default factor speed for the robot to move towards the target position.
+const GOTO_SPEED: f64 = 1.5;
+/// The default factor speed for the robot to rotate towards the target orientation.
+const GOTO_ROTATION: f64 = 1.5;
+/// The error tolerance for arriving at the target position.
+const ERR_TOLERANCE: f64 = 0.115;
 
 impl Action for MoveTo {
     /// Returns the name of the action.
@@ -153,90 +294,13 @@ impl Action for MoveTo {
                     target.x = target.x.clamp(-penalty_y, penalty_y);
                 }
             }
-            let dist_to_target = distance(&robot.pose.position, &target);
-            if dist_to_target <= DIST_CHECK_FINISHED {
-                self.state = State::Done;
-                return Command::default();
+            if GameManager::bot_in_trajectory(world, id, target){
+                self.smart_moveto(robot, world, target)
+            }else{
+                self.dumb_moveto(robot, world, target)
             }
-
-            // Resulting movement vector
-            let mut f = Vector2::new(0.0, 0.0);
-
-            // -- Attractive field
-            f += self.attractive_force(&robot.pose.position, &target);
-
-            // -- Repulsive field
-            let mut dist_to_obst = 0.;
-            // Don't compute any repulsion if robot is already near target
-            if dist_to_target >= 0.15 {
-                let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
-                world.allies_bot.iter()
-                    // Our robot id is not an obstacle
-                    .filter(|(id, _)| **id != robot.id)
-                    .for_each(|(_, ally)| {
-
-                        dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
-
-                        if dist_to_obst < OBSTACLE_RADIUS {
-                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
-                        }
-                    }
-                );
-
-                world.enemies_bot.iter()
-                    .for_each(|(_, enemy)| {
-                        // Distance from our robot and the ally obstacle
-                        dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
-
-                        if dist_to_obst < OBSTACLE_RADIUS {
-                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
-                        }
-                    }
-                );
-
-                // avoid ball if tasked
-                if self.avoid_ball {
-                    if let Some(ball) = &world.ball {
-                        let ball_position = &ball.position.xy();
-                        if distance(ball_position, &robot.pose.position) <= OBSTACLE_RADIUS {
-                            let d_q = distance(&robot.pose.position, ball_position);
-                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &d_q, &robot.pose.position, ball_position);
-                        }
-                    }
-                }
-
-                f += repulsive_strength_sum;
-            }
-
-            // -- Normalizing the strength vector to avoid super Sonic speed
-            //    but only if not close to target, otherwise leads to oscillation
-            if dist_to_target > 1.0 {
-                f = f.normalize();
-            }
-
-            // -- Compute angle of the resulting vector
-            let angular_velocity = self.angular_speed(&robot.pose.orientation);
-
-            // -- Change the basis of the resulting vector to the basis of the robot
-            //    I'm not exactly sure why it's `-robot_theta` and not `robot_theta`
-            let rob_rotation_basis = Rotation2::new(-&robot.pose.orientation);
-            // println!("Before transformation : {}", &f);
-            f = rob_rotation_basis * f;
-            // println!("After transformation : {}", &f);
-
-            // -- Determine whether we need to charge
-            let charge = self.chg_near_arrival && distance(&robot.pose.position, &self.target) <= 0.3;
-
-            Command {
-                forward_velocity: f.x as f32,
-                left_velocity: f.y as f32,
-                angular_velocity,
-                charge,
-                kick: self.kick,
-                dribbler: self.dribble,
-            }
-        } else {
+        }else {
             Command::default()
-        }
+        }        
     }
 }
