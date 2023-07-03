@@ -45,6 +45,14 @@ impl Strategy for Shooter {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         action_wrapper.clean(self.id);
+        let robot = match world.allies_bot.get(&self.id) {
+            None => {
+                return false;
+            }
+            Some(robot) => {
+                robot
+            }
+        };
         if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
             if bappe.id != self.id {return false}
         };
@@ -57,21 +65,13 @@ impl Strategy for Shooter {
                 ball.position.xy()
             }
         };
-        let robot = match world.allies_bot.get(&self.id) {
-            None => {
-                return false;
-            }
-            Some(robot) => {
-                robot
-            }
-        };
         let robot_pos = robot.pose.position;
         let robot_to_ball = ball_pos - robot_pos;
         let dist_to_ball = robot_to_ball.norm();
         let dir_shooting_line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
         let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
-        if (dist_to_ball < 0.115 && dot_with_ball > 0.97) || robot.has_ball{//TODO replace with IR (robot.has_ball)
+        if (dist_to_ball < 0.115 && dot_with_ball > 0.96) || robot.has_ball{//TODO replace with IR (robot.has_ball)
             let kick: Option<Kick> = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {
                 Some(Kick::StraightKick {  power: 4. }) 
             }else {None};

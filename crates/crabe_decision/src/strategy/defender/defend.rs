@@ -10,19 +10,20 @@ use std::f64::consts::PI;
 /// The penaltyPrepKeeper struct represents a strategy that commands the keeper to set in the penalty formation
 /// It is used when there is a penalty for the opponent team
 #[derive(Default)]
-pub struct Stand {
+pub struct Defend {
     /// The id of the robot to move.
     id: u8,
+    left: bool,//defense the ball with 2 bot
 }
 
-impl Stand {
+impl Defend {
     /// Creates a new penaltyPrepKeeper instance with the desired robot id.
-    pub fn new(id: u8) -> Self {
-        Self { id }
+    pub fn new(id: u8, left: bool) -> Self {
+        Self { id , left}
     }
 }
 
-impl Strategy for Stand {
+impl Strategy for Defend {
     /// Executes the penaltyPrepKeeper strategy.
     ///
     /// This strategy commands all the robots to move in position for
@@ -43,7 +44,7 @@ impl Strategy for Stand {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.clear();
+        action_wrapper.clean(self.id);
         let robot = match world.allies_bot.get(&self.id) {
             None => {
                 return false;
@@ -54,14 +55,16 @@ impl Strategy for Stand {
         };
         let ball_pos = match world.ball.clone() {
             None => {
+                action_wrapper.push(self.id, MoveTo::new(robot.pose.position, robot.pose.orientation, 0., None));
                 return false;
             }
             Some(ball) => {
                 ball.position.xy()
             }
         };
-        let robot_pos = robot.pose.position;
-        action_wrapper.push(self.id, MoveTo::new(robot.pose.position, vectors::angle_to_point(ball_pos, robot_pos), 0., None));
+        let to_ball_angle = vectors::angle_to_point(ball_pos, robot.pose.position);
+        let follow_ball = Point2::new(-3., ball_pos.y);
+        action_wrapper.push(self.id, MoveTo::new(follow_ball, to_ball_angle, 0., None));
         false
     }
 }
