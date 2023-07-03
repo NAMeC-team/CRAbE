@@ -1,5 +1,6 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
+use crate::constants::{KEEPER_ID, PIVOT_ID, ATTACKER2_ID, DEFENDER2_ID, DEFENDER1_ID, ATTACKER1_ID};
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -40,12 +41,12 @@ impl Strategy for PrepareKickOffEnemy {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.push(5, MoveTo::new(Point2::new(-1.5, 1.1), -PI / 4.0, 0.0,None , false, false));
-        action_wrapper.push(1, MoveTo::new(Point2::new(-1.0, -0.0), -PI / 4.0, 0.0,None, false, false));
-        action_wrapper.push(2, MoveTo::new(Point2::new(-1.5, -1.1), -PI / 4.0, 0.0,None, false, false));
-        action_wrapper.push(3, MoveTo::new(Point2::new(-1.2, 0.7), -PI / 4.0, 0.0,None, false, false));
-        action_wrapper.push(4, MoveTo::new(Point2::new(-1.2, -0.7), -PI / 4.0, 0.0,None, false, false));
-        action_wrapper.push(0, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(DEFENDER2_ID, MoveTo::new(Point2::new(-1.2, 0.7), -PI / 4.0, 0.0,None , false, false));
+        action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(-1.0, 0.0), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(DEFENDER1_ID, MoveTo::new(Point2::new(-0.7, -1.0), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(-0.7, 1.0), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(-1.2, -0.7), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(KEEPER_ID, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None, false, false));
         true
     }
 }
