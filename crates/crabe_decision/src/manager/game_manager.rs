@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
@@ -11,6 +9,7 @@ use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crate::strategy::testing::GoToCenter;
 use crabe_framework::data::world::{World, Robot, AllyInfo, EnemyInfo};
+use crate::constants::{KEEPER_ID, ATTACKER1_ID, ATTACKER2_ID, DEFENDER1_ID, DEFENDER2_ID, PIVOT_ID};
 
 /// The `Manual` struct represents a decision manager that executes strategies manually
 /// added to its list.
@@ -23,13 +22,6 @@ pub struct GameManager {
     last_game_state: Option<GameState>,
     strategies: Vec<Box<dyn Strategy>>,
 }
-
-const KEEPER_ID: u8 = 4;
-const PIVOT_ID: u8 = 1;
-const DEFENDER1_ID: u8 = 2;
-const DEFENDER2_ID: u8 = 3;
-const ATTACKER1_ID: u8 = 0  ;
-const ATTACKER2_ID: u8 = 5;
 
 impl GameManager {
     /// Creates a new `Manual` instance with the desired strategies to test.
@@ -136,8 +128,8 @@ impl Manager for GameManager {
                         self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
-                        self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
-                        self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
+                        // self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
+                        // self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
                         //     self.strategies.push(Box::new(Shooter::new(id)));
