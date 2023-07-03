@@ -128,8 +128,8 @@ impl Manager for GameManager {
                         self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
-                        // self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
-                        // self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
+                        self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
+                        self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
                         //     self.strategies.push(Box::new(Shooter::new(id)));

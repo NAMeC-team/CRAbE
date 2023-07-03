@@ -75,7 +75,7 @@ impl Strategy for Shooter {
             let kick: Option<Kick> = if dir_shooting_line.intersect(&world.geometry.ally_goal.front_line) {
                 Some(Kick::StraightKick {  power: 4. }) 
             }else {None};
-            action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., None, false, false));
+            action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., None, false, true));
         }else if dist_to_ball < 0.8 {
             action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1.,  None, false, false));
         }else{
