@@ -1,7 +1,9 @@
 pub mod camera;
+pub mod referee;
 
 use crate::constant;
 use crate::data::camera::{CamBall, CamGeometry, CamRobot};
+use crate::data::referee::Referee;
 use chrono::{DateTime, Utc};
 use constant::PACKET_BUFFER_SIZE;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
@@ -23,6 +25,7 @@ pub struct FilterData {
     pub enemies: TrackedRobotMap<EnemyInfo>,
     pub ball: TrackedBall,
     pub geometry: CamGeometry,
+    pub referee: Vec<Referee>,
 }
 
 pub struct TrackedRobot<T> {
