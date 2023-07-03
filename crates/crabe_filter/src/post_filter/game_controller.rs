@@ -10,6 +10,7 @@ use crate::data::referee::event::{Event, GameEvent};
 use crate::data::referee::RefereeCommand;
 use std::time::Instant;
 
+const FIRST_KICK_OFF: bool = false;
 #[derive(Debug)]
 pub struct GameControllerPostFilter {
     previous_game_event: Option<GameEvent>,
@@ -123,7 +124,8 @@ impl GameControllerPostFilter {
                 }
             }
         } else {
-            world.data.state = GameState::Stopped(StoppedState::Stop);
+            let team = if FIRST_KICK_OFF {world.team_color} else {world.team_color.opposite()};
+            world.data.state = GameState::Stopped(StoppedState::PrepareKickoff(team));
         }
         _chrono = Some(Instant::now());
     }
@@ -286,7 +288,6 @@ impl PostFilter for GameControllerPostFilter {
         if ref_command != self.last_command{
             self.previous_command = self.last_command.clone();
             self.chrono = Option::from(Instant::now());
-            dbg!(&ref_command);
         }
         self.last_command = ref_command.clone();
 
