@@ -116,13 +116,12 @@ impl Manager for GameManager {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
                         if team != world.team_color {
-                            return;
+                            println!("lol");
+                            self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(Defend::new(DEFENDER1_ID,false)));
+                            self.strategies.push(Box::new(Defend::new(DEFENDER2_ID,true)));
                         }
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                        for id in rest {
-                            self.strategies.push(Box::new(GoToCenter::new(1)));
-                        }
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
