@@ -4,31 +4,33 @@ use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World};
-use super::Keep;
+use super::Defend;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
-pub struct Goal {
+pub struct Defender {
     /// The id of the robot to move.
     id: u8,
+    left: bool,
     strategy: Box<dyn Strategy>
 }
-impl Default for Goal {
+impl Default for Defender {
     fn default() -> Self {
-        Self { id: KEEPER_ID, strategy: Box::new(Keep::new(KEEPER_ID))}
+        Self { id: KEEPER_ID,left:false, strategy: Box::new(Defend::new(KEEPER_ID, false))}
     }
 }
-impl Goal {
-    /// Creates a new Goal instance with the desired robot id.
-    pub fn new(id: u8) -> Self {
+impl Defender {
+    /// Creates a new Defender instance with the desired robot id.
+    pub fn new(id: u8, left: bool) -> Self {
         Self { 
             id, 
-            strategy: Box::new(Keep::new(id))
+            left,
+            strategy: Box::new(Defend::new(id, false))
         }
     }
 }
 
-impl Strategy for Goal {
+impl Strategy for Defender {
     /// # Arguments
     ///
     /// * world: The current state of the game world.
@@ -61,14 +63,14 @@ impl Strategy for Goal {
                     self.strategy = Box::new(Shooter::new(self.id));
                 }
             }else{
-                if self.strategy.name() != "Keep" {
-                    self.strategy = Box::new(Keep::new(self.id));
+                if self.strategy.name() != "Defend" {
+                    self.strategy = Box::new(Defend::new(self.id, self.left));
                 }
             }
         }
         self.strategy.step(world, tools_data, action_wrapper)
     }
     fn name(&self) -> &'static str {
-        return "Goal"
+        return "Defender"
     }
 }
