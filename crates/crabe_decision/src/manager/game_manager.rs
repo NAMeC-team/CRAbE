@@ -69,14 +69,13 @@ impl GameManager {
             }
         };
         let trajectory = Line::new(robot.pose.position, target);
-        dbg!(world.allies_bot.len());
         let closest_dist = world.allies_bot
             .iter().filter(|(current_id, _)| **current_id != id)
-            .map(|(id, robot)| (id, dbg!(trajectory.dist_to_point(&robot.pose.position.xy()))))
+            .map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy())))
             .chain(world.enemies_bot.iter().map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy()))))
             .min_by(|(_, d1), (_, d2)| d1.total_cmp(d2))
             .map(|(_, d)| d);
-        return dbg!(closest_dist) < Some(0.2)
+        return closest_dist < Some(0.2)
     }
 }
 
@@ -152,12 +151,12 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
+                        // self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        // self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
-                        self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
-                        self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
-                        self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
+                        // self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
+                        // self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
+                        // self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
                         //     self.strategies.push(Box::new(Shooter::new(id)));

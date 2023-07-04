@@ -123,7 +123,7 @@ impl MoveTo {
         let ti = frame_inv(robot_frame(robot));
         let target_in_robot = ti * Point2::new(target.x, target.y);
 
-        let error_orientation = angle_wrap(self.orientation - robot.pose.orientation);
+        let error_orientation =dbg!(self.orientation - robot.pose.orientation);
         let error_x = target_in_robot[0];
         let error_y = target_in_robot[1];
         let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
@@ -133,7 +133,7 @@ impl MoveTo {
         let order = Vector3::new(
             GOTO_SPEED * error_x,
             GOTO_SPEED * error_y,
-            GOTO_ROTATION * error_orientation,
+            dbg!(GOTO_ROTATION * error_orientation),
         );
 
         let dribble = self.dribble.clamp(0., 1.);

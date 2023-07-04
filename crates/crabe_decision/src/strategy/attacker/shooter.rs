@@ -103,7 +103,7 @@ impl Strategy for Shooter {
             if self.id != bappe.id {
                 self.stand(action_wrapper, world);
             }else{
-                self.go_shoot(action_wrapper, world);
+                self.stand(action_wrapper, world);
             }
         }
         false
