@@ -1,7 +1,7 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
-use crate::strategy::attacker::Shooter;
+use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Stand, Defend, Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
@@ -99,7 +99,7 @@ impl Manager for GameManager {
                 GameState::Stopped(stopped_state) => match stopped_state {
                     StoppedState::Stop => {
                         println!("stop");
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
                     }
                     StoppedState::PrepareKickoff(team) => {
                         if team == world.team_color {
@@ -125,15 +125,15 @@ impl Manager for GameManager {
                         if team != world.team_color {
                             return;
                         }
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
                         if team == world.team_color {
-                            self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                            self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
-                            self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
-                            self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
+                            self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
                             self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
                             self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         }else{
@@ -145,20 +145,20 @@ impl Manager for GameManager {
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                         let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         for id in rest {
-                            self.strategies.push(Box::new(Shooter::new(id)));
+                            self.strategies.push(Box::new(Attacker::new(id)));
                         }
                     }
                     RunningState::Run => {
                         println!("run");
                         self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
-                        self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
-                        self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
-                        self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
+                        self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                        self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                        self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
                         self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
                         self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
-                        //     self.strategies.push(Box::new(Shooter::new(id)));
+                        //     self.strategies.push(Box::new(Attacker::new(id)));
                         // }
                     }
                 },
