@@ -37,7 +37,15 @@ impl GameManager {
     pub fn closest_ally_to_ball(world: &World) -> Option<&Robot<AllyInfo>>{
         world.allies_bot
             .iter()
-            .filter(|(id, _)| **id != KEEPER_ID)
+            .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+            .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
+            .map(|(_, bot, _)| bot)
+    }
+
+    pub fn closest_ally_shooter_to_ball(world: &World) -> Option<&Robot<AllyInfo>>{
+        world.allies_bot
+            .iter()
+            .filter(|(id, _)| **id != KEEPER_ID && **id != DEFENDER1_ID && **id != DEFENDER2_ID)
             .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
             .min_by(|(_, _, d1), (_, _, d2)| d1.total_cmp(d2))
             .map(|(_, bot, _)| bot)
@@ -61,14 +69,14 @@ impl GameManager {
             }
         };
         let trajectory = Line::new(robot.pose.position, target);
-
+        dbg!(world.allies_bot.len());
         let closest_dist = world.allies_bot
-            .iter().filter(|(id, _)| id != id)
-            .map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy())))
+            .iter().filter(|(current_id, _)| **current_id != id)
+            .map(|(id, robot)| (id, dbg!(trajectory.dist_to_point(&robot.pose.position.xy()))))
             .chain(world.enemies_bot.iter().map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy()))))
             .min_by(|(_, d1), (_, d2)| d1.total_cmp(d2))
             .map(|(_, d)| d);
-        return closest_dist < Some(0.15)
+        return dbg!(closest_dist) < Some(0.2)
     }
 }
 
@@ -80,6 +88,7 @@ impl Manager for GameManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
+        GameManager::bot_in_trajectory(world, 0, Point2::new(0., 0.));
         if self.last_game_state.is_none() || self.last_game_state.unwrap() != world.data.state {
             // clear current strategy
             self.strategies.clear();
@@ -119,19 +128,16 @@ impl Manager for GameManager {
                             return;
                         }
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                        for id in rest {
-                            self.strategies.push(Box::new(GoToCenter::new(1)));
-                        }
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
                         if team == world.team_color {
                             self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                            let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                            for id in rest {
-                                self.strategies.push(Box::new(Shooter::new(id)));
-                            }
+                            self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
+                            self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
+                            self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
+                            self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
+                            self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
                         }else{
                             self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                         }
