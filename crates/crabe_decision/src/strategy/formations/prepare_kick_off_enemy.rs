@@ -43,9 +43,9 @@ impl Strategy for PrepareKickOffEnemy {
     ) -> bool {
         action_wrapper.push(DEFENDER2_ID, MoveTo::new(Point2::new(-1.2, 0.7), -PI / 4.0, 0.0,None , false, false));
         action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(-1.0, 0.0), -PI / 4.0, 0.0,None, false, false));
-        action_wrapper.push(DEFENDER1_ID, MoveTo::new(Point2::new(-0.7, -1.0), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(-0.7, -1.0), -PI / 4.0, 0.0,None, false, false));
         action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(-0.7, 1.0), -PI / 4.0, 0.0,None, false, false));
-        action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(-1.2, -0.7), -PI / 4.0, 0.0,None, false, false));
+        action_wrapper.push(DEFENDER1_ID, MoveTo::new(Point2::new(-1.2, -0.7), -PI / 4.0, 0.0,None, false, false));
         action_wrapper.push(KEEPER_ID, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None, false, false));
         true
     }

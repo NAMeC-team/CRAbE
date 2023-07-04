@@ -85,7 +85,7 @@ impl Manager for GameManager {
             self.strategies.clear();
             action_wrapper.clear();
 
-            match world.data.state {
+            match dbg!(world.data.state) {
                 GameState::Halted(_) => {
                     println!("halted");
                 }
@@ -116,16 +116,12 @@ impl Manager for GameManager {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
                         if team != world.team_color {
+                            println!("lol");
                             self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                             self.strategies.push(Box::new(Defend::new(DEFENDER1_ID,false)));
                             self.strategies.push(Box::new(Defend::new(DEFENDER2_ID,true)));
-                            return;
-                        }
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                        for id in rest {
-                            self.strategies.push(Box::new(GoToCenter::new(1)));
-                        }
+                        }else{
+                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));}
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
