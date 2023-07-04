@@ -17,15 +17,25 @@ use crate::post_filter::PostFilter;
 use crate::pre_filter::game_controller::GameControllerPreFilter;
 use crate::pre_filter::vision::VisionFilter;
 use crate::pre_filter::PreFilter;
-use clap::Args;
+use clap::{Args, ValueEnum};
 use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
 use filter::velocity_acceleration::VelocityAccelerationFilter;
+use crate::filter::field_side::FieldSideFilter;
 
 #[derive(Args)]
-pub struct FilterConfig {}
+pub struct FilterConfig {
+    #[arg(long)]
+    field_side: Option<FieldSide>
+}
+
+#[derive(Debug, ValueEnum, Clone)]
+pub enum FieldSide {
+    Positive,
+    Negative
+}
 
 pub struct FilterPipeline {
     pub pre_filters: Vec<Box<dyn PreFilter>>,
@@ -36,13 +46,18 @@ pub struct FilterPipeline {
 }
 
 impl FilterPipeline {
-    pub fn with_config(_config: FilterConfig, common_config: &CommonConfig) -> Self {
+    pub fn with_config(config: FilterConfig, common_config: &CommonConfig) -> Self {
         let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
-        let filters: Vec<Box<dyn Filter>> = vec![
+        let mut filters: Vec<Box<dyn Filter>> = vec![
             Box::new(PassthroughFilter),
             Box::new(VelocityAccelerationFilter),
             Box::<InactiveFilter>::default(),
         ];
+
+        if let Some(field_side) = config.field_side {
+            filters.push(Box::new(FieldSideFilter::new(field_side)))
+        }
+
         let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
             Box::new(RobotFilter),
             Box::new(GeometryFilter),
