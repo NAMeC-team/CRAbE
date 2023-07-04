@@ -122,8 +122,12 @@ impl MoveTo {
     pub fn dumb_moveto(&mut self, robot: &Robot<AllyInfo>, _world: &World, target: Point2<f64>) -> Command {
         let ti = frame_inv(robot_frame(robot));
         let target_in_robot = ti * Point2::new(target.x, target.y);
-
-        let error_orientation =dbg!(self.orientation - robot.pose.orientation);
+        let wanted_orientation = self.orientation.rem_euclid(2. * PI);
+        let curent_orientation = robot.pose.orientation.rem_euclid(2. * PI);
+        let mut error_orientation = wanted_orientation - curent_orientation;
+        if error_orientation.abs() > PI{
+            error_orientation = -error_orientation;
+        }
         let error_x = target_in_robot[0];
         let error_y = target_in_robot[1];
         let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
@@ -133,7 +137,7 @@ impl MoveTo {
         let order = Vector3::new(
             GOTO_SPEED * error_x,
             GOTO_SPEED * error_y,
-            dbg!(GOTO_ROTATION * error_orientation),
+            GOTO_ROTATION * error_orientation,
         );
 
         let dribble = self.dribble.clamp(0., 1.);
@@ -250,14 +254,10 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
     )
 }
 
-fn angle_wrap(alpha: f64) -> f64 {
-    (alpha + PI) % (2.0 * PI) - PI
-}
-
 /// The default factor speed for the robot to move towards the target position.
 const GOTO_SPEED: f64 = 1.5;
 /// The default factor speed for the robot to rotate towards the target orientation.
-const GOTO_ROTATION: f64 = 1.5;
+const GOTO_ROTATION: f64 = 3.15;
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.115;
 
