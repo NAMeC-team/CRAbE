@@ -14,7 +14,6 @@ impl FieldSideFilter {
     }
 
     fn filter_by_side<T>(tracked_robots: &mut TrackedRobotMap<T>, field_side: &FieldSide) {
-        println!("{:?}", field_side);
         tracked_robots.retain(|_id, robot| {
             match field_side {
                 FieldSide::Positive => robot.data.pose.position.x.is_sign_positive(),
