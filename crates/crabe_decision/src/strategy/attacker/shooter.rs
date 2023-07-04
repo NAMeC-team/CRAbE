@@ -71,7 +71,7 @@ impl Shooter {
             }else {None};
             action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., kick, false, true));
         }else if dist_to_ball < 0.8 {
-            action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1.,  None, false, false));
+            action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1.,  None, false, true));
         }else{
             action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 0.,  None, false, false));
         };
