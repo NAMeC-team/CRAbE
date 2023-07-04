@@ -1,6 +1,5 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;

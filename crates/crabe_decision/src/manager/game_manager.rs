@@ -2,7 +2,7 @@ use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::{Attacker};
-use crate::strategy::defender::{Stand, Defend, Defender};
+use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
