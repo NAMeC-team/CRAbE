@@ -100,5 +100,8 @@ impl Strategy for Defend {
         }
         false
     }
+    fn name(&self) -> &'static str {
+        return "Defend";
+    }
 }
 

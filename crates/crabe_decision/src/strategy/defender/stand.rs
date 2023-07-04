@@ -64,5 +64,8 @@ impl Strategy for Stand {
         action_wrapper.push(self.id, MoveTo::new(robot.pose.position, vectors::angle_to_point(ball_pos, robot_pos), 0., None,false,true));
         false
     }
+    fn name(&self) -> &'static str {
+        return "Stand";
+    }
 }
 

@@ -60,5 +60,8 @@ impl Strategy for PenaltyPrepKeeper {
         }
         true
     }
+    fn name(&self) -> &'static str {
+        return "PrepareKickoffKeeper";
+    }
 }
 

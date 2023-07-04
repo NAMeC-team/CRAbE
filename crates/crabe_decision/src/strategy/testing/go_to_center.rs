@@ -56,4 +56,7 @@ impl Strategy for GoToCenter {
         );
         true
     }
+    fn name(&self) -> &'static str {
+        return "GotoCenter";
+    }
 }

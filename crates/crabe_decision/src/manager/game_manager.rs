@@ -3,13 +3,12 @@ use crate::manager::Manager;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
 use crate::strategy::defender::{Stand, Defend};
-use crate::strategy::keeper::{Keep, PenaltyPrepKeeper};
+use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
 use nalgebra::Point2;
-use crate::strategy::testing::GoToCenter;
 use crabe_framework::data::world::{World, Robot, AllyInfo, EnemyInfo};
 use crate::constants::{KEEPER_ID, ATTACKER1_ID, ATTACKER2_ID, DEFENDER1_ID, DEFENDER2_ID, PIVOT_ID};
 
@@ -151,7 +150,7 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
                         self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
                         self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));

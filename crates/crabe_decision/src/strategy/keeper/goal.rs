@@ -1,7 +1,9 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
+use crate::constants::KEEPER_ID;
 use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
+use crate::strategy::attacker::Shooter;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World, Robot, EnemyInfo, AllyInfo};
@@ -12,22 +14,31 @@ use std::cmp::min;
 use std::f64::consts::PI;
 use std::ops::{Add, Mul};
 
+use super::Keep;
+
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
-#[derive(Default)]
-pub struct Keep {
+pub struct Goal {
     /// The id of the robot to move.
     id: u8,
+    strategy: Box<dyn Strategy>
 }
-
-impl Keep {
-    /// Creates a new Keep instance with the desired robot id.
+impl Default for Goal {
+    fn default() -> Self {
+        Self { id: KEEPER_ID, strategy: Box::new(Keep::new(KEEPER_ID))}
+    }
+}
+impl Goal {
+    /// Creates a new Goal instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id }
+        Self { 
+            id, 
+            strategy: Box::new(Keep::new(id))
+        }
     }
 }
 
-impl Strategy for Keep {
+impl Strategy for Goal {
     /// # Arguments
     ///
     /// * world: The current state of the game world.
@@ -55,25 +66,20 @@ impl Strategy for Keep {
         };
         if let Some(ball) = &world.ball{
             let ball_pos = ball.position_2d();
-            let mut shoot_dir = Line::new(ball_pos,Point2::new(-10.,ball.position.y));
-            if ball.velocity.norm() > 0.{
-                let ball_dir = ball.position + ball.velocity * 1000.;
-                shoot_dir.end = ball_dir.xy();
-            }
-            else if let Some(closest_enemy) = GameManager::closest_enemy_to_ball(world){
-                let enemy_dir = closest_enemy.pose.position + vector_from_angle(closest_enemy.pose.orientation) * 1000.;
-                shoot_dir.end = enemy_dir.xy();
-            }
-            if let Some(intersection) = world.geometry.ally_goal.front_line.intersection_line(&shoot_dir) {
-                let x = world.geometry.ally_goal.bottom_left_position.x+0.1;
-                let y = clamp(intersection.y, world.geometry.ally_goal.bottom_left_position.y, world.geometry.ally_goal.bottom_right_position.y);
-                action_wrapper.push(self.id, MoveTo::new(Point2::new(x, y), vectors::angle_to_point(ball.position.xy(), robot.pose.position ), 0., None, false, false));
+            if dbg!((robot.pose.position - ball_pos).norm()) < 0.4{
+                if self.strategy.name() != "Shooter" {
+                    self.strategy = Box::new(Shooter::new(self.id));
+                }
+            }else{
+                if self.strategy.name() != "Keep" {
+                    self.strategy = Box::new(Keep::new(self.id));
+                }
             }
         }
-        false
+        dbg!(self.strategy.name());
+        self.strategy.step(world, tools_data, action_wrapper)
     }
-
     fn name(&self) -> &'static str {
-        return "Keep";
+        return "Goal"
     }
 }
