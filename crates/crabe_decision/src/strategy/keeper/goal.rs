@@ -1,19 +1,9 @@
-use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::constants::KEEPER_ID;
-use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
-use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{World, Robot, EnemyInfo, AllyInfo};
-use crabe_math::shape::Line;
-use crabe_math::vectors::{vector_from_angle, self};
-use nalgebra::{Point2, clamp};
-use std::cmp::min;
-use std::f64::consts::PI;
-use std::ops::{Add, Mul};
-
+use crabe_framework::data::world::{World};
 use super::Keep;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
