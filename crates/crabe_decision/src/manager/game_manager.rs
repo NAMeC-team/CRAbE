@@ -116,6 +116,9 @@ impl Manager for GameManager {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
                         if team != world.team_color {
+                            self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(Defend::new(DEFENDER1_ID,false)));
+                            self.strategies.push(Box::new(Defend::new(DEFENDER2_ID,true)));
                             return;
                         }
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
