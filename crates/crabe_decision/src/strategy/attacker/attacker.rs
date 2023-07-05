@@ -5,6 +5,7 @@ use crate::strategy::Strategy;
 use crate::strategy::attacker::{Shooter, Passer};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World};
+use nalgebra::Point2;
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
 pub struct Attacker {
@@ -44,15 +45,22 @@ impl Strategy for Attacker {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.clean(self.id);      
-        if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
+        action_wrapper.clean(self.id);
+        if let Some(bappe) = GameManager::closest_ally_shooter_to_ball(world) {
             if self.id != bappe.id {
                 if self.strategy.name() != "Passer" {
                     self.strategy = Box::new(Passer::new(self.id));
                 }
             }else{
-                if self.strategy.name() != "Shooter" {
-                    self.strategy = Box::new(Shooter::new(self.id));
+                let target = Point2::new(world.geometry.field.length/2.5, 0.0);
+                if GameManager::bot_in_trajectory(world, self.id, target){//change to the size of the ball
+                    if self.strategy.name() != "Passer" {
+                        self.strategy = Box::new(Passer::new(self.id));
+                    }
+                }else{
+                    if self.strategy.name() != "Shooter" {
+                        self.strategy = Box::new(Shooter::new(self.id));
+                    }
                 }
             }
         } 
