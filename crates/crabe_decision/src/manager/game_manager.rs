@@ -5,6 +5,7 @@ use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
+use crate::strategy::testing::FollowBall;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
@@ -150,12 +151,13 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
-                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
-                        self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
-                        self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
-                        self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
-                        self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
-                        self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
+                        // self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                        // self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                        // self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                        // self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
+                        // self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
+                        // self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
+                        self.strategies.push(Box::new(FollowBall::new(0)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
                         //     self.strategies.push(Box::new(Attacker::new(id)));
