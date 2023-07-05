@@ -10,7 +10,7 @@ use crabe_math::shape::Line;
 use std::f64::consts::PI;
 
 /// The PrepareFreeKickEnemy struct represents a strategy that commands the team to set in the PrepareFreeKickEnemy formation
-/// It is used when the team is in favor of the kick-off
+/// It is used when the team is not in favor of the freekick
 #[derive(Default)]
 pub struct PrepareFreeKickEnemy {
 }
@@ -59,36 +59,36 @@ impl Strategy for PrepareFreeKickEnemy {
             }
         };    
         if let Some(bappe) = world.allies_bot.get(&DEFENDER2_ID) {
-            action_wrapper.push(DEFENDER2_ID, MoveTo::new(Point2::new(-3.5, -0.3), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+            action_wrapper.push(DEFENDER2_ID, MoveTo::new(Point2::new(-3.5, -0.3), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, true, false));
         };
         if let Some(bappe) = world.allies_bot.get(&PIVOT_ID) {
             if ball_pos.x>-2.5{
-                action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(ball_pos.x-1.8, ball_pos.y+0.5), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,false));
+                action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(ball_pos.x-1.8, ball_pos.y+0.5), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,true));
             } else {
-                action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(-3.5, 0.3), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+                action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(-3.5, 0.3), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, true, false));
             }    
         };
         if let Some(bappe) = world.allies_bot.get(&DEFENDER1_ID) {
-            action_wrapper.push(DEFENDER1_ID, MoveTo::new(Point2::new(-3.5, 0.3), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+            action_wrapper.push(DEFENDER1_ID, MoveTo::new(Point2::new(-3.5, 0.3), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, true, false));
         };
         if let Some(bappe) = world.allies_bot.get(&ATTACKER2_ID) {
             let mut shoot_dir = Line::new(ball_pos,Point2::new(world.geometry.ally_goal.bottom_left_position.x,world.geometry.ally_goal.bottom_left_position.y));
             let mut wall_dir = Line::new(Point2::new(ball_pos.x-0.6,5.),Point2::new(ball_pos.x-0.6,-5.));
             if let Some(intersection) = wall_dir.intersection_line(&shoot_dir) {
-                action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(intersection.x, intersection.y), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+                action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(intersection.x, intersection.y), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, true));
             } else{
-                action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(-3.25, 3.), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+                action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(-3.25, 3.), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, true, false));
             }
         };
         if let Some(bappe) = world.allies_bot.get(&ATTACKER1_ID) {
             if ball_pos.x>-2.5{
-                action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(ball_pos.x-1.5, ball_pos.y), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,false));
+                action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(ball_pos.x-1.5, ball_pos.y), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,true));
             } else {
-                action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(-3.5, -1.), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,false));
+                action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(-3.5, -1.), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, true,false));
             }
         };
         if let Some(bappe) = world.allies_bot.get(&KEEPER_ID) {
-            action_wrapper.push(KEEPER_ID, MoveTo::new(Point2::new(-4.5, 0.0), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+            action_wrapper.push(KEEPER_ID, MoveTo::new(Point2::new(-4.5, 0.0), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, true, false));
         };
         false
     }

@@ -153,13 +153,6 @@ impl Manager for GameManager {
                         }else{
                             self.strategies.push(Box::new(PrepareFreeKickEnemy::new()));
                         }
-                        /*
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
-                        for id in rest {
-                            self.strategies.push(Box::new(Attacker::new(id)));
-                        }
-                        */
                     }
                     RunningState::Run => {
                         println!("run");
