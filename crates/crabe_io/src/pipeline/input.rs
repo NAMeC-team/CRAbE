@@ -8,6 +8,9 @@ use crabe_framework::data::output::FeedbackMap;
 
 #[derive(Args)]
 pub struct InputConfig {
+    #[arg(long)]
+    gc: bool,
+
     #[command(flatten)]
     #[command(next_help_heading = "Vision")]
     pub vision_cfg: VisionConfig,
@@ -33,7 +36,7 @@ impl InputPipeline {
             common_cfg,
         ))];
 
-        if common_cfg.gc {
+        if input_cfg.gc {
             tasks.push(Box::new(GameController::with_config(input_cfg.gc_cfg)));
         }
 

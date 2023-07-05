@@ -1,5 +1,4 @@
 pub mod ball;
-pub mod game_controller;
 pub mod geometry;
 pub mod robot;
 

@@ -1,4 +1,4 @@
-use crabe_math::shape::{Circle, Line};
+use crabe_math::shape::Circle;
 use nalgebra::Point2;
 use serde::Serialize;
 
@@ -50,19 +50,11 @@ impl Default for Geometry {
                 width: 1.0,
                 depth: 0.18,
                 top_left_position: Point2::new(-4.68, -0.5),
-                bottom_left_position: Point2::new(-4.5, -0.5),
-                bottom_right_position: Point2::new(-4.5, 0.5),
-                top_right_position: Point2::new(-4.68, 0.5),
-                front_line: Line::new(Point2::new(-4.5, -0.5), Point2::new(-4.5, 0.5)),
             },
             enemy_goal: Goal {
                 width: 1.0,
                 depth: 0.18,
                 top_left_position: Point2::new(4.68, 0.5),
-                bottom_left_position: Point2::new(4.5, 0.5),
-                bottom_right_position: Point2::new(4.5, -0.5),
-                top_right_position: Point2::new(4.68, -0.5),
-                front_line: Line::new(Point2::new(4.5, -0.5), Point2::new(4.5, 0.5)),
             },
             ally_penalty: Penalty {
                 width: 2.0,
