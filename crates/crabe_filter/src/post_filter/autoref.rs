@@ -35,16 +35,22 @@ impl PostFilter for AutoRefFilter {
                 //let timestamp = create_date_time(frame.timestamp.into());
                 for robot in frame.robots.iter() {
                     // TODO: Team color enum
-                    match robot.robot_id.team_color {
+                    let team_color = match robot.robot_id.team_color {
                         2 => {
-                            let robot = Self::map_robot(robot, timestamp);
-                            world.allies_bot.insert(robot.id, robot);
+                            TeamColor::Yellow
                         },
                         _ => {
-                            let robot = Self::map_robot(robot, timestamp);
-                            world.enemies_bot.insert(robot.id, robot);
+                            TeamColor::Blue
                         },
                     };
+
+                    if team_color == world.team_color {
+                        let robot = Self::map_robot(robot, timestamp);
+                        world.allies_bot.insert(robot.id, robot);
+                    } else {
+                        let robot = Self::map_robot(robot, timestamp);
+                        world.enemies_bot.insert(robot.id, robot);
+                    }
                 }
 
                 let tracked_ball = frame.balls.last();
