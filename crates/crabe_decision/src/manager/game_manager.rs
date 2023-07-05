@@ -76,6 +76,22 @@ impl GameManager {
             .map(|(_, d)| d);
         return closest_dist < Some(0.2)
     }
+
+    pub fn ball_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
+        let robot = match world.allies_bot.get(&id) {
+            None => {
+                return false;
+            }
+            Some(robot) => {
+                robot
+            }
+        };
+        let trajectory = Line::new(robot.pose.position, target);
+        if let Some(ball) = &world.ball{
+            return trajectory.dist_to_point(&ball.position_2d()) < 0.11
+        }
+        false
+    }
 }
 
 impl Manager for GameManager {
@@ -92,7 +108,7 @@ impl Manager for GameManager {
             self.strategies.clear();
             action_wrapper.clear();
 
-            match world.data.state {
+            match GameState::Running(RunningState::Run) {
                 GameState::Halted(_) => {
                     println!("halted");
                 }
