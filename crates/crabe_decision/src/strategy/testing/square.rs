@@ -65,4 +65,7 @@ impl Strategy for Square {
         );
         true
     }
+    fn name(&self) -> &'static str {
+        return "Square";
+    }
 }

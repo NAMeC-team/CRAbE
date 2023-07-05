@@ -1,12 +1,14 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
+use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_math::shape::Line;
 use crabe_math::vectors;
 use nalgebra::Point2;
 use std::f64::consts::PI;
+use std::ops::{Add, Mul};
 
 /// The penaltyPrepKeeper struct represents a strategy that commands the keeper to set in the penalty formation
 /// It is used when there is a penalty for the opponent team
@@ -62,7 +64,7 @@ impl Strategy for Defend {
             Some(ball) => {
                 ball.position.xy()
             }
-        };
+        };            
         let shoot_line = Line::new(ball_pos, Point2::new(-world.geometry.field.length/2.,0.));
         let shoot_dir = shoot_line.start - shoot_line.end;
         let bot_line_pos_side_point = Point2::new(-world.geometry.field.length/2. + world.geometry.ally_penalty.depth, -world.geometry.field.width/2.);
@@ -77,6 +79,9 @@ impl Strategy for Defend {
             action_wrapper.push(self.id, MoveTo::new(final_pos, to_ball_angle, 0., None,false,true));
         }
         false
+    }
+    fn name(&self) -> &'static str {
+        return "Defend";
     }
 }
 

@@ -59,4 +59,7 @@ impl Strategy for RobotsFormation {
         }
         true
     }
+    fn name(&self) -> &'static str {
+        return "RobotFormation";
+    }
 }

@@ -3,3 +3,7 @@
 /// for use in a game.
 mod shooter;
 pub use self::shooter::Shooter;
+mod attacker;
+pub use self::attacker::Attacker;
+mod passer;
+pub use self::passer::Passer;

@@ -35,4 +35,6 @@ pub trait Strategy {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool;
+
+    fn name(&self) -> &'static str;
 }
