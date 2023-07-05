@@ -54,8 +54,8 @@ impl Strategy for Attacker {
             }else{
                 let target = Point2::new(world.geometry.field.length/2.5, 0.0);
                 if GameManager::bot_in_trajectory(world, self.id, target){//change to the size of the ball
-                    if self.strategy.name() != "Passer" {
-                        self.strategy = Box::new(Passer::new(self.id));
+                    if self.strategy.name() != "Shooter" {
+                        self.strategy = Box::new(Shooter::new(self.id));
                     }
                 }else{
                     if self.strategy.name() != "Shooter" {
