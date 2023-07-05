@@ -51,6 +51,18 @@ impl GameManager {
             .map(|(_, bot, _)| bot)
     }
 
+    pub fn closest_allies_to_ball_in_order(world: &World) -> Vec<&Robot<AllyInfo>> {
+        let mut robots: Vec<_> = world.allies_bot
+            .iter()
+            .filter(|(id, _)| **id != KEEPER_ID && **id != DEFENDER1_ID && **id != DEFENDER2_ID)
+            .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+            .collect();
+        robots.sort_by(|(_,_,d1), (_,_,d2)| {
+            d1.total_cmp(d2)
+        });
+        robots.into_iter().map(|(_,r,_)| r).collect()
+    }
+
     pub fn closest_enemy_to_ball(world: &World) -> Option<&Robot<EnemyInfo>>{
         world.enemies_bot
             .iter()
