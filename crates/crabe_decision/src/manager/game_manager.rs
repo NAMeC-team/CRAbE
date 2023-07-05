@@ -87,7 +87,6 @@ impl Manager for GameManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        GameManager::bot_in_trajectory(world, 0, Point2::new(0., 0.));
         if self.last_game_state.is_none() || self.last_game_state.unwrap() != world.data.state {
             // clear current strategy
             self.strategies.clear();
@@ -151,13 +150,12 @@ impl Manager for GameManager {
                     }
                     RunningState::Run => {
                         println!("run");
-                        // self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
-                        // self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
-                        // self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
-                        // self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
-                        // self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
-                        // self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
-                        self.strategies.push(Box::new(FollowBall::new(0)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                        self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                        self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
+                        self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
+                        self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
                         //     self.strategies.push(Box::new(Attacker::new(id)));
