@@ -16,7 +16,8 @@ impl PostFilter for BallFilter {
             ball
         });
 
-
-        world.ball = ball;
+        if ball.is_some() {
+            world.ball = ball;
+        } 
     }
 }
