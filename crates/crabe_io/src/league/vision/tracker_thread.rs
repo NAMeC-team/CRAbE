@@ -60,8 +60,6 @@ impl TrackerVision {
 impl ReceiverTask for TrackerVision {
     fn fetch(&mut self, input: &mut InboundData) {
         input.tracker_packet.extend(self.rx_tracker.try_iter());
-        dbg!(&input.tracker_packet);
-        input.tracker_packet.clear();
     }
 
     fn close(&mut self) {

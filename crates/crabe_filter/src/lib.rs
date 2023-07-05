@@ -50,21 +50,18 @@ pub struct FilterPipeline {
 impl FilterPipeline {
     pub fn with_config(config: FilterConfig, common_config: &CommonConfig) -> Self {
         let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
-        let mut filters: Vec<Box<dyn Filter>> = vec![
-            Box::new(PassthroughFilter),
-            Box::new(VelocityAccelerationFilter),
-            Box::<InactiveFilter>::default(),
-        ];
+        let mut filters: Vec<Box<dyn Filter>> = vec![];
 
         let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
-            Box::new(RobotFilter),
             Box::new(GeometryFilter),
-            Box::new(BallFilter),
         ];
 
         if common_config.tracker {
             pre_filters.push(Box::new(TrackerFilter));
             post_filters.push(Box::new(AutoRefFilter));
+        } else {
+            post_filters.push(Box::new(RobotFilter));
+            post_filters.push(Box::new(BallFilter));
         }
 
         if let Some(field_side) = config.field_side {
@@ -73,6 +70,9 @@ impl FilterPipeline {
 
         if common_config.gc {
             pre_filters.push(Box::new(GameControllerPreFilter));
+            filters.push(Box::new(PassthroughFilter));
+            filters.push(Box::new(VelocityAccelerationFilter));
+            filters.push(Box::<InactiveFilter>::default());
             post_filters.push(Box::<GameControllerPostFilter>::default());
         }
 
