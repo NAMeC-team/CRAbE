@@ -49,5 +49,8 @@ impl Strategy for PrepareKickOffEnemy {
         action_wrapper.push(KEEPER_ID, MoveTo::new(Point2::new(-4.0, -0.0), -PI / 4.0, 0.0,None, false, false));
         true
     }
+    fn name(&self) -> &'static str {
+        return "PrepareKickoffEnemy";
+    }
 }
 

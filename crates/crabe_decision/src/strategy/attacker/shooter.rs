@@ -99,7 +99,7 @@ impl Strategy for Shooter {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         action_wrapper.clean(self.id);
-        if let Some(bappe) = GameManager::closest_ally_shooter_to_ball(world) {
+        if let Some(bappe) = GameManager::closest_ally_to_ball(world) {
             if self.id != bappe.id {
                 self.stand(action_wrapper, world);
             }else{
@@ -108,4 +108,8 @@ impl Strategy for Shooter {
         }
         false
     }
+    fn name(&self) -> &'static str {
+        return "Shooter";
+    }
 }
+

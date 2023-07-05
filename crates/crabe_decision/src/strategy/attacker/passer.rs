@@ -85,4 +85,8 @@ impl Strategy for Shooter {
 
         false
     }
+
+    fn name(&self) -> &'static str{
+        return "Passer";
+    }
 }
