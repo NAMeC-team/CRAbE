@@ -11,9 +11,10 @@ use std::ops::{Div};
 
 const OBSTACLE_RADIUS: f64 = 0.7;
 const K_ATTRACTION: f64 = 1.0;
-const K_REPULSION: f64 = 1.0;
+const K_REPULSION: f64 = 2.0;
 const DIST_CHECK_FINISHED: f64 = 0.02;
-const MAX_ANGLE_ERROR: f64 = FRAC_PI_6;
+const DIST_CHECK_NEAR_TARGET: f64 = 0.15;
+const MAX_ANGLE_ERROR: f64 = FRAC_PI_6 / 3.;
 use crate::constants::{KEEPER_ID};
 
 
@@ -93,11 +94,19 @@ impl MoveTo {
     /// * `d_q` : Euclidean distance between the robot and the obstacle
     /// * `q`   : The robot's vector position (or coordinates)
     /// * `q_c` : The obstacle's vector position (or coordinates)
-    fn repulsive_force(&self, d_0: &f64, d_q: &f64, q: &Point2<f64>, q_c: &Point2<f64>) -> Vector2<f64> {
-        K_REPULSION *
+    fn repulsive_force(&self,
+                       // Args for the formula of the paper
+                       d_0: &f64, d_q: &f64, q: &Point2<f64>, q_c: &Point2<f64>,
+                       // Our custom arguments
+                       q_velocity: &f64,
+    ) -> Vector2<f64> {
+        let base_force_formula = K_REPULSION *
         (1.0.div(d_q) - 1.0.div(d_0)) *
         (1.0.div(d_q.powi(2))) *
-        ((q-q_c).div(distance(&q, q_c)))
+        ((q-q_c).div(distance(&q, q_c)));
+
+        base_force_formula
+
     }
 
     /// Computes the angular speed required to adjust the robot's orientation to the required orientation
@@ -123,13 +132,15 @@ impl MoveTo {
             // Our robot id is not an obstacle
             .filter(|(id, _)|
                 if filter_our_robot_id { **id != robot_to_move.id }
-                else { false })
+                else { true })
             .for_each(|(_, ally)| {
 
+                // Apply a repulsive force only if near obstacle
                 let dist_to_obst = distance(&robot_to_move.pose.position, &ally.pose.position);
                 if dist_to_obst < OBSTACLE_RADIUS {
-                    repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot_to_move.pose.position, &ally.pose.position);
+                    repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot_to_move.pose.position, &ally.pose.position, &0.);
                 }
+
             }
         );
 
@@ -183,54 +194,14 @@ impl MoveTo {
         f += self.attractive_force(&robot.pose.position, &target);
 
         // -- Repulsive field
-        let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
-        repulsive_strength_sum += self.compute_repulsive_force_of(robot, &world.allies_bot, true);
-        repulsive_strength_sum += self.compute_repulsive_force_of(robot, &world.enemies_bot, false);
+        if dist_to_target >= DIST_CHECK_NEAR_TARGET {
+            let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
+            repulsive_strength_sum += self.compute_repulsive_force_of(robot, &world.allies_bot, true);
+            repulsive_strength_sum += self.compute_repulsive_force_of(robot, &world.enemies_bot, false);
 
-        // let mut dist_to_obst = 0.;
-        // // Don't compute any repulsion if robot is already near target
-        // if dist_to_target >= 0.15 {
-        //     let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
-        //
-        //     world.allies_bot.iter()
-        //         // Our robot id is not an obstacle
-        //         .filter(|(id, _)| **id != robot.id)
-        //         .for_each(|(_, ally)| {
-        //
-        //             dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
-        //
-        //             if dist_to_obst < OBSTACLE_RADIUS {
-        //                 repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
-        //             }
-        //         }
-        //     );
-        //
-        //     world.enemies_bot.iter()
-        //         .for_each(|(_, enemy)| {
-        //             // Distance from our robot and the ally obstacle
-        //             dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
-        //
-        //             if dist_to_obst < OBSTACLE_RADIUS {
-        //                 repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
-        //             }
-        //         }
-        //     );
-        //
-        //     // avoid ball if tasked
-        //     if self.avoid_ball {
-        //         if let Some(ball) = &world.ball {
-        //             let ball_position = &ball.position.xy();
-        //             if distance(ball_position, &robot.pose.position) <= OBSTACLE_RADIUS {
-        //                 let d_q = distance(&robot.pose.position, ball_position);
-        //                 repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &d_q, &robot.pose.position, ball_position);
-        //             }
-        //         }
-        //     }
-        //
-        // }
-
-        // Add the repulsive strength
-        f += repulsive_strength_sum;
+            // Add the repulsive strength
+            f += repulsive_strength_sum;
+        }
 
         // -- Normalizing the strength vector to avoid super Sonic speed
         //    but only if not close to target, otherwise leads to oscillation
