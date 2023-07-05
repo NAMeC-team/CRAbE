@@ -9,7 +9,7 @@ use nalgebra::{distance, Point2, Rotation2, Vector2, Isometry2, Vector3};
 use std::ops::{Div};
 
 
-const OBSTACLE_RADIUS: f64 = 0.7;
+const OBSTACLE_DIAMETER: f64 = 0.7;
 const K_ATTRACTION: f64 = 12.0; // Default : 1.0
 const K_REPULSION: f64 = 2.0; // Default : 1.0
 const DIST_CHECK_FINISHED: f64 = 0.02;
@@ -100,13 +100,20 @@ impl MoveTo {
                        // Our custom arguments
                        q_velocity: &f64,
     ) -> Vector2<f64> {
-        let base_force_formula = K_REPULSION *
+        let base_rep_formula = K_REPULSION *
         (1.0.div(d_q) - 1.0.div(d_0)) *
         (1.0.div(d_q.powi(2))) *
         ((q-q_c).div(distance(&q, q_c)));
 
-        base_force_formula
-
+        if q_velocity.eq(&0.) {
+            base_rep_formula
+        } else {
+            // second factor is > 1.0
+            // let result = base_rep_formula * (1.0.div(*q_velocity));
+            let result = base_rep_formula * (*q_velocity);
+            dbg!(result);
+            result
+        }
     }
 
     /// Computes the angular speed required to adjust the robot's orientation to the required orientation
@@ -137,8 +144,8 @@ impl MoveTo {
 
                 // Apply a repulsive force only if near obstacle
                 let dist_to_obst = distance(&robot_to_move.pose.position, &ally.pose.position);
-                if dist_to_obst < OBSTACLE_RADIUS {
-                    repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot_to_move.pose.position, &ally.pose.position, &0.);
+                if dist_to_obst < OBSTACLE_DIAMETER {
+                    repulsive_strength_sum += self.repulsive_force(&OBSTACLE_DIAMETER, &dist_to_obst, &robot_to_move.pose.position, &ally.pose.position, &robot_to_move.velocity.linear.norm());
                 }
 
             }
@@ -193,6 +200,13 @@ impl MoveTo {
         // -- Attractive field
         f += self.attractive_force(&robot.pose.position, &target);
 
+        // -- Normalizing the attraction strength vector to avoid super Sonic speed
+        //    but only if not close to target, otherwise leads to oscillation
+        //    (maybe we don't need that, test in real)
+        if dist_to_target > 1.0 {
+            // f = f.normalize() * 2.;
+        }
+
         // -- Repulsive field
         if dist_to_target >= DIST_CHECK_NEAR_TARGET {
             let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
@@ -201,12 +215,6 @@ impl MoveTo {
 
             // Add the repulsive strength
             f += repulsive_strength_sum;
-        }
-
-        // -- Normalizing the strength vector to avoid super Sonic speed
-        //    but only if not close to target, otherwise leads to oscillation
-        if dist_to_target > 1.0 {
-            f = f.normalize();
         }
 
         // -- Compute angle of the resulting vector
