@@ -64,18 +64,22 @@ impl Strategy for Defend {
             Some(ball) => {
                 ball.position.xy()
             }
-        };            
+        };
         let shoot_line = Line::new(ball_pos, Point2::new(-world.geometry.field.length/2.,0.));
         let shoot_dir = shoot_line.start - shoot_line.end;
         let bot_line_pos_side_point = Point2::new(-world.geometry.field.length/2. + world.geometry.ally_penalty.depth, -world.geometry.field.width/2.);
         let bot_line_pos = Line::new(bot_line_pos_side_point, Point2::new(bot_line_pos_side_point.x, -bot_line_pos_side_point.y));
         let interseption_point = shoot_line.intersection_line(&bot_line_pos);
         let perpendicular_dir = vectors::rotate_vector(shoot_dir, PI/2.).normalize() * 0.109;
-        if let Some(interseption_position) = interseption_point{
+        let to_ball_angle = vectors::angle_to_point(ball_pos, robot.pose.position);
+        if ball_pos.x < -world.geometry.field.length/2. +world.geometry.ally_penalty.depth{
+            //idk what to do
+            action_wrapper.push(self.id, MoveTo::new(robot.pose.position, to_ball_angle, 0., None,false,true));
+        }
+        else if let Some(interseption_position) = interseption_point{
             let mut final_pos = interseption_position;
             if self.left {final_pos = final_pos + perpendicular_dir;}
             else {final_pos = final_pos - perpendicular_dir}
-            let to_ball_angle = vectors::angle_to_point(ball_pos, robot.pose.position);
             action_wrapper.push(self.id, MoveTo::new(final_pos, to_ball_angle, 0., None,false,true));
         }
         false
