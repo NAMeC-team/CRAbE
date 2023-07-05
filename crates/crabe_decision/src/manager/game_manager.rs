@@ -4,7 +4,7 @@ use crate::strategy::Strategy;
 use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
-use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
+use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
@@ -142,11 +142,24 @@ impl Manager for GameManager {
                     }
                     RunningState::FreeKick(team) => {
                         println!("free kick for {:#?}", team);
+
+                        if team == world.team_color {
+                            self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
+                            self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
+                            self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
+                        }else{
+                            self.strategies.push(Box::new(PrepareFreeKickEnemy::new()));
+                        }
+                        /*
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                         let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         for id in rest {
                             self.strategies.push(Box::new(Attacker::new(id)));
                         }
+                        */
                     }
                     RunningState::Run => {
                         println!("run");
