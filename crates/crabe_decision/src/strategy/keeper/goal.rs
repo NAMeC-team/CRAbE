@@ -1,9 +1,12 @@
 use crate::action::ActionWrapper;
+use crate::action::move_to::MoveTo;
 use crate::constants::KEEPER_ID;
 use crate::strategy::Strategy;
 use crate::strategy::attacker::Shooter;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World};
+use crabe_math::vectors;
+use nalgebra::Point2;
 use super::Keep;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
@@ -54,15 +57,18 @@ impl Strategy for Goal {
                 robot
             }
         };
+        let x = -world.geometry.field.length/2.;
+        let y = 0.;
         if let Some(ball) = &world.ball{
             let ball_pos = ball.position_2d();
-            if dbg!((robot.pose.position - ball_pos).norm()) < 0.4{
+            if (robot.pose.position - ball_pos).norm() < 0.4 && (robot.pose.position - Point2::new(x,y)).norm() < 1.{
                 if self.strategy.name() != "Shooter" {
                     self.strategy = Box::new(Shooter::new(self.id));
                 }
             }else{
                 if self.strategy.name() != "Keep" {
                     self.strategy = Box::new(Keep::new(self.id));
+
                 }
             }
         }

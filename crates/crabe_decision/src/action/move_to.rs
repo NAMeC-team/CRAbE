@@ -15,6 +15,15 @@ const K_REPULSION: f64 = 2.0; // Default : 1.0
 const DIST_CHECK_FINISHED: f64 = 0.02;
 const DIST_CHECK_NEAR_TARGET: f64 = 0.15;
 const MAX_ANGLE_ERROR: f64 = FRAC_PI_6 / 3.;
+// [COMMENTED OUT] Speed multiplier
+const NORM_MULTIPLIER: f64 = 1.0;
+/// The default factor speed for the robot to move towards the target position.
+const GOTO_SPEED: f64 = 1.5;
+/// The default factor speed for the robot to rotate towards the target orientation.
+const GOTO_ROTATION: f64 = 3.15;
+/// The error tolerance for arriving at the target position.
+const ERR_TOLERANCE: f64 = 0.115;
+const OFFSET_Y_GOAL_AREA: f64 = 0.10;
 use crate::constants::{KEEPER_ID};
 
 
@@ -204,7 +213,7 @@ impl MoveTo {
         //    but only if not close to target, otherwise leads to oscillation
         //    (maybe we don't need that, test in real)
         if dist_to_target > 1.0 {
-            // f = f.normalize() * 2.;
+            // f = f.normalize() * NORM_MULTIPLIER;
         }
 
         // -- Repulsive field
@@ -216,7 +225,7 @@ impl MoveTo {
             // Add the repulsive strength
             f += repulsive_strength_sum;
         }
-
+      
         // -- Compute angle of the resulting vector
         let angular_velocity = self.angular_speed(&robot.pose.orientation);
 
@@ -255,13 +264,6 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
     )
 }
 
-/// The default factor speed for the robot to move towards the target position.
-const GOTO_SPEED: f64 = 1.5;
-/// The default factor speed for the robot to rotate towards the target orientation.
-const GOTO_ROTATION: f64 = 3.15;
-/// The error tolerance for arriving at the target position.
-const ERR_TOLERANCE: f64 = 0.115;
-
 impl Action for MoveTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
@@ -284,10 +286,10 @@ impl Action for MoveTo {
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
             let mut target = self.target.clone();
-            //prevent going in the goal zone
             if id != KEEPER_ID{
                 if &target.y.abs() < &(&world.geometry.ally_penalty.width / 2.) && &world.geometry.field.length>&0.{
-                    let penalty_y = &world.geometry.field.length/2. - &world.geometry.ally_penalty.depth;
+                    let mut penalty_y = &world.geometry.field.length/2. - &world.geometry.ally_penalty.depth;
+                    penalty_y -= OFFSET_Y_GOAL_AREA;
                     target.x = target.x.clamp(-penalty_y, penalty_y);
                 }
             }
