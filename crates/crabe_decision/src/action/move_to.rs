@@ -10,8 +10,8 @@ use std::ops::{Div};
 
 
 const OBSTACLE_RADIUS: f64 = 0.7;
-const K_ATTRACTION: f64 = 1.0;
-const K_REPULSION: f64 = 2.0;
+const K_ATTRACTION: f64 = 12.0; // Default : 1.0
+const K_REPULSION: f64 = 2.0; // Default : 1.0
 const DIST_CHECK_FINISHED: f64 = 0.02;
 const DIST_CHECK_NEAR_TARGET: f64 = 0.15;
 const MAX_ANGLE_ERROR: f64 = FRAC_PI_6 / 3.;
