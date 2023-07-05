@@ -1,6 +1,5 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
@@ -20,28 +19,28 @@ impl Shooter {
     pub fn new(id: u8) -> Self {
         Self { id}
     }
+}
 
-    pub fn stand(&mut self, action_wrapper: &mut ActionWrapper, world: &World) -> bool{
-        let robot = match world.allies_bot.get(&self.id) {
-            None => {
-                return false;
-            }
-            Some(robot) => {
-                robot
-            }
-        };
-        let ball_pos = match world.ball.clone() {
-            None => {
-                return false;
-            }
-            Some(ball) => {
-                ball.position.xy()
-            }
-        };     
-        action_wrapper.push(self.id, MoveTo::new(robot.pose.position, vectors::angle_to_point(ball_pos, robot.pose.position), 0., None, false, true));
-        false
-    }
-    pub fn go_shoot(&mut self, action_wrapper: &mut ActionWrapper, world: &World) -> bool{
+impl Strategy for Shooter {
+    /// Executes the Shooter strategy.
+    ///
+    /// # Arguments
+    ///
+    /// * world: The current state of the game world.
+    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.    
+    /// * action_wrapper: An `ActionWrapper` instance used to issue actions to the robot.
+    ///
+    /// # Returns
+    ///
+    /// A boolean value indicating whether the strategy is finished or not.
+    #[allow(unused_variables)]
+    fn step(
+        &mut self,
+        world: &World,
+        tools_data: &mut ToolData,
+        action_wrapper: &mut ActionWrapper,
+    ) -> bool {
+        action_wrapper.clean(self.id);
         let robot = match world.allies_bot.get(&self.id) {
             None => {
                 return false;
@@ -71,41 +70,14 @@ impl Shooter {
             }else {None};
             action_wrapper.push(self.id, MoveTo::new(robot_pos, vectors::angle_to_point(goal_pos, robot_pos), 1., kick, false, true));
         }else if dist_to_ball < 0.8 {
-            action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1.,  None, false, false));
+            action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 1.,  None, false, true));
         }else{
             action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(ball_pos, robot_pos), 0.,  None, false, false));
         };
         false
     }
-}
-
-impl Strategy for Shooter {
-    /// Executes the Shooter strategy.
-    ///
-    /// # Arguments
-    ///
-    /// * world: The current state of the game world.
-    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.    
-    /// * action_wrapper: An `ActionWrapper` instance used to issue actions to the robot.
-    ///
-    /// # Returns
-    ///
-    /// A boolean value indicating whether the strategy is finished or not.
-    #[allow(unused_variables)]
-    fn step(
-        &mut self,
-        world: &World,
-        tools_data: &mut ToolData,
-        action_wrapper: &mut ActionWrapper,
-    ) -> bool {
-        action_wrapper.clean(self.id);
-        if let Some(bappe) = GameManager::closest_ally_shooter_to_ball(world) {
-            if self.id != bappe.id {
-                self.stand(action_wrapper, world);
-            }else{
-                self.go_shoot(action_wrapper, world);
-            }
-        }
-        false
+    fn name(&self) -> &'static str {
+        return "Shooter";
     }
 }
+

@@ -1,15 +1,14 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::Strategy;
-use crate::strategy::attacker::Shooter;
-use crate::strategy::defender::{Stand, Defend};
-use crate::strategy::keeper::{Keep, PenaltyPrepKeeper};
+use crate::strategy::attacker::{Attacker};
+use crate::strategy::defender::{Defender};
+use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
 use nalgebra::Point2;
-use crate::strategy::testing::GoToCenter;
 use crabe_framework::data::world::{World, Robot, AllyInfo, EnemyInfo};
 use crate::constants::{KEEPER_ID, ATTACKER1_ID, ATTACKER2_ID, DEFENDER1_ID, DEFENDER2_ID, PIVOT_ID};
 
@@ -69,14 +68,13 @@ impl GameManager {
             }
         };
         let trajectory = Line::new(robot.pose.position, target);
-        dbg!(world.allies_bot.len());
         let closest_dist = world.allies_bot
             .iter().filter(|(current_id, _)| **current_id != id)
-            .map(|(id, robot)| (id, dbg!(trajectory.dist_to_point(&robot.pose.position.xy()))))
+            .map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy())))
             .chain(world.enemies_bot.iter().map(|(id, robot)| (id, trajectory.dist_to_point(&robot.pose.position.xy()))))
             .min_by(|(_, d1), (_, d2)| d1.total_cmp(d2))
             .map(|(_, d)| d);
-        return dbg!(closest_dist) < Some(0.2)
+        return closest_dist < Some(0.181)
     }
 }
 
@@ -101,7 +99,7 @@ impl Manager for GameManager {
                 GameState::Stopped(stopped_state) => match stopped_state {
                     StoppedState::Stop => {
                         println!("stop");
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
                     }
                     StoppedState::PrepareKickoff(team) => {
                         if team == world.team_color {
@@ -127,17 +125,17 @@ impl Manager for GameManager {
                         if team != world.team_color {
                             return;
                         }
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
                         if team == world.team_color {
-                            self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                            self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
-                            self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
-                            self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
-                            self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
-                            self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
+                            self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
+                            self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
+                            self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         }else{
                             self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                         }
@@ -147,20 +145,20 @@ impl Manager for GameManager {
                         self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
                         let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         for id in rest {
-                            self.strategies.push(Box::new(Shooter::new(id)));
+                            self.strategies.push(Box::new(Attacker::new(id)));
                         }
                     }
                     RunningState::Run => {
                         println!("run");
-                        self.strategies.push(Box::new(Keep::new(KEEPER_ID)));
-                        self.strategies.push(Box::new(Shooter::new(PIVOT_ID)));
-                        self.strategies.push(Box::new(Shooter::new(ATTACKER1_ID)));
-                        self.strategies.push(Box::new(Shooter::new(ATTACKER2_ID)));
-                        self.strategies.push(Box::new(Defend::new(DEFENDER1_ID, true)));
-                        self.strategies.push(Box::new(Defend::new(DEFENDER2_ID, false)));
+                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                        self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                        self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                        self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
+                        self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
+                        self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         //let rest: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).filter(|id| *id != KEEPER_ID).collect();
                         // for id in rest {
-                        //     self.strategies.push(Box::new(Shooter::new(id)));
+                        //     self.strategies.push(Box::new(Attacker::new(id)));
                         // }
                     }
                 },

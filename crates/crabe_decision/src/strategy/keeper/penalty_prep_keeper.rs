@@ -1,13 +1,10 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use crabe_math::{shape::Line, vectors};
-use crabe_math::vectors::vector_from_angle;
-use nalgebra::{Point2, clamp};
-use std::f64::consts::PI;
+use crabe_math::{vectors};
+use nalgebra::{Point2};
 
 /// The penaltyPrepKeeper struct represents a strategy that commands the keeper to set in the penalty formation
 /// It is used when there is a penalty for the opponent team
@@ -59,6 +56,9 @@ impl Strategy for PenaltyPrepKeeper {
             action_wrapper.push(self.id, MoveTo::new(Point2::new(-world.geometry.field.length/2., 0.), vectors::angle_to_point(ball.position_2d(), robot.pose.position), 0., None, false, false));    
         }
         true
+    }
+    fn name(&self) -> &'static str {
+        return "PrepareKickoffKeeper";
     }
 }
 
