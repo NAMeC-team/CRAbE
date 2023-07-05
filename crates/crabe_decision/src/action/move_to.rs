@@ -287,7 +287,7 @@ impl Action for MoveTo {
                     target.x = target.x.clamp(-penalty_y, penalty_y);
                 }
             }
-            if GameManager::bot_in_trajectory(world, id, target){
+            if GameManager::bot_in_trajectory(world, id, target) || (self.avoid_ball && GameManager::ball_in_trajectory(world, id, target)){
                 self.smart_moveto(robot, world, target)
             }else{
                 self.dumb_moveto(robot, world, target)
