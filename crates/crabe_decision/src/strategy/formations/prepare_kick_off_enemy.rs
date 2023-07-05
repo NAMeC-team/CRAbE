@@ -51,7 +51,7 @@ impl Strategy for PrepareKickOffEnemy {
 
         let ball_pos = match world.ball.clone() {
             None => {
-                return false;
+                Point2::new(0.0,0.0)
             }
             Some(ball) => {
                 ball.position.xy()
