@@ -5,6 +5,7 @@ use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy};
+use crate::strategy::testing::FollowBall;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
@@ -102,7 +103,6 @@ impl Manager for GameManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        GameManager::bot_in_trajectory(world, 0, Point2::new(0., 0.));
         if self.last_game_state.is_none() || self.last_game_state.unwrap() != world.data.state {
             // clear current strategy
             self.strategies.clear();

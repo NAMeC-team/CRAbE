@@ -10,3 +10,5 @@ pub use self::square::Square;
 
 mod robots_formation;
 pub use self::robots_formation::RobotsFormation;
+mod follow_ball;
+pub use self::follow_ball::FollowBall;
