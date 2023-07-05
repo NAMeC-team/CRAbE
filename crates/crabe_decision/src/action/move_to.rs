@@ -13,6 +13,14 @@ const K_ATTRACTION: f64 = 1.0;
 const K_REPULSION: f64 = 1.0;
 const DIST_CHECK_FINISHED: f64 = 0.02;
 const MAX_ANGLE_ERROR: f64 = FRAC_PI_6;
+//Speed
+const NORM_MULTIPLIER: f64 = 1.0;
+/// The default factor speed for the robot to move towards the target position.
+const GOTO_SPEED: f64 = 1.5;
+/// The default factor speed for the robot to rotate towards the target orientation.
+const GOTO_ROTATION: f64 = 3.15;
+/// The error tolerance for arriving at the target position.
+const ERR_TOLERANCE: f64 = 0.115;
 const OFFSET_Y_GOAL_AREA: f64 = 0.10;
 use crate::constants::{KEEPER_ID};
 
@@ -207,7 +215,7 @@ impl MoveTo {
         // -- Normalizing the strength vector to avoid super Sonic speed
         //    but only if not close to target, otherwise leads to oscillation
         if dist_to_target > 1.0 {
-            f = f.normalize();
+            f = f.normalize() * NORM_MULTIPLIER;
         }
 
         // -- Compute angle of the resulting vector
@@ -249,14 +257,6 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
         robot.pose.orientation,
     )
 }
-
-/// The default factor speed for the robot to move towards the target position.
-const GOTO_SPEED: f64 = 1.5;
-/// The default factor speed for the robot to rotate towards the target orientation.
-const GOTO_ROTATION: f64 = 3.15;
-/// The error tolerance for arriving at the target position.
-const ERR_TOLERANCE: f64 = 0.115;
-
 
 impl Action for MoveTo {
     /// Returns the name of the action.
