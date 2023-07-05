@@ -1,0 +1,17 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml",
+        "./crates/crabe_decision/Cargo.toml"
+    ]
+}
