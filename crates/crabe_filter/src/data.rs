@@ -23,7 +23,7 @@ pub type TrackedRobotMap<T> = HashMap<u8, TrackedRobot<T>>;
 pub struct FilterData {
     pub allies: TrackedRobotMap<AllyInfo>,
     pub enemies: TrackedRobotMap<EnemyInfo>,
-    pub ball: TrackedBall,
+    pub ball: Option<TrackedBall>,
     pub geometry: CamGeometry,
     pub referee: Vec<Referee>,
 }
