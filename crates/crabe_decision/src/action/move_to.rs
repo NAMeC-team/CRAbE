@@ -14,7 +14,7 @@ const K_REPULSION: f64 = 1.0;
 const DIST_CHECK_FINISHED: f64 = 0.02;
 const MAX_ANGLE_ERROR: f64 = FRAC_PI_6;
 //Speed
-const NORM_MULTIPLIER: f64 = 1000000.0;
+const NORM_MULTIPLIER: f64 = 1.0;
 /// The default factor speed for the robot to move towards the target position.
 const GOTO_SPEED: f64 = 1.5;
 /// The default factor speed for the robot to rotate towards the target orientation.

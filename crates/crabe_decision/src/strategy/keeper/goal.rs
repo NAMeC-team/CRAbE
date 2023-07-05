@@ -67,7 +67,6 @@ impl Strategy for Goal {
                 }
             }else{
                 if self.strategy.name() != "Keep" {
-                    action_wrapper.push(robot.id, MoveTo::new(Point2::new(x, y), vectors::angle_to_point(ball_pos, robot.pose.position),0.0 , None, false,false));
                     self.strategy = Box::new(Keep::new(self.id));
 
                 }
