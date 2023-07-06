@@ -35,15 +35,33 @@ impl Guard for SpeedGuard {
         _tool_commands: &mut ToolCommands,
     ) {
         commands.iter_mut().for_each(|(_id, command)| {
-            command.forward_velocity = command
-                .forward_velocity
-                .clamp(-self.max_linear, self.max_linear);
-            command.left_velocity = command
-                .left_velocity
-                .clamp(-self.max_linear, self.max_linear);
-            command.angular_velocity = command
-                .angular_velocity
-                .clamp(-self.max_angular, self.max_angular);
+            match command.forward_velocity {
+                f32::NAN => { command.forward_velocity = 0. }
+                _ => {
+                    command.forward_velocity = command
+                        .forward_velocity
+                        .clamp(-self.max_linear, self.max_linear);
+                }
+            };
+
+            match command.left_velocity {
+                f32::NAN => { command.left_velocity = 0. }
+                _ => {
+                    command.left_velocity = command
+                        .left_velocity
+                        .clamp(-self.max_linear, self.max_linear);
+                }
+            };
+
+            match command.angular_velocity {
+                f32::NAN => { command.angular_velocity = 0. }
+                _ => {
+                    command.angular_velocity = command
+                        .angular_velocity
+                        .clamp(-self.max_angular, self.max_angular);
+                }
+            };
+
         });
     }
 }
