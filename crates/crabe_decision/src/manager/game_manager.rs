@@ -4,7 +4,7 @@ use crate::strategy::Strategy;
 use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
-use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy};
+use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy, PreparePenaltyEnemy};
 use crate::strategy::testing::FollowBall;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
@@ -140,7 +140,7 @@ impl Manager for GameManager {
                     StoppedState::PreparePenalty(team) => {
                         println!("prepare penalty {:?}",team);
                         if team != world.team_color {
-                            self.strategies.push(Box::new(PenaltyPrepKeeper::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(PreparePenaltyEnemy::new()));
                         }
                     }
                     StoppedState::BallPlacement(team) => {
