@@ -53,6 +53,8 @@ impl Default for Geometry {
                 bottom_left_position: Point2::new(-4.5, -0.5),
                 bottom_right_position: Point2::new(-4.5, 0.5),
                 top_right_position: Point2::new(-4.68, 0.5),
+                center_front_position: Point2::new(-4.5, 0.),
+                center_back_position: Point2::new(-4.68, 0.),
                 front_line: Line::new(Point2::new(-4.5, -0.5), Point2::new(-4.5, 0.5)),
             },
             enemy_goal: Goal {
@@ -62,6 +64,8 @@ impl Default for Geometry {
                 bottom_left_position: Point2::new(4.5, 0.5),
                 bottom_right_position: Point2::new(4.5, -0.5),
                 top_right_position: Point2::new(4.68, -0.5),
+                center_front_position: Point2::new(4.5, 0.),
+                center_back_position: Point2::new(4.68, 0.),
                 front_line: Line::new(Point2::new(4.5, -0.5), Point2::new(4.5, 0.5)),
             },
             ally_penalty: Penalty {
