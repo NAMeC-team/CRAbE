@@ -240,6 +240,12 @@ impl Action for MoveTo {
                     target.x = target.x.clamp(-penalty_y, penalty_y);
                 }
             }
+            if target.x.abs() > &world.geometry.field.length/2.{
+                target.x = world.geometry.field.length/2. * target.x.signum();
+            }
+            if target.y.abs() > &world.geometry.field.width/2.{
+                target.y = world.geometry.field.width/2. * target.y.signum();
+            }
 
             self.compute_moveto_vector(robot, world, target)
 
