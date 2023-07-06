@@ -52,7 +52,7 @@ impl Strategy for Shooter {
                 robot
             }
         };
-        let goal_pos: Point2<f64> = Point2::new(world.geometry.field.length/2., 0.0);
+        let goal_pos: Point2<f64> = world.geometry.enemy_goal.center_front_position;
         let ball_pos = match world.ball.clone() {
             None => {
                 return false;
