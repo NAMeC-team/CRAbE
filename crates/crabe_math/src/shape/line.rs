@@ -39,7 +39,6 @@ impl Line{
     
         let div = det(xdiff, ydiff);
         if div.abs() < 1e-6 {
-            println!("Lines do not intersect");
             return None;
         }
     
@@ -58,7 +57,6 @@ impl Line{
     
         let div = det(xdiff, ydiff);
         if div.abs() < 1e-6 {
-            println!("Lines do not intersect");
             return None;
         }
     
