@@ -64,25 +64,27 @@ impl Strategy for Shooter {
         let robot_pos = robot.pose.position;
         let robot_to_ball = ball_pos - robot_pos;
         let dir_shooting_line: Line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
+        let dir_shooting_line_ball: Line = Line::new(robot_pos, robot_pos.add((ball_pos - robot_pos).mul(100.)));
         let ball_to_goal = goal_pos - ball_pos;
         let behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.3;
         let ball_avoidance: bool = robot_to_ball.normalize().dot(&(goal_pos-ball_pos).normalize()) < 0.;
         let aligne_with_goal_target: bool = dir_shooting_line.intersect(&world.geometry.enemy_goal.front_line);
+        let aligne_to_shoot: bool = dir_shooting_line_ball.intersect(&world.geometry.enemy_goal.front_line);
         let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
         match self.state {
             ShooterState::PlaceForShoot => {
-                if aligne_with_goal_target && ((behind_ball_pos - robot_pos).norm() <= 0.1 || dot_with_ball > 0.93){
+                if aligne_to_shoot && aligne_with_goal_target && (((behind_ball_pos - robot_pos).norm() <= 0.1 || dot_with_ball > 0.93)){
                     self.state = ShooterState::Shoot
                 }
                 action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 0., None, ball_avoidance, false));
             },
             ShooterState::Shoot => {
                 let dist_to_ball = robot_to_ball.norm();
-                let kick: Option<Kick> = if dist_to_ball < 0.12 && dot_with_ball > 0.9 && aligne_with_goal_target {
+                let kick: Option<Kick> = if dist_to_ball < 0.12 && dot_with_ball > 0.9 && aligne_to_shoot {
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
-                action_wrapper.push(self.id, MoveTo::new(ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 1.,  kick, false, true));
+                action_wrapper.push(self.id, MoveTo::new(ball_pos + (ball_pos - robot_pos).mul(10.), vectors::angle_to_point(goal_pos, robot_pos), 1.,  kick, false, true));
                 if ball_avoidance || dist_to_ball > 0.4{
                     self.state = ShooterState::PlaceForShoot;
                 }
