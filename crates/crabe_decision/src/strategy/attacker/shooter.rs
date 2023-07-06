@@ -68,17 +68,17 @@ impl Strategy for Shooter {
         let behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.3;
         let ball_avoidance: bool = robot_to_ball.normalize().dot(&(goal_pos-ball_pos).normalize()) < 0.;
         let aligne_with_goal_target: bool = dir_shooting_line.intersect(&world.geometry.enemy_goal.front_line);
+        let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
+        let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
         match self.state {
             ShooterState::PlaceForShoot => {
-                if aligne_with_goal_target && (behind_ball_pos - robot_pos).norm() <= 0.1{
+                if aligne_with_goal_target && ((behind_ball_pos - robot_pos).norm() <= 0.1 || dot_with_ball > 0.93){
                     self.state = ShooterState::Shoot
                 }
                 action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 0., None, ball_avoidance, false));
             },
             ShooterState::Shoot => {
                 let dist_to_ball = robot_to_ball.norm();
-                let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
-                let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
                 let kick: Option<Kick> = if dist_to_ball < 0.12 && dot_with_ball > 0.9 && aligne_with_goal_target {
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
