@@ -9,4 +9,6 @@ pub use self::go_to_center::GoToCenter;
 pub use self::square::Square;
 
 mod robots_formation;
+mod go_to_position;
+
 pub use self::robots_formation::RobotsFormation;
