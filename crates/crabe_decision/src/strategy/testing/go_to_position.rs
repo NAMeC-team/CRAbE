@@ -46,7 +46,7 @@ impl Strategy for GoToPosition {
         action_wrapper.push(
             self.id,
             MoveTo::new(
-                coord,
+                self.coord,
                 0.0,
                 0.0, None,
                 false, false,
