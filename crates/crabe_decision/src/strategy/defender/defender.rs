@@ -58,7 +58,7 @@ impl Strategy for Defender {
         };
         if let Some(ball) = &world.ball{
             let ball_pos = ball.position_2d();
-            if dbg!((robot.pose.position - ball_pos).norm()) < 0.4{
+            if ((robot.pose.position - ball_pos).norm()) < 0.4{
                 if self.strategy.name() != "Shooter" {
                     self.strategy = Box::new(Shooter::new(self.id));
                 }

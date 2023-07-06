@@ -12,23 +12,18 @@ use crabe_math::vectors::{self, vector_from_angle};
 use crabe_math::shape::Line;
 
 #[derive(Default)]
-pub struct Passer {
+pub struct Waiter {
     /// The id of the robot to move.
     id: u8
 }
-impl Passer {
+impl Waiter {
     /// Creates a new Square instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id}
     }
 }
 
-impl Strategy for Passer {
-    /// Executes the Square strategy.
-    ///
-    /// This strategy commands the robot with the specified ID to move in a square shape in a
-    /// counter-clockwise direction.
-    ///
+impl Strategy for Waiter {
     /// # Arguments
     ///
     /// * world: The current state of the game world.
@@ -63,7 +58,7 @@ impl Strategy for Passer {
             }
         };     
         let mut y = 0.;
-        if self.id == ATTACKER1_ID{
+        if dbg!(self.id) == ATTACKER1_ID{
             y = -2.;
         }else if self.id == ATTACKER2_ID{
             y = 2.;

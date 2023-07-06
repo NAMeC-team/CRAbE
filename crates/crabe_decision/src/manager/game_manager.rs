@@ -5,6 +5,7 @@ use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
 use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy};
+use crate::strategy::testing::FollowBall;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
@@ -50,6 +51,18 @@ impl GameManager {
             .map(|(_, bot, _)| bot)
     }
 
+    pub fn closest_allies_to_ball_in_order(world: &World) -> Vec<&Robot<AllyInfo>> {
+        let mut robots: Vec<_> = world.allies_bot
+            .iter()
+            .filter(|(id, _)| **id != KEEPER_ID && **id != DEFENDER1_ID && **id != DEFENDER2_ID)
+            .map(|(id, robot)| (id, robot, robot.distance(&world.ball.clone().unwrap_or_default().position.xy())))
+            .collect();
+        robots.sort_by(|(_,_,d1), (_,_,d2)| {
+            d1.total_cmp(d2)
+        });
+        robots.into_iter().map(|(_,r,_)| r).collect()
+    }
+
     pub fn closest_enemy_to_ball(world: &World) -> Option<&Robot<EnemyInfo>>{
         world.enemies_bot
             .iter()
@@ -76,6 +89,22 @@ impl GameManager {
             .map(|(_, d)| d);
         return closest_dist < Some(0.2)
     }
+
+    pub fn ball_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
+        let robot = match world.allies_bot.get(&id) {
+            None => {
+                return false;
+            }
+            Some(robot) => {
+                robot
+            }
+        };
+        let trajectory = Line::new(robot.pose.position, target);
+        if let Some(ball) = &world.ball{
+            return trajectory.dist_to_point(&ball.position_2d()) < 0.11
+        }
+        false
+    }
 }
 
 impl Manager for GameManager {
@@ -86,7 +115,6 @@ impl Manager for GameManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        GameManager::bot_in_trajectory(world, 0, Point2::new(0., 0.));
         if self.last_game_state.is_none() || self.last_game_state.unwrap() != world.data.state {
             // clear current strategy
             self.strategies.clear();
