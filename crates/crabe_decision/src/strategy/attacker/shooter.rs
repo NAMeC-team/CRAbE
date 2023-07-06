@@ -73,7 +73,7 @@ impl Strategy for Shooter {
                 if aligne_with_goal_target && (behind_ball_pos - robot_pos).norm() <= 0.1{
                     self.state = ShooterState::Shoot
                 }
-                action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 0., None, ball_avoidance, false));    
+                action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 0., None, ball_avoidance, false));
             },
             ShooterState::Shoot => {
                 let dist_to_ball = robot_to_ball.norm();
