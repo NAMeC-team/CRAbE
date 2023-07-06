@@ -150,10 +150,16 @@ impl Manager for GameManager {
                 GameState::Running(running_state) => match running_state {
                     RunningState::KickOff(team) => {
                         println!("kickoff for {:#?}", team);
-                        if team != world.team_color {
-                            return;
+                        if team == world.team_color {
+                            self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
+                            self.strategies.push(Box::new(Attacker::new(PIVOT_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER1_ID)));
+                            self.strategies.push(Box::new(Attacker::new(ATTACKER2_ID)));
+                            self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
+                            self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
+                        } else {
+                            return; // Wait for the ball leaving the middle circle
                         }
-                        self.strategies.push(Box::new(Goal::new(KEEPER_ID)));
                     }
                     RunningState::Penalty(team) => {
                         println!("penalty for {:#?}", team);
