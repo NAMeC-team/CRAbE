@@ -64,6 +64,10 @@ impl Strategy for Keep {
                 let y = clamp(intersection.y, world.geometry.ally_goal.bottom_left_position.y, world.geometry.ally_goal.bottom_right_position.y);
                 action_wrapper.push(self.id, MoveTo::new(Point2::new(x, y), vectors::angle_to_point(ball.position.xy(), robot.pose.position ), 0., None, false, false));
             }
+            else {
+                let goal_center = Point2::new(-world.geometry.field.length/2.,0.);
+                action_wrapper.push(self.id, MoveTo::new(goal_center, vectors::angle_to_point(ball.position.xy(), robot.pose.position ), 0., None, false, false));
+            }
          } else {
             let goal_center = Point2::new(-world.geometry.field.length/2.,0.);
             action_wrapper.push(self.id, MoveTo::new(goal_center, vectors::angle_to_point(Point2::new(0.,0.), robot.pose.position ), 0., None, false, false));
