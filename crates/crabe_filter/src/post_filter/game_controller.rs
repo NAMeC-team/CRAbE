@@ -5,6 +5,7 @@ use crabe_framework::data::world::game_state::{
 };
 use crabe_framework::data::world::{TeamColor, World};
 use log::warn;
+use nalgebra::Point2;
 
 use crate::data::referee::event::{Event, GameEvent};
 use crate::data::referee::RefereeCommand;
@@ -151,11 +152,23 @@ impl GameControllerPostFilter {
             None => Some(Instant::now())
         };
         if let Some(chrono) = _chrono {
+            let ball_pos = match world.ball.clone() {
+                None => {
+                    Point2::new(0.0,0.0)
+                }
+                Some(ball) => {
+                    ball.position.xy()
+                }
+            };
             if previous_command == RefereeCommand::PrepareKickoff(TeamColor::Blue){
                 if chrono.elapsed() >= std::time::Duration::from_secs(10) {
                     world.data.state = GameState::Running(RunningState::Run);
                 } else {
-                    world.data.state = GameState::Running(RunningState::KickOff(TeamColor::Blue));
+                    if ball_pos.x.abs()>0.5 || ball_pos.y.abs()>0.5 {
+                        world.data.state = GameState::Running(RunningState::Run);
+                    } else if world.data.state != GameState::Running(RunningState::Run){
+                        world.data.state = GameState::Running(RunningState::KickOff(TeamColor::Blue));
+                    }
                 }
                 return
             }
@@ -163,7 +176,11 @@ impl GameControllerPostFilter {
                 if chrono.elapsed() >= std::time::Duration::from_secs(10) {
                     world.data.state = GameState::Running(RunningState::Run);
                 } else {
-                    world.data.state = GameState::Running(RunningState::KickOff(TeamColor::Yellow));
+                    if ball_pos.x.abs()>0.5 || ball_pos.y.abs()>0.5 {
+                        world.data.state = GameState::Running(RunningState::Run);
+                    } else if world.data.state != GameState::Running(RunningState::Run){
+                        world.data.state = GameState::Running(RunningState::KickOff(TeamColor::Yellow));
+                    }
                 }
                 return
             }
