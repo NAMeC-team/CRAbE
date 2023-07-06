@@ -56,26 +56,35 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
 
 fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
     let factor = if positive { 1.0 } else { -1.0 };
+    let half_geo_cam_width = cam_geometry.goal_width / 2.0;
     let bottom_right = Point2::new(
         factor * ((cam_geometry.field_length / 2.0)),
-        factor * -(cam_geometry.goal_width / 2.0),
+        factor * -half_geo_cam_width,
     );
     let bottom_left = Point2::new(
         factor * ((cam_geometry.field_length / 2.0)),
-        factor * (cam_geometry.goal_width / 2.0),
+        factor * half_geo_cam_width,
     );
     Goal {
         width: cam_geometry.goal_width,
         depth: cam_geometry.goal_depth,
         top_left_position: Point2::new(
             factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
-            factor * (cam_geometry.goal_width / 2.0),
+            factor * half_geo_cam_width,
         ),
         bottom_left_position: bottom_left,
         bottom_right_position: bottom_right,
         top_right_position: Point2::new(
             factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
-            factor * -(cam_geometry.goal_width / 2.0),
+            factor * -half_geo_cam_width,
+        ),
+        center_front_position: Point2::new(
+            factor * ((cam_geometry.field_length / 2.0)),
+            0.,
+        ),
+        center_back_position: Point2::new(
+            factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
+            0.,
         ),
         front_line: Line::new(bottom_right, bottom_left),
     }

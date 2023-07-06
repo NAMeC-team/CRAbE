@@ -22,6 +22,12 @@ pub struct Goal {
     /// The top-right corner of the goal, measured from the origin of the field,
     /// in meters.
     pub top_right_position: Point2<f64>,
+    // The center front point of the goal, measured from the origin of the field,
+    /// in meters.
+    pub center_front_position: Point2<f64>,
+    // The center back point of the goal, measured from the origin of the field,
+    /// in meters.
+    pub center_back_position: Point2<f64>,
     /// The front line of the goal, measured from the origin of the field,
     /// in meters.
     pub front_line: Line

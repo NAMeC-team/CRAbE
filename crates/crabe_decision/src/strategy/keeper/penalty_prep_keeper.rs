@@ -53,7 +53,7 @@ impl Strategy for PenaltyPrepKeeper {
         };
         if let Some(ball) = &world.ball{
 
-            action_wrapper.push(self.id, MoveTo::new(Point2::new(-world.geometry.field.length/2., 0.), vectors::angle_to_point(ball.position_2d(), robot.pose.position), 0., None, false, false));    
+            action_wrapper.push(self.id, MoveTo::new(world.geometry.ally_goal.center_front_position, vectors::angle_to_point(ball.position_2d(), robot.pose.position), 0., None, false, false));    
         }
         true
     }
