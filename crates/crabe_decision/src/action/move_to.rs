@@ -140,35 +140,36 @@ impl MoveTo {
         // -- Repulsive field
         let mut dist_to_obst = 0.;
         // Don't compute any repulsion if robot is already near target
-        if dist_to_target >= 0.15 &&
-            GameManager::bot_in_trajectory(world, robot.id, target) {
+        if dist_to_target >= 0.15 {
             let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
-            world.allies_bot.iter()
-                // Our robot id is not an obstacle
-                .filter(|(id, _)| **id != robot.id)
-                .for_each(|(_, ally)| {
+            if GameManager::bot_in_trajectory(world, robot.id, target){
+                world.allies_bot.iter()
+                    // Our robot id is not an obstacle
+                    .filter(|(id, _)| **id != robot.id)
+                    .for_each(|(_, ally)| {
 
-                    dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
+                        dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
 
-                    if dist_to_obst < OBSTACLE_RADIUS {
-                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
+                        if dist_to_obst < OBSTACLE_RADIUS {
+                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
+                        }
                     }
-                }
-            );
+                );
 
-            world.enemies_bot.iter()
-                .for_each(|(_, enemy)| {
-                    // Distance from our robot and the ally obstacle
-                    dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
+                world.enemies_bot.iter()
+                    .for_each(|(_, enemy)| {
+                        // Distance from our robot and the ally obstacle
+                        dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
 
-                    if dist_to_obst < OBSTACLE_RADIUS {
-                        repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
+                        if dist_to_obst < OBSTACLE_RADIUS {
+                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
+                        }
                     }
-                }
-            );
+                );
+            }
 
             // avoid ball if tasked
-            if self.avoid_ball {
+            if self.avoid_ball && GameManager::ball_in_trajectory(world, robot.id, target){
                 if let Some(ball) = &world.ball {
                     let ball_position = &ball.position.xy();
                     if distance(ball_position, &robot.pose.position) <= OBSTACLE_RADIUS {
