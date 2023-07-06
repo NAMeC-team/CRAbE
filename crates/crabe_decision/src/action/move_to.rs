@@ -123,39 +123,7 @@ impl MoveTo {
         (GOTO_ROTATION * error_orientation) as f32
     }
 
-    pub fn dumb_moveto(&mut self, robot: &Robot<AllyInfo>, _world: &World, target: Point2<f64>) -> Command {
-        let ti = frame_inv(robot_frame(robot));
-        let target_in_robot = ti * Point2::new(target.x, target.y);
-        let wanted_orientation = self.orientation.rem_euclid(2. * PI);
-        let curent_orientation = robot.pose.orientation.rem_euclid(2. * PI);
-        let mut error_orientation = wanted_orientation - curent_orientation;
-        if error_orientation.abs() > PI{
-            error_orientation = -error_orientation;
-        }
-        let error_x = target_in_robot[0];
-        let error_y = target_in_robot[1];
-        let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
-        if arrived {
-            self.state = State::Done;
-        }
-        let order = Vector3::new(
-            GOTO_SPEED * error_x,
-            GOTO_SPEED * error_y,
-            GOTO_ROTATION * error_orientation,
-        );
-
-        let dribble = self.dribble.clamp(0., 1.);
-
-        Command {
-            forward_velocity: order.x as f32,
-            left_velocity: order.y as f32,
-            angular_velocity: order.z as f32,
-            charge: true,
-            kick: self.kick,
-            dribbler: dribble,
-        }
-    }
-    pub fn smart_moveto(&mut self, robot: &Robot<AllyInfo>, world: &World, target: Point2<f64>) -> Command {
+    pub fn compute_moveto_vector(&mut self, robot: &Robot<AllyInfo>, world: &World, target: Point2<f64>) -> Command {
         
         let dist_to_target = distance(&robot.pose.position, &target);
         if dist_to_target <= DIST_CHECK_FINISHED {
@@ -172,7 +140,8 @@ impl MoveTo {
         // -- Repulsive field
         let mut dist_to_obst = 0.;
         // Don't compute any repulsion if robot is already near target
-        if dist_to_target >= 0.15 {
+        if dist_to_target >= 0.15 &&
+            GameManager::bot_in_trajectory(world, robot.id, target) {
             let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
             world.allies_bot.iter()
                 // Our robot id is not an obstacle
@@ -242,22 +211,6 @@ impl MoveTo {
     }
 }
 
-fn frame(x: f64, y: f64, orientation: f64) -> Isometry2<f64> {
-    Isometry2::new(Vector2::new(x, y), orientation)
-}
-
-fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
-    frame.inverse()
-}
-
-fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
-    frame(
-        robot.pose.position.x,
-        robot.pose.position.y,
-        robot.pose.orientation,
-    )
-}
-
 impl Action for MoveTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
@@ -287,12 +240,10 @@ impl Action for MoveTo {
                     target.x = target.x.clamp(-penalty_y, penalty_y);
                 }
             }
-            if GameManager::bot_in_trajectory(world, id, target) || (self.avoid_ball && GameManager::ball_in_trajectory(world, id, target)){
-                self.smart_moveto(robot, world, target)
-            }else{
-                self.dumb_moveto(robot, world, target)
-            }
-        }else {
+
+            self.compute_moveto_vector(robot, world, target)
+
+        } else {
             Command::default()
         }        
     }
