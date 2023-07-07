@@ -68,6 +68,7 @@ impl Strategy for Shooter {
         let dir_shooting_line: Line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
         let dir_shooting_line_ball: Line = Line::new(robot_pos, robot_pos.add((ball_pos - robot_pos).mul(100.)));
         let ball_to_goal = goal_pos - ball_pos;
+
         let mut behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.3;
         let ball_avoidance: bool = robot_to_ball.normalize().dot(&(goal_pos-ball_pos).normalize()) < 0.;
         let aligne_with_goal_target: bool = dir_shooting_line.intersect(&world.geometry.enemy_goal.front_line);
@@ -98,7 +99,7 @@ impl Strategy for Shooter {
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
                 action_wrapper.push(self.id, MoveTo::new(ball_pos + (ball_pos - robot_pos), vectors::angle_to_point(goal_pos, robot_pos), 1.,  kick, false, true));
-                if ball_avoidance || dist_to_ball > 0.4{
+                if ball_avoidance || dist_to_ball > 0.4 {
                     self.state = ShooterState::PlaceForShoot;
                 }
             }
