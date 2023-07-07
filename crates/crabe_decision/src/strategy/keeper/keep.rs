@@ -1,3 +1,5 @@
+use std::ops::Mul;
+
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::manager::game_manager::GameManager;
@@ -59,7 +61,11 @@ impl Strategy for Keep {
                 let enemy_dir = closest_enemy.pose.position + vector_from_angle(closest_enemy.pose.orientation) * 1000.;
                 shoot_dir.end = enemy_dir.xy();
             }
-            if let Some(intersection) = world.geometry.ally_goal.front_line.intersection_line(&shoot_dir) {
+            if let Some(mut intersection) = world.geometry.ally_goal.front_line.intersection_line(&shoot_dir) {
+                let dir = robot.pose.position - intersection;
+                if (dir).norm() > 0.2 {
+                    intersection = intersection - dir.mul(100.);
+                }
                 let x = world.geometry.ally_goal.bottom_left_position.x+0.1;
                 let y = clamp(intersection.y, world.geometry.ally_goal.bottom_left_position.y, world.geometry.ally_goal.bottom_right_position.y);
                 action_wrapper.push(self.id, MoveTo::new(Point2::new(x, y), vectors::angle_to_point(ball.position.xy(), robot.pose.position ), 0., None, false, false));
