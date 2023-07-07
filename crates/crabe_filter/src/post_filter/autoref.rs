@@ -36,7 +36,7 @@ impl PostFilter for AutoRefFilter {
                 for robot in frame.robots.iter() {
                     // TODO: Team color enum
                     let team_color = match robot.robot_id.team_color {
-                        2 => {
+                        1 => {
                             TeamColor::Yellow
                         },
                         _ => {
