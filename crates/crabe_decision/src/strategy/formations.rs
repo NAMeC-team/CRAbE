@@ -13,3 +13,6 @@ pub use self::prepare_freekick_enemy::PrepareFreeKickEnemy;
 //PenaltyEnemy set ups the kick of when not in favor of the free kick
 mod prepare_penalty_enemy;
 pub use self::prepare_penalty_enemy::PreparePenaltyEnemy;
+
+mod go_out_from_ball;
+pub use self::go_out_from_ball::GoOutFromBall;

@@ -4,7 +4,7 @@ use crate::strategy::Strategy;
 use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
-use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy, PreparePenaltyEnemy};
+use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy, PreparePenaltyEnemy, GoOutFromBall};
 use crate::strategy::testing::FollowBall;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
@@ -145,6 +145,7 @@ impl Manager for GameManager {
                         }
                     }
                     StoppedState::BallPlacement(team) => {
+                        self.strategies.push(Box::new(GoOutFromBall::new()));
                         println!("ball placement {:?}",team);
                     }
                 },
