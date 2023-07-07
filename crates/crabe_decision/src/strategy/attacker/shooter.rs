@@ -71,8 +71,9 @@ impl Strategy for Shooter {
 
         let mut behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.3;
         let ball_avoidance: bool = robot_to_ball.normalize().dot(&(goal_pos-ball_pos).normalize()) < 0.;
-        let aligne_with_goal_target: bool = dir_shooting_line.intersect(&world.geometry.enemy_goal.front_line);
-        let aligne_to_shoot: bool = dir_shooting_line_ball.intersect(&world.geometry.enemy_goal.front_line);
+        let front_line = Line::new(Point2::new(&world.geometry.field.length/2., &world.geometry.enemy_penalty.width/2.), Point2::new(&world.geometry.field.length/2., -&world.geometry.enemy_penalty.width/2.));
+        let aligne_with_goal_target: bool = dir_shooting_line.intersect(&front_line);
+        let aligne_to_shoot: bool = dir_shooting_line_ball.intersect(&front_line);
         let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
         let aligne_oriented_to_opponent_side = dir_shooting_line.intersection(&world.geometry.enemy_goal.front_line).is_some();
@@ -80,7 +81,7 @@ impl Strategy for Shooter {
             ShooterState::PlaceForShoot => {
                 if ((aligne_to_shoot && aligne_with_goal_target) || 
                     (robot_pos.x < 0. && aligne_oriented_to_opponent_side)) && 
-                    (((behind_ball_pos - robot_pos).norm() <= 0.2 || dot_with_ball > 0.93)){
+                    (((behind_ball_pos - robot_pos).norm() <= 0.2 || (dot_with_ball) > 0.93)){
                     self.state = ShooterState::Shoot
                 }
                 if ball_avoidance {
