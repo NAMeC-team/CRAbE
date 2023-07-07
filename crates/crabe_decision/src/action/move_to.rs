@@ -93,8 +93,8 @@ impl MoveTo {
         let dist_to_target = distance(q, q_d);
         if dist_to_target >= 0.5 {
             base_force * 1.5
-        } else if dist_to_target >= 0.1 {
-            base_force * 2.0
+        } else if dist_to_target >= 0.08 {
+            base_force * 3.0
         } else {
             base_force
         }
