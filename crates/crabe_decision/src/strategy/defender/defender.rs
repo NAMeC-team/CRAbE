@@ -25,7 +25,7 @@ impl Defender {
         Self { 
             id, 
             left,
-            strategy: Box::new(Defend::new(id, false))
+            strategy: Box::new(Defend::new(id, left))
         }
     }
 }
