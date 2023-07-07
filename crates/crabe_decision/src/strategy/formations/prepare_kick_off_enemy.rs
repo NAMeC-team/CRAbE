@@ -57,7 +57,6 @@ impl Strategy for PrepareKickOffEnemy {
                 ball.position.xy()
             }
         };
-        println!("PrepareKickOffEnemyAction");
         if let Some(bappe) = world.allies_bot.get(&DEFENDER2_ID) {
             action_wrapper.push(DEFENDER2_ID, MoveTo::new(Point2::new(-1.2, 0.7), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,false));
         };
