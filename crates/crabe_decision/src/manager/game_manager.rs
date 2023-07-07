@@ -4,7 +4,7 @@ use crate::strategy::Strategy;
 use crate::strategy::attacker::{Attacker};
 use crate::strategy::defender::{Defender};
 use crate::strategy::keeper::{Keep, PenaltyPrepKeeper, Goal};
-use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy, PreparePenaltyEnemy};
+use crate::strategy::formations::{PrepareKickOffAlly, PrepareKickOffEnemy, PrepareFreeKickEnemy, PreparePenaltyEnemy, GoOutFromBall};
 use crate::strategy::testing::FollowBall;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
@@ -135,6 +135,7 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(PrepareKickOffAlly::new()));
                         }else{
                             self.strategies.push(Box::new(PrepareKickOffEnemy::new()));
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                         println!("prepare kick off {:?}",team);
                     }
@@ -142,9 +143,11 @@ impl Manager for GameManager {
                         println!("prepare penalty {:?}",team);
                         if team != world.team_color {
                             self.strategies.push(Box::new(PreparePenaltyEnemy::new()));
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                     }
                     StoppedState::BallPlacement(team) => {
+                        self.strategies.push(Box::new(GoOutFromBall::new()));
                         println!("ball placement {:?}",team);
                     }
                 },
@@ -159,7 +162,7 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
                             self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         } else {
-                            return; // Wait for the ball leaving the middle circle
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                     }
                     RunningState::Penalty(team) => {
@@ -187,6 +190,7 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         }else{
                             self.strategies.push(Box::new(PrepareFreeKickEnemy::new()));
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                     }
                     RunningState::Run => {
