@@ -62,8 +62,8 @@ impl Strategy for GoOutFromBall {
         for i in 0..6{
             if let Some(bappe) = world.allies_bot.get(&i) {
                 let to_ball=ball_pos - bappe.pose.position;
-                if to_ball.norm() < 1.{
-                    action_wrapper.push(bappe.id, MoveTo::new(bappe.pose.position - to_ball.normalize().mul(1.11), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+                if to_ball.norm() < 0.6{
+                    action_wrapper.push(bappe.id, MoveTo::new(bappe.pose.position - to_ball.normalize().mul(0.7), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
                 }
             };
         }
