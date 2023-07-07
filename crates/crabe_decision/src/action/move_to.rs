@@ -128,7 +128,12 @@ impl MoveTo {
         if error_orientation.abs() > PI{
             error_orientation = -error_orientation;
         }
-        (GOTO_ROTATION * error_orientation) as f32
+        if error_orientation >= 0. {
+            error_orientation = 1.0;
+        } else {
+            error_orientation = -1.0;
+        }
+        error_orientation as f32
     }
 
     pub fn compute_moveto_vector(&mut self, robot: &Robot<AllyInfo>, world: &World, target: Point2<f64>) -> Command {
