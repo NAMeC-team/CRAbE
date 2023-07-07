@@ -458,9 +458,7 @@ fn map_protobuf_referee(
     };
     Ok(Referee {
         source_identifier: packet.source_identifier,
-        match_type: Some(ProtocolMatchType::from_i32(packet.stage)
-            .map(map_match_type)
-            .ok_or(RefereeDeserializationError)?),
+        match_type: packet.match_type.map(|match_type|ProtocolMatchType::from_i32(match_type).map(map_match_type)).flatten(), // TODO: Handle error
         packet_timestamp: create_date_time((packet.packet_timestamp / 1_000_000) as i64),
         stage: ProtocolStage::from_i32(packet.stage)
             .map(map_stage)
