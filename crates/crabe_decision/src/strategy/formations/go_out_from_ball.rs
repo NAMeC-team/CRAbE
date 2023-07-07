@@ -44,12 +44,6 @@ impl Strategy for GoOutFromBall {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.clean(KEEPER_ID);
-        action_wrapper.clean(PIVOT_ID);
-        action_wrapper.clean(ATTACKER1_ID);
-        action_wrapper.clean(ATTACKER2_ID);
-        action_wrapper.clean(DEFENDER1_ID);
-        action_wrapper.clean(DEFENDER2_ID);
 
         let ball_pos = match world.ball.clone() {
             None => {
@@ -63,7 +57,8 @@ impl Strategy for GoOutFromBall {
             if let Some(bappe) = world.allies_bot.get(&i) {
                 let to_ball=ball_pos - bappe.pose.position;
                 if to_ball.norm() < 0.6{
-                    action_wrapper.push(bappe.id, MoveTo::new(bappe.pose.position - to_ball.normalize().mul(0.7), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
+                    action_wrapper.clean(bappe.id);
+                    action_wrapper.push(bappe.id, MoveTo::new(bappe.pose.position - to_ball.normalize().mul(0.6), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
                 }
             };
         }

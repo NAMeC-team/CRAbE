@@ -135,6 +135,7 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(PrepareKickOffAlly::new()));
                         }else{
                             self.strategies.push(Box::new(PrepareKickOffEnemy::new()));
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                         println!("prepare kick off {:?}",team);
                     }
@@ -142,6 +143,7 @@ impl Manager for GameManager {
                         println!("prepare penalty {:?}",team);
                         if team != world.team_color {
                             self.strategies.push(Box::new(PreparePenaltyEnemy::new()));
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                     }
                     StoppedState::BallPlacement(team) => {
@@ -160,7 +162,7 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(Defender::new(DEFENDER1_ID, true)));
                             self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         } else {
-                            return; // Wait for the ball leaving the middle circle
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                     }
                     RunningState::Penalty(team) => {
@@ -188,6 +190,7 @@ impl Manager for GameManager {
                             self.strategies.push(Box::new(Defender::new(DEFENDER2_ID, false)));
                         }else{
                             self.strategies.push(Box::new(PrepareFreeKickEnemy::new()));
+                            self.strategies.push(Box::new(GoOutFromBall::new()));
                         }
                     }
                     RunningState::Run => {
