@@ -75,8 +75,8 @@ impl Strategy for Shooter {
         let aligne_oriented_to_opponent_side = dir_shooting_line.intersection(&world.geometry.enemy_goal.front_line).is_some();
         match self.state {
             ShooterState::PlaceForShoot => {
-                if (aligne_to_shoot && aligne_with_goal_target) || 
-                    (robot_pos.x < 0. && aligne_oriented_to_opponent_side) && 
+                if ((aligne_to_shoot && aligne_with_goal_target) || 
+                    (robot_pos.x < 0. && aligne_oriented_to_opponent_side)) && 
                     (((behind_ball_pos - robot_pos).norm() <= 0.1 || dot_with_ball > 0.93)){
                     self.state = ShooterState::Shoot
                 }
@@ -88,7 +88,7 @@ impl Strategy for Shooter {
                     (aligne_to_shoot || aligne_oriented_to_opponent_side) {
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
-                action_wrapper.push(self.id, MoveTo::new(ball_pos + (ball_pos - robot_pos).mul(10.), vectors::angle_to_point(goal_pos, robot_pos), 1.,  kick, false, true));
+                action_wrapper.push(self.id, MoveTo::new(ball_pos + (ball_pos - robot_pos), vectors::angle_to_point(goal_pos, robot_pos), 1.,  kick, false, true));
                 if ball_avoidance || dist_to_ball > 0.4{
                     self.state = ShooterState::PlaceForShoot;
                 }

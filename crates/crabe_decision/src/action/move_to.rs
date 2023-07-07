@@ -143,18 +143,18 @@ impl MoveTo {
         if dist_to_target >= 0.15 {
             let mut repulsive_strength_sum = Vector2::new(0.0, 0.0);
             if GameManager::bot_in_trajectory(world, robot.id, target){
-                world.allies_bot.iter()
-                    // Our robot id is not an obstacle
-                    .filter(|(id, _)| **id != robot.id)
-                    .for_each(|(_, ally)| {
+                // world.allies_bot.iter()
+                //     // Our robot id is not an obstacle
+                //     .filter(|(id, _)| **id != robot.id)
+                //     .for_each(|(_, ally)| {
 
-                        dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
+                //         dist_to_obst = distance(&robot.pose.position, &ally.pose.position);
 
-                        if dist_to_obst < OBSTACLE_RADIUS {
-                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
-                        }
-                    }
-                );
+                //         if dist_to_obst < OBSTACLE_RADIUS {
+                //             repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &ally.pose.position);
+                //         }
+                //     }
+                // );
 
                 world.enemies_bot.iter()
                     .for_each(|(_, enemy)| {
