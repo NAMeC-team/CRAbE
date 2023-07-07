@@ -61,6 +61,9 @@ impl FilterPipeline {
             post_filters.push(Box::new(AutoRefFilter));
         } else {
             post_filters.push(Box::new(RobotFilter));
+            filters.push(Box::new(PassthroughFilter));
+            filters.push(Box::new(VelocityAccelerationFilter));
+            filters.push(Box::<InactiveFilter>::default());
             post_filters.push(Box::new(BallFilter));
         }
 
@@ -70,9 +73,6 @@ impl FilterPipeline {
 
         if common_config.gc {
             pre_filters.push(Box::new(GameControllerPreFilter));
-            filters.push(Box::new(PassthroughFilter));
-            filters.push(Box::new(VelocityAccelerationFilter));
-            filters.push(Box::<InactiveFilter>::default());
             post_filters.push(Box::<GameControllerPostFilter>::default());
         }
 
