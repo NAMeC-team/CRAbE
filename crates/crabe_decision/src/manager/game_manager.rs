@@ -10,7 +10,7 @@ use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{GameState, RunningState, StoppedState};
 use crabe_math::shape::Line;
 use nalgebra::Point2;
-use crabe_framework::data::world::{World, Robot, AllyInfo, EnemyInfo};
+use crabe_framework::data::world::{World, Robot, AllyInfo, EnemyInfo, HaltedState};
 use crate::constants::{KEEPER_ID, ATTACKER1_ID, ATTACKER2_ID, DEFENDER1_ID, DEFENDER2_ID, PIVOT_ID};
 
 /// The `Manual` struct represents a decision manager that executes strategies manually
@@ -121,9 +121,14 @@ impl Manager for GameManager {
             action_wrapper.clear();
 
             match world.data.state {
-                GameState::Halted(_) => {
-                    println!("halted");
-                }
+                GameState::Halted(halted_state) => match halted_state {
+                    HaltedState::Halt => {
+                        println!("halt")
+                    },
+                    HaltedState::Timeout => {
+                        println!("timeout")
+                    }
+                } 
                 GameState::Stopped(stopped_state) => match stopped_state {
                     StoppedState::Stop => {
                         println!("stop");
