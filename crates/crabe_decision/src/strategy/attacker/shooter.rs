@@ -1,10 +1,12 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
+use crate::manager::game_manager::GameManager;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::{Point2};
+use std::f64::consts::PI;
 use std::ops::{Add, Mul};
 use crabe_math::vectors::{self, vector_from_angle};
 use crabe_math::shape::Line;
@@ -66,7 +68,8 @@ impl Strategy for Shooter {
         let dir_shooting_line: Line = Line::new(robot_pos, robot_pos.add(vector_from_angle(robot.pose.orientation).mul(100.)));
         let dir_shooting_line_ball: Line = Line::new(robot_pos, robot_pos.add((ball_pos - robot_pos).mul(100.)));
         let ball_to_goal = goal_pos - ball_pos;
-        let behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.6;
+
+        let mut behind_ball_pos = ball_pos + ball_to_goal.normalize() * -0.3;
         let ball_avoidance: bool = robot_to_ball.normalize().dot(&(goal_pos-ball_pos).normalize()) < 0.;
         let aligne_with_goal_target: bool = dir_shooting_line.intersect(&world.geometry.enemy_goal.front_line);
         let aligne_to_shoot: bool = dir_shooting_line_ball.intersect(&world.geometry.enemy_goal.front_line);
@@ -75,10 +78,20 @@ impl Strategy for Shooter {
         let aligne_oriented_to_opponent_side = dir_shooting_line.intersection(&world.geometry.enemy_goal.front_line).is_some();
         match self.state {
             ShooterState::PlaceForShoot => {
-                if ((behind_ball_pos - robot_pos).norm() <= 0.2 || dot_with_ball > 0.93){
+                if ((aligne_to_shoot && aligne_with_goal_target) || 
+                    (robot_pos.x < 0. && aligne_oriented_to_opponent_side)) && 
+                    (((behind_ball_pos - robot_pos).norm() <= 0.2 || dot_with_ball > 0.93)){
                     self.state = ShooterState::Shoot
                 }
-                action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 0., None, ball_avoidance, false));
+                if ball_avoidance {
+                    let perp_dir=(vectors::rotate_vector((ball_pos - behind_ball_pos), PI/2.)).mul(0.3);
+                    let side = -(perp_dir.dot(&robot_to_ball)).signum();
+                    behind_ball_pos = behind_ball_pos+perp_dir*side;
+                    if GameManager::ball_in_trajectory(world, self.id, behind_ball_pos){
+                        behind_ball_pos = robot_pos + perp_dir * side;
+                    }
+                }
+                action_wrapper.push(self.id, MoveTo::new(behind_ball_pos, vectors::angle_to_point(goal_pos, robot_pos), 0., None, false, false));
             },
             ShooterState::Shoot => {
                 let dist_to_ball = robot_to_ball.norm();
@@ -86,7 +99,7 @@ impl Strategy for Shooter {
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
                 action_wrapper.push(self.id, MoveTo::new(ball_pos + (ball_pos - robot_pos), vectors::angle_to_point(goal_pos, robot_pos), 1.,  kick, false, true));
-                if ball_avoidance || dist_to_ball > 0.4{
+                if ball_avoidance || dist_to_ball > 0.4 {
                     self.state = ShooterState::PlaceForShoot;
                 }
             }
