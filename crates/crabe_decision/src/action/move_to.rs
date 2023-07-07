@@ -156,16 +156,16 @@ impl MoveTo {
                 //     }
                 // );
 
-                world.enemies_bot.iter()
-                    .for_each(|(_, enemy)| {
-                        // Distance from our robot and the ally obstacle
-                        dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
+                // world.enemies_bot.iter()
+                //     .for_each(|(_, enemy)| {
+                //         // Distance from our robot and the ally obstacle
+                //         dist_to_obst = distance(&robot.pose.position, &enemy.pose.position);
 
-                        if dist_to_obst < OBSTACLE_RADIUS {
-                            repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
-                        }
-                    }
-                );
+                //         if dist_to_obst < OBSTACLE_RADIUS {
+                //             repulsive_strength_sum += self.repulsive_force(&OBSTACLE_RADIUS, &dist_to_obst, &robot.pose.position, &enemy.pose.position);
+                //         }
+                //     }
+                // );
             }
 
             // avoid ball if tasked
