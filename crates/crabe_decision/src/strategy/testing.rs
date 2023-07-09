@@ -13,4 +13,7 @@ mod go_to_position;
 
 pub use self::robots_formation::RobotsFormation;
 mod follow_ball;
+mod test_vision_moveto;
+
 pub use self::follow_ball::FollowBall;
+pub use self::test_vision_moveto::TestVisionMoveTo;
