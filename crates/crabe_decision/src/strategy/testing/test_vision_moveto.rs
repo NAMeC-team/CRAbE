@@ -1,3 +1,4 @@
+use std::ops::Div;
 use nalgebra::{distance, Point2};
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
@@ -35,7 +36,7 @@ impl TestVisionMoveTo {
 impl Strategy for TestVisionMoveTo {
     fn step(&mut self, world: &World, _: &mut ToolData, action_wrapper: &mut ActionWrapper) -> bool {
         // WARNING : Not clearing the action_wrapper
-        // action_wrapper.clear();
+        action_wrapper.clear();
         let sign = if self.positive_half { 1. } else { -1. };
         let mut finished = world.allies_bot.len() > 0;
         match self.status {
@@ -43,7 +44,7 @@ impl Strategy for TestVisionMoveTo {
                 world.allies_bot.iter()
                     .filter(|(ally_id, _)| self.ids.contains(ally_id))
                     .for_each(|(ally_id, ally_info)| {
-                        let target = Point2::new(*ally_id as f64 * sign, 0.);
+                        let target = Point2::new((*ally_id as f64).div(2.) * sign, 0.);
                         action_wrapper.push(*ally_id, MoveTo::new(
                             target,
                             0., 0., None, false, false),
@@ -61,7 +62,7 @@ impl Strategy for TestVisionMoveTo {
                 world.allies_bot.iter()
                     .filter(|(ally_id, _)| self.ids.contains(ally_id))
                     .for_each(|(ally_id, ally_info)| {
-                        let target_forward = Point2::new(*ally_id as f64 * sign, 1.);
+                        let target_forward = Point2::new((*ally_id as f64).div(2.) * sign, 1.);
                         action_wrapper.push(*ally_id, MoveTo::new(
                             target_forward,
                             0., 0., None, false, false),
@@ -76,7 +77,7 @@ impl Strategy for TestVisionMoveTo {
                 world.allies_bot.iter()
                     .filter(|(ally_id, _)| self.ids.contains(ally_id))
                     .for_each(|(ally_id, ally_info)| {
-                    let target_backwards = Point2::new(*ally_id as f64 * sign, -1.);
+                    let target_backwards = Point2::new((*ally_id as f64).div(2.) * sign, -1.);
                     action_wrapper.push(*ally_id, MoveTo::new(
                         target_backwards,
                         0., 0., None, false, false),
