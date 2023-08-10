@@ -9,17 +9,17 @@ authors = ["NAMeC"]
 [dependencies]
 prost = "0.11.9"
 bytes= "1.4"
-log = "0.4.18"
-clap = { version = "4.3.0", features = ["derive"] }
+log = "0.4.19"
+clap = { version = "4.3.21", features = ["derive"] }
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
 flume = "0.10.14"
-tokio = { version = "1.28.2", features = ["full"] }
+tokio = { version = "1.30.0", features = ["full"] }
 tungstenite = "0.19.0"
 futures-util = "0.3.28"
 tokio-tungstenite = "0.19.0"
-serde = { version= "1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
+serde = { version= "1.0.183", features = ["derive"] }
+serde_json = "1.0.104"
 serialport = { git= "https://github.com/metta-systems/serialport-rs.git" }
-serde_with = "3.0.0"
+serde_with = "3.2.0"
 socket2 = "0.5.3"
