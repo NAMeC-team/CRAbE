@@ -22,6 +22,11 @@ impl Square {
 }
 
 impl Strategy for Square {
+
+    fn name(&self) -> &'static str {
+        "Square"
+    }
+
     /// Executes the Square strategy.
     ///
     /// This strategy commands the robot with the specified ID to move in a square shape in a
