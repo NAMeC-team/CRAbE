@@ -20,16 +20,16 @@ pub enum HaltedState {
 #[serde(rename_all="camelCase")]
 pub enum StoppedState {
     Stop,
-    PrepareKickoff,
-    PreparePenalty,
-    BallPlacement
+    PrepareKickoff(TeamColor),
+    PreparePenalty(TeamColor),
+    BallPlacement(TeamColor)
 }
 
 #[derive(Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[serde(rename_all="camelCase")]
 pub enum RunningState {
     KickOff(TeamColor),
-    Penalty,
-    FreeKick,
+    Penalty(TeamColor),
+    FreeKick(TeamColor),
     Run
 }
