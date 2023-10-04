@@ -1,7 +1,7 @@
 use crate::data::{FilterData, TrackedBall, TrackedRobot};
 use crate::filter::Filter;
 use crabe_framework::data::world::{Ball, Pose, Robot, World};
-use ringbuffer::RingBufferRead;
+use ringbuffer::RingBuffer;
 
 fn robot_passthrough<'a, T: 'a + Default>(
     robots: impl Iterator<Item = (&'a u8, &'a mut TrackedRobot<T>)>,

@@ -18,7 +18,7 @@ mod detection {
         use crabe_protocol::protobuf::vision_packet::SslDetectionRobot;
         use log::warn;
         use nalgebra::Point2;
-        use ringbuffer::RingBufferWrite;
+        use ringbuffer::RingBuffer;
 
         pub struct RobotDetectionInfo<'a> {
             pub detected_blue: &'a [SslDetectionRobot],
