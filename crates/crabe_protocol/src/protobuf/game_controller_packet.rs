@@ -274,7 +274,7 @@ pub mod game_event {
         /// the difference \[m/s\] of the velocity of the two bots
         #[prost(float, optional, tag = "5")]
         pub speed_diff: ::core::option::Option<f32>,
-        /// the angle \[rad\] in the range [0, π] of the bot velocity vectors
+        /// the angle \[rad\] in the range \[0, π\] of the bot velocity vectors
         /// an angle of 0 rad (  0°) means, the bots barely touched each other
         /// an angle of π rad (180°) means, the bots crashed frontal into each other
         #[prost(float, optional, tag = "6")]
@@ -302,7 +302,7 @@ pub mod game_event {
         /// the difference \[m/s\] of the velocity of the two bots
         #[prost(float, optional, tag = "6")]
         pub speed_diff: ::core::option::Option<f32>,
-        /// the angle \[rad\] in the range [0, π] of the bot velocity vectors
+        /// the angle \[rad\] in the range \[0, π\] of the bot velocity vectors
         /// an angle of 0 rad (  0°) means, the bots barely touched each other
         /// an angle of π rad (180°) means, the bots crashed frontal into each other
         #[prost(float, optional, tag = "7")]

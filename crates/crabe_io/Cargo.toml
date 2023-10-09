@@ -7,19 +7,19 @@ authors = ["NAMeC"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-prost = "0.11.9"
-bytes= "1.4"
-log = "0.4.19"
-clap = { version = "4.3.21", features = ["derive"] }
+prost = "0.12.1"
+bytes= "1.5"
+log = "0.4.20"
+clap = { version = "4.4.6", features = ["derive"] }
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
-flume = "0.10.14"
-tokio = { version = "1.30.0", features = ["full"] }
-tungstenite = "0.19.0"
+flume = "0.11.0"
+tokio = { version = "1.32.0", features = ["full"] }
+tungstenite = "0.20.1"
 futures-util = "0.3.28"
-tokio-tungstenite = "0.19.0"
-serde = { version= "1.0.183", features = ["derive"] }
-serde_json = "1.0.104"
+tokio-tungstenite = "0.20.1"
+serde = { version= "1.0.188", features = ["derive"] }
+serde_json = "1.0.107"
 serialport = { git= "https://github.com/metta-systems/serialport-rs.git" }
-serde_with = "3.2.0"
-socket2 = "0.5.3"
+serde_with = "3.3.0"
+socket2 = "0.5.4"
