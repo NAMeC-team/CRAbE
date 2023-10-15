@@ -39,7 +39,7 @@ impl Guard for SpeedGuard {
             // Replacing any NaN values that might be computed to 0.
             // nalgebra docs mention you shouldn't compare with f32::NaN and should use the .is_nan() method instead
             if command.forward_velocity.is_nan() {
-                warn!("Tried to send NaN instead of a value in command.forward_velocity. Changing it to 0.");
+                warn!("An attempt was made to send NaN instead of a valid value in forward_velocity. It has been adjusted to 0.");
                 command.forward_velocity = 0.;
             } else {
                 command.forward_velocity = command
@@ -48,7 +48,7 @@ impl Guard for SpeedGuard {
             }
 
             if command.left_velocity.is_nan() {
-                warn!("Tried to send NaN instead of a value in command.left_velocity. Changing it to 0.");
+                warn!("An attempt was made to send NaN instead of a valid value in left_velocity. It has been adjusted to 0.");
                 command.left_velocity = 0.;
             } else {
                 command.left_velocity = command
@@ -57,7 +57,7 @@ impl Guard for SpeedGuard {
             }
 
             if command.angular_velocity.is_nan() {
-                warn!("Tried to send NaN instead of a value in command.angular_velocity. Changing it to 0.");
+                warn!("An attempt was made to send NaN instead of a valid value in angular_velocity. It has been adjusted to 0.");
                 command.angular_velocity = command
                     .angular_velocity
                     .clamp(-self.max_angular, self.max_angular);
