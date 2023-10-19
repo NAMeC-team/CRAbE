@@ -12,6 +12,10 @@ pub mod testing;
 /// through an `ActionWrapper` instance. A strategy can run for multiple time steps, until it decides to
 /// terminate by returning `true` from the `step` method.
 pub trait Strategy {
+
+    /// Name of the strategy, that we use as simple reference
+    fn name(&self) -> &'static str;
+
     /// Executes one step of the strategy, updating the state of the robot and issuing commands
     /// to it through the given `ActionWrapper`.
     ///
