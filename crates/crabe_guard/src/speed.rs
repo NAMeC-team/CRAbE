@@ -1,3 +1,4 @@
+use log::warn;
 use crate::constant::{MAX_ANGULAR, MAX_LINEAR};
 use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
@@ -35,15 +36,33 @@ impl Guard for SpeedGuard {
         _tool_commands: &mut ToolCommands,
     ) {
         commands.iter_mut().for_each(|(_id, command)| {
-            command.forward_velocity = command
-                .forward_velocity
-                .clamp(-self.max_linear, self.max_linear);
-            command.left_velocity = command
-                .left_velocity
-                .clamp(-self.max_linear, self.max_linear);
-            command.angular_velocity = command
-                .angular_velocity
-                .clamp(-self.max_angular, self.max_angular);
+            // Replacing any NaN values that might be computed to 0.
+            // nalgebra docs mention you shouldn't compare with f32::NaN and should use the .is_nan() method instead
+            if command.forward_velocity.is_nan() {
+                warn!("An attempt was made to send NaN instead of a valid value in forward_velocity. It has been adjusted to 0.");
+                command.forward_velocity = 0.;
+            } else {
+                command.forward_velocity = command
+                    .forward_velocity
+                    .clamp(-self.max_linear, self.max_linear);
+            }
+
+            if command.left_velocity.is_nan() {
+                warn!("An attempt was made to send NaN instead of a valid value in left_velocity. It has been adjusted to 0.");
+                command.left_velocity = 0.;
+            } else {
+                command.left_velocity = command
+                    .left_velocity
+                    .clamp(-self.max_linear, self.max_linear);
+            }
+
+            if command.angular_velocity.is_nan() {
+                warn!("An attempt was made to send NaN instead of a valid value in angular_velocity. It has been adjusted to 0.");
+                command.angular_velocity = command
+                    .angular_velocity
+                    .clamp(-self.max_angular, self.max_angular);
+            }
+
         });
     }
 }
