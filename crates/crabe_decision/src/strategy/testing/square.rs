@@ -22,7 +22,6 @@ impl Square {
 }
 
 impl Strategy for Square {
-
     fn name(&self) -> &'static str {
         "Square"
     }
