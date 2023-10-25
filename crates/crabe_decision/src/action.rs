@@ -76,8 +76,8 @@ impl ActionWrapper {
 
     /// Clears the sequence of actions to be executed of all robot.
     pub fn clear_all(&mut self) {
-        self.actions.iter_mut().for_each(|(_, sequencer)| {
-            sequencer.clear();
+        self.actions.for_each(|(_, action)| {
+            action.clear();
         })
     }
 
