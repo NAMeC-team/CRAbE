@@ -1,7 +1,7 @@
 use crate::data::world::{Team, TeamColor};
 use serde::Serialize;
 
-/// The `GameState` struct represents the state of the SSL game, including the teams and which team is on the positive half of the field.
+/// The `GameData` struct represents the state of the SSL game, including the teams and which team is on the positive half of the field.
 #[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct GameData {
@@ -14,7 +14,7 @@ pub struct GameData {
 }
 
 impl GameData {
-    /// Creates a new `GameState` with the given `team_color` as the team color for the ally team, and the opposite team color for the enemy team.
+    /// Creates a new `GameData` with the given `team_color` as the team color for the ally team, and the opposite team color for the enemy team.
     pub fn new(team_color: TeamColor) -> Self {
         Self {
             ally: Team::with_color(team_color),
