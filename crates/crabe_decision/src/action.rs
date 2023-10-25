@@ -68,10 +68,17 @@ impl ActionWrapper {
     /// # Arguments
     ///
     /// * `id`: The id of the robot whose sequence of actions will be cleared.
-    pub fn clean(&mut self, id: u8) {
+    pub fn clear(&mut self, id: u8) {
         if let Some(sequencer) = self.actions.get_mut(&id) {
             sequencer.clear();
         }
+    }
+
+    /// Clears the sequence of actions to be executed of all robot.
+    pub fn clear_all(&mut self) {
+        self.actions.iter_mut().for_each(|(_, sequencer)| {
+            sequencer.clear();
+        })
     }
 
     /// Computes the sequence of actions to be executed for each robot and returns a
