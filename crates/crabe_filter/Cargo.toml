@@ -8,7 +8,7 @@ authors = ["NAMeC"]
 
 [dependencies]
 log = "0.4.20"
-clap = { version = "4.4.6", features = ["derive"] }
+clap = { version = "4.4.7", features = ["derive"] }
 nalgebra = "0.32.3"
 ringbuffer = "0.15.0"
 chrono="0.4.31"
