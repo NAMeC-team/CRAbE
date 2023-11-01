@@ -38,7 +38,7 @@ impl TestVisionMoveTo {
 impl Strategy for TestVisionMoveTo {
     fn step(&mut self, world: &World, _: &mut ToolData, action_wrapper: &mut ActionWrapper) -> bool {
         // WARNING : Not clearing the action_wrapper leads to stuttering
-        action_wrapper.clear();
+        action_wrapper.clear_all();
         let sign = if self.positive_half { 1. } else { -1. };
         let mut y_target = 0.;
         let mut next_status = TestVisionMoveToStatus::MovingForward;
