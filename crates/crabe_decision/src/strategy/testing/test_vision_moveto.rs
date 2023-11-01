@@ -35,6 +35,10 @@ impl TestVisionMoveTo {
 }
 
 impl Strategy for TestVisionMoveTo {
+    fn name(&self) -> &'static str {
+        "TestVisionMoveTo"
+    }
+
     fn step(&mut self, world: &World, _: &mut ToolData, action_wrapper: &mut ActionWrapper) -> bool {
         // WARNING : Not clearing the action_wrapper leads to stuttering
         action_wrapper.clear_all();
@@ -71,9 +75,5 @@ impl Strategy for TestVisionMoveTo {
         }
 
         false
-    }
-
-    fn name(&self) -> &'static str {
-        "TestVisionMoveTo"
     }
 }
