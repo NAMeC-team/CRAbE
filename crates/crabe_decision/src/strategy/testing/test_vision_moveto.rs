@@ -2,13 +2,12 @@ use std::ops::Div;
 use nalgebra::{distance, Point2};
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{AllyInfo, RobotMap, World};
-use crate::action::{Actions, ActionWrapper};
+use crabe_framework::data::world::World;
+use crate::action::ActionWrapper;
 use crate::action::move_to::MoveTo;
-use crate::action::order_raw::RawOrder;
 use crate::strategy::Strategy;
 
-const DIST_TARGET_REACHED: f64 = 0.25;
+const DIST_TARGET_REACHED: f64 = 0.1;
 
 #[derive(Debug)]
 enum TestVisionMoveToStatus {
@@ -58,17 +57,14 @@ impl Strategy for TestVisionMoveTo {
         }
 
         // Move robots
-        let mut change_status = false;
+        let mut change_status = true;
 
         world.allies_bot.iter()
             .filter(|(ally_id, _)| self.ids.contains(ally_id))
             .for_each(|(ally_id, ally_info)| {
                 let target = Point2::new((*ally_id as f64).div(2.) * sign, y_target);
-                action_wrapper.push(*ally_id, MoveTo::new(
-                    target,
-                    0., 0., None, false, false),
-                );
-                change_status = distance(&target, &ally_info.pose.position) <= DIST_TARGET_REACHED
+                action_wrapper.push(*ally_id, MoveTo::new(target, 0.));
+                change_status = change_status && distance(&target, &ally_info.pose.position) <= DIST_TARGET_REACHED
             });
         if change_status {
             self.status = next_status;
