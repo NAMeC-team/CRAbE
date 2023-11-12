@@ -1,5 +1,5 @@
-use crabe_math::shape::Line;
 use nalgebra::Point2;
+use crabe_math::shape::{Line, Rectangle};
 use serde::Serialize;
 
 /// Represents a goal on a soccer field.
@@ -10,27 +10,47 @@ pub struct Goal {
     pub width: f64,
     /// The depth of the goal, in meters.
     pub depth: f64,
-    /// The top-left corner of the goal, measured from the origin of the field,
-    /// in meters.
-    pub top_left_position: Point2<f64>,
-    /// The bottom-left corner of the goal, measured from the origin of the field,
-    /// in meters.
-    pub bottom_left_position: Point2<f64>,
-    /// The bottom-right corner of the goal, measured from the origin of the field,
-    /// in meters.
-    pub bottom_right_position: Point2<f64>,
-    /// The top-right corner of the goal, measured from the origin of the field,
-    /// in meters.
-    pub top_right_position: Point2<f64>,
-    // The center front point of the goal, measured from the origin of the field,
-    /// in meters.
-    pub center_front_position: Point2<f64>,
-    // The center back point of the goal, measured from the origin of the field,
-    /// in meters.
-    pub center_back_position: Point2<f64>,
+    /// Describes the 4 points of the goal area, in meters
+    pub area: Rectangle,
+    /// Center of the goal, starts from the front of the goal to its inside, parallel to the goal posts
+    pub center_line: Line,
     /// The front line of the goal, measured from the origin of the field,
     /// in meters.
-    pub front_line: Line
+    pub front_line: Line,
 }
 
-impl Goal {}
+impl Goal {
+    pub fn new(width: f64, depth: f64, area: Rectangle, positive: bool) -> Goal {
+
+        let front_line: Line;
+        let center_line: Line;
+
+        if positive {
+            center_line = Line {
+                start: Point2::new(area.center.x + depth, area.center.y + depth),
+                end: Point2::new(area.center.x - depth, area.center.y - depth),
+            };
+            front_line = Line {
+                start: area.top_left,
+                end: area.bottom_left
+            }
+        } else {
+            center_line = Line {
+                start: Point2::new(area.center.x - depth, area.center.y - depth),
+                end: Point2::new(area.center.x + depth, area.center.y + depth),
+            };
+            front_line = Line {
+                start: area.top_right,
+                end: area.bottom_right
+            }
+        };
+
+        Self {
+            width,
+            depth,
+            area,
+            center_line,
+            front_line,
+        }
+    }
+}

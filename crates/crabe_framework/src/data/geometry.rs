@@ -1,4 +1,4 @@
-use crabe_math::shape::{Circle, Line};
+use crabe_math::shape::{Circle, Line, Rectangle};
 use nalgebra::Point2;
 use serde::Serialize;
 
@@ -46,42 +46,47 @@ impl Default for Geometry {
                 length: 9.0,
                 width: 6.0,
             },
-            ally_goal: Goal {
-                width: 1.0,
-                depth: 0.18,
-                top_left_position: Point2::new(-4.68, -0.5),
-                bottom_left_position: Point2::new(-4.5, -0.5),
-                bottom_right_position: Point2::new(-4.5, 0.5),
-                top_right_position: Point2::new(-4.68, 0.5),
-                center_front_position: Point2::new(-4.5, 0.),
-                center_back_position: Point2::new(-4.68, 0.),
-                front_line: Line::new(Point2::new(-4.5, -0.5), Point2::new(-4.5, 0.5)),
-            },
-            enemy_goal: Goal {
-                width: 1.0,
-                depth: 0.18,
-                top_left_position: Point2::new(4.68, 0.5),
-                bottom_left_position: Point2::new(4.5, 0.5),
-                bottom_right_position: Point2::new(4.5, -0.5),
-                top_right_position: Point2::new(4.68, -0.5),
-                center_front_position: Point2::new(4.5, 0.),
-                center_back_position: Point2::new(4.68, 0.),
-                front_line: Line::new(Point2::new(4.5, -0.5), Point2::new(4.5, 0.5)),
-            },
+
+            // You might ask "Why is goal width not the rectangle's width here ???"
+            // To this I answer "No fucking idea"
+            // For some reason the person who chose the names for the Protobuf packet decided
+            // to call the goal 'width' the distance between the two goal posts.
+            // You can't call it 'height' because we're in a 3D world, but why didn't they
+            // call it 'length' then ?
+            //
+            // So instead we're viewing this rectangle as in 2D space, the same way a web
+            // designer would perceive it (width and height attributes in CSS).
+            // Otherwise this wouldn't make any sense, or would require new devs to understand
+            // this peculiar difference here. Let's just hide it
+            ally_goal: Goal::new(
+                1.0, 0.18,
+                Rectangle::new(0.18, 1.0, Point2::new(-4.68, -0.5)),
+                true
+            ),
+            enemy_goal: Goal::new(
+                1.0, 0.18,
+            Rectangle::new(0.18, 1.0, Point2::new(4.68, 0.5)),
+                false
+            ),
             ally_penalty: Penalty {
                 width: 2.0,
                 depth: 1.0,
-                top_left_position: Point2::new(-4.5, -1.0),
+                area: Rectangle::new(
+                    1.0, 2.0, Point2::new(-4.5, -1.0)
+                ),
             },
             enemy_penalty: Penalty {
                 width: 2.0,
                 depth: 1.0,
-                top_left_position: Point2::new(4.5, 1.0),
+                area: Rectangle::new(
+                    1.0, 2.0, Point2::new(4.5, 1.0)
+                ),
             },
             center: Circle {
                 center: Point2::new(0.0, 0.0),
                 radius: 0.5,
             },
         }
+
     }
 }
