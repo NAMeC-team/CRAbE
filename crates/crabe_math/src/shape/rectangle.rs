@@ -15,6 +15,7 @@ use serde::Serialize;
 /// v y
 /// ```
 #[derive(Clone, Serialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct Rectangle {
     /// The width of the rectangle.
     pub width: f64,
