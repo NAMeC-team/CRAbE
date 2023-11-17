@@ -149,9 +149,8 @@ impl System {
             feedback = self.output_component.step(command_map, ToolCommands);
             info!("Execution time : {} μs", &timer.elapsed().as_micros());
             let elapsed = timer.elapsed();
-            let mut sleep_time = _refresh_rate;
             if elapsed <= _refresh_rate {
-                sleep_time = Duration::from(_refresh_rate - timer.elapsed());
+                let sleep_time = Duration::from(_refresh_rate - timer.elapsed());
                 thread::sleep(sleep_time);
             }
             info!("Actual refresh time : {} μs", &timer.elapsed().as_micros());
