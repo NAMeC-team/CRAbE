@@ -1,10 +1,10 @@
 use nalgebra::Point2;
 use crabe_math::shape::{Line, Rectangle};
-use serde::Serialize;
+use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 
 /// Represents a goal on a soccer field.
-#[derive(Serialize, Clone, Debug)]
-#[serde(rename_all = "camelCase")]
+#[derive(Clone, Debug)]
 pub struct Goal {
     /// Describes the 4 points of the goal area, in meters
     pub area: Rectangle,
@@ -53,11 +53,25 @@ impl Goal {
 
     /// The width of the goal, in meters, as defined per the SSL rulebook
     pub fn width(&self) -> &f64 {
-        return &self.area.height;
+         &self.area.height
     }
 
     /// The depth of the goal, in meters, as defined per the SSL rulebook
     pub fn depth(&self) -> &f64 {
-        return &self.area.width;
+        &self.area.width
+    }
+}
+
+impl Serialize for Goal {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where S: Serializer
+    {
+        let num_fields: usize = 3;
+        let mut state
+            = serializer.serialize_struct("Goal", num_fields)?;
+        state.serialize_field("width", &self.area.height)?;
+        state.serialize_field("depth", &self.area.width)?;
+        state.serialize_field("topLeftPosition", &self.area.top_left)?;
+        state.end()
     }
 }

@@ -66,15 +66,11 @@ impl Default for Geometry {
                 false
             ),
             ally_penalty: Penalty {
-                width: 2.0,
-                depth: 1.0,
                 area: Rectangle::new(
                     1.0, 2.0, Point2::new(-4.5, -1.0)
                 ),
             },
             enemy_penalty: Penalty {
-                width: 2.0,
-                depth: 1.0,
                 area: Rectangle::new(
                     1.0, 2.0, Point2::new(4.5, 1.0)
                 ),

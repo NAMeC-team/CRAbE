@@ -33,8 +33,6 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
             let width = 2.0 * line.line.start.y.abs();
             let depth = (line.line.start.x - line.line.end.x).abs();
             Penalty {
-                width,
-                depth,
                 // if below looks weird to you, have a look at data/geometry.rs default values
                 // for more explanations
                 area: Rectangle::new(
@@ -49,8 +47,6 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
             let width = cam_geometry.penalty_area_width.unwrap_or(2.0);
             let depth = cam_geometry.penalty_area_depth.unwrap_or(1.0);
             Penalty {
-                width,
-                depth,
                 area: Rectangle::new(
                     depth, width, Point2::new(
                         factor * (cam_geometry.field_length / 2.0),
