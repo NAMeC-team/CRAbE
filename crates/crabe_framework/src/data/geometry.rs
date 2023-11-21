@@ -47,17 +47,14 @@ impl Default for Geometry {
                 width: 6.0,
             },
 
-            // You might ask "Why is goal width not the rectangle's width here ???"
-            // To this I answer "No fucking idea"
-            // For some reason the person who chose the names for the Protobuf packet decided
-            // to call the goal 'width' the distance between the two goal posts.
-            // You can't call it 'height' because we're in a 3D world, but why didn't they
-            // call it 'length' then ?
-            //
-            // So instead we're viewing this rectangle as in 2D space, the same way a web
-            // designer would perceive it (width and height attributes in CSS).
-            // Otherwise this wouldn't make any sense, or would require new devs to understand
-            // this peculiar difference here. Let's just hide it
+            // -- this is a professional comment
+            // You might ask "Why is goal width not the rectangle's width here ?"
+            // This is because the SSL rulebook defines the penalty and goal areas with different words
+            // (from a non-programmer perspective). Recall that this is a multi-field environment.
+            // So instead we're viewing this rectangle as in 2D space in the code, the same way a web
+            // developer would perceive it (width and height attributes in CSS).
+            // Otherwise this would require new devs to understand
+            // this peculiar difference here. This is merely a choice
             ally_goal: Goal::new(
                 1.0, 0.18,
                 Rectangle::new(0.18, 1.0, Point2::new(-4.68, -0.5)),
