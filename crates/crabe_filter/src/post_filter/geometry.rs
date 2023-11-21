@@ -66,12 +66,9 @@ fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
     Goal::new(
         cam_geometry.goal_width,
         cam_geometry.goal_depth,
-        Rectangle::new(
-            cam_geometry.goal_depth, cam_geometry.goal_width,
-            Point2::new(
-                factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
-                factor * (cam_geometry.goal_width / 2.0),
-            ),
+        Point2::new(
+            factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
+            factor * (cam_geometry.goal_width / 2.0),
         ), positive
     )
 }

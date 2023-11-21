@@ -57,12 +57,12 @@ impl Default for Geometry {
             // this peculiar difference here. This is merely a choice
             ally_goal: Goal::new(
                 1.0, 0.18,
-                Rectangle::new(0.18, 1.0, Point2::new(-4.68, -0.5)),
+                Point2::new(-4.68, -0.5),
                 true
             ),
             enemy_goal: Goal::new(
                 1.0, 0.18,
-            Rectangle::new(0.18, 1.0, Point2::new(4.68, 0.5)),
+            Point2::new(4.68, 0.5),
                 false
             ),
             ally_penalty: Penalty {
