@@ -3,6 +3,8 @@ use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 
 pub mod vision;
+pub mod packet_translation_filter;
+pub mod common;
 
 pub trait PreFilter {
     fn step(
