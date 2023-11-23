@@ -21,7 +21,7 @@ pub struct ProtocolPacketTranslateFilter;
 impl ProtocolPacketTranslateFilter {}
 
 fn to_team_infos(infos: game_controller_packet::referee::TeamInfo) -> TeamInfo {
-    let _infos = TeamInfo {
+    TeamInfo {
         name: infos.name.into(),
         score: infos.score,
         red_cards: infos.red_cards,
@@ -37,8 +37,7 @@ fn to_team_infos(infos: game_controller_packet::referee::TeamInfo) -> TeamInfo {
         bot_substitution_intent: infos.bot_substitution_intent,
         ball_placement_failures_reached: infos.ball_placement_failures_reached,
         bot_substitution_allowed: infos.bot_substitution_allowed,
-    };
-    _infos
+    }
 }
 
 fn map_match_type(match_type: ProtocolMatchType) -> MatchType {
@@ -99,7 +98,7 @@ fn map_team_color(team: ProtocolTeam) -> TeamColor {
 }
 
 fn map_team_color_i32(value: i32) -> TeamColor {
-    map_team_color(ProtocolTeam::from_i32(value).unwrap_or(ProtocolTeam::Unknown))
+    map_team_color(ProtocolTeam::try_from(value).unwrap_or(ProtocolTeam::Unknown))
 }
 
 fn map_point(point: ProtocolPoint) -> Point2<f64> {
@@ -194,7 +193,7 @@ fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
     if let Some(event) = event {
         Some(GameEvent{
             type_event: match game_event.r#type{
-                Some(r#type) => ProtocolType::from_i32(r#type)
+                Some(r#type) =>  ProtocolType::try_from(r#type).ok()
                     .map(map_type),
                 None => None
             },
@@ -458,15 +457,15 @@ fn map_protobuf_referee(
     };
     Ok(Referee {
         source_identifier: packet.source_identifier,
-        match_type: packet.match_type.map(|match_type|ProtocolMatchType::from_i32(match_type).map(map_match_type)).flatten(), // TODO: Handle error
+        match_type: packet.match_type.map(|match_type|ProtocolMatchType::try_from(match_type).ok().map(map_match_type)).flatten(), // TODO: Handle error
         packet_timestamp: create_date_time((packet.packet_timestamp / 1_000_000) as i64),
-        stage: ProtocolStage::from_i32(packet.stage)
+        stage: ProtocolStage::try_from(packet.stage).ok()
             .map(map_stage)
             .ok_or(RefereeDeserializationError)?,
         stage_time_left: packet
             .stage_time_left
             .map(|d| Duration::microseconds(d as i64)),
-        command: ProtocolCommand::from_i32(packet.command)
+        command: ProtocolCommand::try_from(packet.command).ok()
             .map(map_command)
             .ok_or(RefereeDeserializationError)?,
         command_counter: packet.command_counter,
@@ -483,7 +482,7 @@ fn map_protobuf_referee(
         }),
         next_command: packet
             .next_command
-            .map(|c| ProtocolCommand::from_i32(c))
+            .map(|c| ProtocolCommand::try_from(c).ok())
             .flatten()
             .map(map_command),
         game_events: packet.game_events.drain(..).filter_map(map_game_event).collect(),
