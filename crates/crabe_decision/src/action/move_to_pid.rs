@@ -1,4 +1,5 @@
 use std::f64::consts::{FRAC_PI_8, PI};
+use std::time::{Instant};
 use nalgebra::{Isometry2, Point2, Vector2, Vector3};
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
@@ -7,11 +8,11 @@ use crate::action::Action;
 use crate::action::state::State;
 
 /// Proportional factor of the PID controller
-const K_P: f64 = 1.;
+const K_P: f64 = 2.;
 /// Integral factor of the PID controller
-const K_I: f64 = 1.;
+const K_I: f64 = 0.4;
 /// Derivative factor of the PID controller
-const K_D: f64 = 1.;
+const K_D: f64 = 1.6;
 
 /// Number of errors to keep track of when computing
 /// the integrative value of the PID controller
@@ -20,16 +21,35 @@ const PID_NUM_ERRORS: usize = 10;
 /// Maximum tolerance for error to be non-zero
 /// If the error is inferior to this number, error will be considered 0.
 /// The same constants are used to determine whether this action is finished or not.
-const TARGET_ATTAINED_TOL: f64 = 0.01;
-const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 2.;  // in radian !
+const TARGET_ATTAINED_TOL: f64 = 0.1;
+const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 4.;  // in radian !
+
+#[derive(Clone)]
+struct PIDErr {
+    err: Vector3<f64>,
+    timestamp: Instant,
+}
+
+impl Default for PIDErr {
+    fn default() -> Self {
+        Self {
+            err: Vector3::new(0., 0., 0.),
+            timestamp: Instant::now(),
+        }
+    }
+}
+
+impl PIDErr {
+    pub fn new(err: Vector3<f64>, timestamp: Instant) -> Self { Self { err, timestamp } }
+}
 
 /// Stores the number of errors for the PID controller
 /// used in this movement command
 #[derive(Clone)]
 struct PIDErrCounter {
-    /// Stores the errors in position and angle (rounded to 2 pi)
+    /// Stores the errors in position and angle (rounded to 2 pi), and the time at which it was stored
     /// xy store the position error, and z is used to store the angle error
-    errors: Vec<Vector3<f64>>,
+    errors: Vec<PIDErr>,
     /// Maximum number of errors to keep
     /// This is also the size of the errors array
     max_size: usize,
@@ -39,9 +59,34 @@ struct PIDErrCounter {
 }
 
 impl PIDErrCounter {
-    fn current(&self) -> Vector3<f64> { self.errors[self.err_index] }
-    fn sum(&self) -> Vector3<f64> {
-        self.errors.iter().sum()
+    /// Get the previous error computed, which is older than the current error
+    fn previous(&self) -> &PIDErr { &self.errors[self.previous_error_idx()] }
+
+    /// Get the most recent error that has been computed
+    fn current(&self) -> &PIDErr { &self.errors[self.err_index] }
+
+    /// Get the index of the previous error computed in this structure's internal storage
+    fn previous_error_idx(&self) -> usize { ((self.err_index as i16 - 1).rem_euclid(self.max_size as i16)) as usize }
+
+    /// Get the index of the next error in this structure's internal storage
+    fn next_error_idx(&self) -> usize { (self.err_index + 1) % self.max_size }
+
+    /// Approximately compute the integral term of all the error terms we have saved, from oldest to most recent
+    /// In short, this is the integrative term of the PID controller
+    ///
+    /// Here, we do not assume that the time period between two error computations is equal, but that it rather
+    /// fluctuates a little in real life operations (we are directly dependent of the vision data we receive).
+    /// This allows us to be a little more precise in our approximation
+    fn sum(&mut self) -> Vector3<f64> {
+        // we manipulate the PIDErrCounter's current error index to be able
+        // to use one of its methods with ease, without having to replicate a computation already written
+        let mut error_sum = Vector3::new(0., 0., 0.);
+        for _ in 0..PID_NUM_ERRORS {
+            error_sum += self.deriv_prev_curr();
+            self.err_index = self.previous_error_idx();
+        }
+        // it should theoretically put the err_index back at its original value after computation
+        error_sum
     }
 
     /// Replaces the error at the current index with
@@ -50,8 +95,9 @@ impl PIDErrCounter {
         // vec was filled with 0. on init
         // this unwrap() shouldn't panic (in theory)
         let old_err = self.errors.get_mut(self.err_index).unwrap();
-        *old_err = err_value;
-        self.err_index = (self.err_index + 1) % self.max_size;
+        *old_err = PIDErr::new(err_value, Instant::now());
+
+        self.err_index = self.next_error_idx();
     }
 
     /// Computes the error sum between the previous and
@@ -59,8 +105,20 @@ impl PIDErrCounter {
     /// Similar to the derivative term of the movement of the robot.
     /// This must be called after computing the current position error for the robot
     fn deriv_prev_curr(&self) -> Vector3<f64> {
-        let idx_prev = ((self.err_index as i16 - 1).rem_euclid(self.max_size as i16)) as usize ;
-        self.errors[idx_prev] - self.errors[self.err_index]
+        let prev = self.previous();
+        let cur = self.current();
+        let mut time_delta: f64 = cur.timestamp
+            .duration_since(prev.timestamp)
+            .as_secs_f64();
+
+        // time_delta could be 0. (idk why). we prevent this
+        if time_delta == 0. {
+            // TODO: Identify why time_delta can be 0.
+            // oh and this is the value of our refresh rate by the way
+            // this is because we force ourselves to have a strict refresh rate. See `crates/crabe/src/main.rs`
+            time_delta = 0.016;
+        }
+        (prev.err - cur.err) / time_delta
     }
 }
 
@@ -78,15 +136,12 @@ pub struct MoveToPID {
 
 impl MoveToPID {
     pub fn new(target: Point2<f64>, orientation: f64) -> Self {
-        let mut zero_vec: Vec<Vector3<f64>> = Vec::new();
-        zero_vec.fill(Vector3::new(0., 0., 0.));
-
         Self {
             state: State::Running,
             target,
             orientation,
             error_tracker: PIDErrCounter {
-                errors: vec![Vector3::new(0., 0., 0.); PID_NUM_ERRORS],
+                errors: vec![PIDErr::default(); PID_NUM_ERRORS],
                 max_size: PID_NUM_ERRORS,
                 err_index: 0,
             }
@@ -120,7 +175,7 @@ impl MoveToPID {
         // consider error is 0. if is it superior to max tolerance
         computed_err.x = if pos_err.x.abs() > TARGET_ATTAINED_TOL { pos_err.x } else { 0. };
         computed_err.y = if pos_err.y.abs() > TARGET_ATTAINED_TOL { pos_err.y } else { 0. };
-        // computed_err.z = if err_theta.abs() > THETA_ATTAINED_TOL { err_theta } else { 0. };
+        computed_err.z = if err_theta.abs() > THETA_ATTAINED_TOL { err_theta } else { 0. };
 
         // dbg!(&computed_err.y);
 
@@ -143,16 +198,18 @@ impl Action for MoveToPID {
             let current_error = self.error_to_target(robot, self.target, self.orientation);
             self.error_tracker.save(current_error);
 
-            if current_error.norm() == 0. {
+            if current_error.xy().norm() <= TARGET_ATTAINED_TOL {
+                self.state = State::Done;
                 return Command::default();
             }
 
             // compute in order, the factors of the PID
-            let p =  K_P * self.error_tracker.current();
+            let p =  K_P * self.error_tracker.current().err;
             let i = K_I * self.error_tracker.sum();
             let d = K_D * self.error_tracker.deriv_prev_curr();
 
             let vec_command: Vector3<f64> = p + i + d;
+            // dbg!(&vec_command);
 
             Command {
                 // assuming that the precision lost by casting can be ignored/neglected
