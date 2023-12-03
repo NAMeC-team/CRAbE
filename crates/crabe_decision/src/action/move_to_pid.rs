@@ -168,7 +168,7 @@ impl MoveToPID {
         let robot_basis = self.robot_basis(robot).inverse();
         let pos_err = robot_basis * target_position;
         // TODO: error angle should be higher when far from target, and very small when close to it
-        let err_theta= target_orientation - robot.pose.orientation;
+        let err_theta= self.angle_wrap(target_orientation - robot.pose.orientation);
 
         // dbg!(&pos_err.y);
 
