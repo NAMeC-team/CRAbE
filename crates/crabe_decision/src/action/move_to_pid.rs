@@ -16,7 +16,7 @@ const K_D: f64 = 1.6;
 
 /// Number of errors to keep track of when computing
 /// the integrative value of the PID controller
-const PID_NUM_ERRORS: usize = 10;
+const PID_NUM_ERRORS: usize = 100;
 
 /// Maximum tolerance for error to be non-zero
 /// If the error is inferior to this number, error will be considered 0.
@@ -96,8 +96,6 @@ impl PIDErrCounter {
         // this unwrap() shouldn't panic (in theory)
         let old_err = self.errors.get_mut(self.err_index).unwrap();
         *old_err = PIDErr::new(err_value, Instant::now());
-
-        self.err_index = self.next_error_idx();
     }
 
     /// Computes the error sum between the previous and
@@ -208,8 +206,16 @@ impl Action for MoveToPID {
             let i = K_I * self.error_tracker.sum();
             let d = K_D * self.error_tracker.deriv_prev_curr();
 
-            let vec_command: Vector3<f64> = p + i + d;
-            // dbg!(&vec_command);
+            let vec_command: Vector3<f64> = p;
+
+            dbg!(&self.error_tracker.err_index);
+            dbg!(&vec_command);
+
+            // after computing the PID control values, we increase the index of the current error by one
+            // this is necessary, otherwise we'll always replace the value at index 0
+            // it has to be at the end of the computations, otherwise you're gonna compute orders
+            // for an error of 0. (the default value with which it was initialized)
+            self.error_tracker.err_index = self.error_tracker.next_error_idx();
 
             Command {
                 // assuming that the precision lost by casting can be ignored/neglected
