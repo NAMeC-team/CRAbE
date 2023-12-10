@@ -8,11 +8,11 @@ use crate::action::Action;
 use crate::action::state::State;
 
 /// Proportional factor of the PID controller
-const K_P: f64 = 2.;
+const K_P: f64 = 2.5;
 /// Integral factor of the PID controller
-const K_I: f64 = 0.4;
+const K_I: f64 = 0.3;
 /// Derivative factor of the PID controller
-const K_D: f64 = 1.6;
+const K_D: f64 = 1.;
 
 /// Number of errors to keep track of when computing
 /// the integrative value of the PID controller
@@ -24,23 +24,23 @@ const PID_NUM_ERRORS: usize = 100;
 const TARGET_ATTAINED_TOL: f64 = 0.1;
 const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 4.;  // in radian !
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 struct PIDErr {
     err: Vector3<f64>,
-    timestamp: Instant,
+    timestamp: Option<Instant>,
 }
 
 impl Default for PIDErr {
     fn default() -> Self {
         Self {
             err: Vector3::new(0., 0., 0.),
-            timestamp: Instant::now(),
+            timestamp: None,
         }
     }
 }
 
 impl PIDErr {
-    pub fn new(err: Vector3<f64>, timestamp: Instant) -> Self { Self { err, timestamp } }
+    pub fn new(err: Vector3<f64>, timestamp: Option<Instant>) -> Self { Self { err, timestamp } }
 }
 
 /// Stores the number of errors for the PID controller
@@ -95,7 +95,7 @@ impl PIDErrCounter {
         // vec was filled with 0. on init
         // this unwrap() shouldn't panic (in theory)
         let old_err = self.errors.get_mut(self.err_index).unwrap();
-        *old_err = PIDErr::new(err_value, Instant::now());
+        *old_err = PIDErr::new(err_value, Some(Instant::now()));
     }
 
     /// Computes the error sum between the previous and
@@ -103,11 +103,21 @@ impl PIDErrCounter {
     /// Similar to the derivative term of the movement of the robot.
     /// This must be called after computing the current position error for the robot
     fn deriv_prev_curr(&self) -> Vector3<f64> {
+
         let prev = self.previous();
         let cur = self.current();
-        let mut time_delta: f64 = cur.timestamp
-            .duration_since(prev.timestamp)
-            .as_secs_f64();
+
+        let mut time_delta = 0.016;
+
+        // if one of the values is None, we consider no derivative can be estimated
+        // this only happens like once during the whole program, so whatever
+        if let Some(prev_timestamp) = prev.timestamp {
+            if let Some(cur_timestamp) = cur.timestamp {
+                time_delta = cur_timestamp.duration_since(prev_timestamp).as_secs_f64();
+            }
+        } else {
+            return Vector3::new(0., 0., 0.);
+        }
 
         // time_delta could be 0. (idk why). we prevent this
         if time_delta == 0. {
@@ -116,7 +126,7 @@ impl PIDErrCounter {
             // this is because we force ourselves to have a strict refresh rate. See `crates/crabe/src/main.rs`
             time_delta = 0.016;
         }
-        (prev.err - cur.err) / time_delta
+        (dbg!(cur.err) - dbg!(prev.err)) / time_delta
     }
 }
 
@@ -142,7 +152,7 @@ impl MoveToPID {
                 errors: vec![PIDErr::default(); PID_NUM_ERRORS],
                 max_size: PID_NUM_ERRORS,
                 err_index: 0,
-            }
+            },
         }
     }
 
@@ -166,16 +176,12 @@ impl MoveToPID {
         let robot_basis = self.robot_basis(robot).inverse();
         let pos_err = robot_basis * target_position;
         // TODO: error angle should be higher when far from target, and very small when close to it
-        let err_theta= self.angle_wrap(target_orientation - robot.pose.orientation);
-
-        // dbg!(&pos_err.y);
+        let err_theta= self.angle_wrap(target_orientation - robot.pose.orientation);  //TODO: how do i do dis ?
 
         // consider error is 0. if is it superior to max tolerance
         computed_err.x = if pos_err.x.abs() > TARGET_ATTAINED_TOL { pos_err.x } else { 0. };
         computed_err.y = if pos_err.y.abs() > TARGET_ATTAINED_TOL { pos_err.y } else { 0. };
         computed_err.z = if err_theta.abs() > THETA_ATTAINED_TOL { err_theta } else { 0. };
-
-        // dbg!(&computed_err.y);
 
         computed_err
     }
@@ -196,6 +202,7 @@ impl Action for MoveToPID {
             let current_error = self.error_to_target(robot, self.target, self.orientation);
             self.error_tracker.save(current_error);
 
+            // Stop the robot if it has attained its destination
             if current_error.xy().norm() <= TARGET_ATTAINED_TOL {
                 self.state = State::Done;
                 return Command::default();
@@ -206,9 +213,9 @@ impl Action for MoveToPID {
             let i = K_I * self.error_tracker.sum();
             let d = K_D * self.error_tracker.deriv_prev_curr();
 
-            let vec_command: Vector3<f64> = p;
+            dbg!(&i);
+            let vec_command: Vector3<f64> = p + i + d;
 
-            dbg!(&self.error_tracker.err_index);
             dbg!(&vec_command);
 
             // after computing the PID control values, we increase the index of the current error by one
@@ -229,5 +236,6 @@ impl Action for MoveToPID {
         } else {
             Command::default()
         }
+
     }
 }
