@@ -10,7 +10,7 @@ use crate::action::state::State;
 /// Proportional factor of the PID controller
 const K_P: f64 = 2.5;
 /// Integral factor of the PID controller
-const K_I: f64 = 0.3;
+const K_I: f64 = 0.9;
 /// Derivative factor of the PID controller
 const K_D: f64 = 1.;
 
@@ -78,14 +78,26 @@ impl PIDErrCounter {
     /// fluctuates a little in real life operations (we are directly dependent of the vision data we receive).
     /// This allows us to be a little more precise in our approximation
     fn sum(&mut self) -> Vector3<f64> {
-        // we manipulate the PIDErrCounter's current error index to be able
-        // to use one of its methods with ease, without having to replicate a computation already written
         let mut error_sum = Vector3::new(0., 0., 0.);
         for _ in 0..PID_NUM_ERRORS {
-            error_sum += self.deriv_prev_curr();
+            let cur = self.current();
+            let prev = self.previous();
+
+            let mut delta = 1.;
+
+            if let Some(cur_timestamp) = cur.timestamp {
+                delta = match prev.timestamp {
+                    Some(prev_timestamp) => cur_timestamp.duration_since(prev_timestamp).as_secs_f64(),
+                    None => 0.,
+                }
+            }
+
+            // approximation of integral term using trapezoidal rule
+            error_sum += delta * ((1./2.) * (cur.err + prev.err));
+
             self.err_index = self.previous_error_idx();
         }
-        // it should theoretically put the err_index back at its original value after computation
+
         error_sum
     }
 
@@ -102,11 +114,7 @@ impl PIDErrCounter {
     /// the current error.
     /// Similar to the derivative term of the movement of the robot.
     /// This must be called after computing the current position error for the robot
-    fn deriv_prev_curr(&self) -> Vector3<f64> {
-
-        let prev = self.previous();
-        let cur = self.current();
-
+    fn deriv_prev_curr(&self, prev: &PIDErr, cur: &PIDErr) -> Vector3<f64> {
         let mut time_delta = 0.016;
 
         // if one of the values is None, we consider no derivative can be estimated
@@ -211,7 +219,7 @@ impl Action for MoveToPID {
             // compute in order, the factors of the PID
             let p =  K_P * self.error_tracker.current().err;
             let i = K_I * self.error_tracker.sum();
-            let d = K_D * self.error_tracker.deriv_prev_curr();
+            let d = K_D * self.error_tracker.deriv_prev_curr(self.error_tracker.previous(), self.error_tracker.current());
 
             dbg!(&i);
             let vec_command: Vector3<f64> = p + i + d;
