@@ -23,12 +23,6 @@ pub struct Rectangle {
     pub height: f64,
     /// The position of the rectangle's top-left corner.
     pub top_left: Point2<f64>,
-    /// The position of the rectangle's top-right corner.
-    pub top_right: Point2<f64>,
-    /// The position of the rectangle's bottom-left corner.
-    pub bottom_left: Point2<f64>,
-    /// The position of the rectangle's bottom-right corner.
-    pub bottom_right: Point2<f64>,
     /// The position of the rectangle's center.
     pub center: Point2<f64>,
 }
@@ -40,10 +34,19 @@ impl Rectangle {
             width,
             height,
             top_left,
-            top_right: Point2::new(top_left.x + width, top_left.y),
-            bottom_left: Point2::new(top_left.x, top_left.y - height),
-            bottom_right: Point2::new(top_left.x + width, top_left.y - height),
             center: Point2::new(top_left.x + (width / 2.), top_left.y - (height / 2.)),
         }
+    }
+
+    pub fn top_right(&self) -> Point2<f64> {
+        Point2::new(self.top_left.x + self.width, self.top_left.y)
+    }
+
+    pub fn bottom_right(&self) -> Point2<f64> {
+        Point2::new(self.top_left.x + self.width, self.top_left.y - self.height)
+    }
+
+    pub fn bottom_left(&self) -> Point2<f64> {
+        Point2::new(self.top_left.x, self.top_left.y - self.height)
     }
 }

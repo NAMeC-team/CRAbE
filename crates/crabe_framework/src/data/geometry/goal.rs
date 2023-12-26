@@ -31,7 +31,7 @@ impl Goal {
             };
             front_line = Line {
                 start: area.top_left,
-                end: area.bottom_left
+                end: area.bottom_left()
             }
         } else {
             center_line = Line {
@@ -39,8 +39,8 @@ impl Goal {
                 end: Point2::new(area.center.x + depth, area.center.y + depth),
             };
             front_line = Line {
-                start: area.top_right,
-                end: area.bottom_right
+                start: area.top_right(),
+                end: area.bottom_right()
             }
         };
 
