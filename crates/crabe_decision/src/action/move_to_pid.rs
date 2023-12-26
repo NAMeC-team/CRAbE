@@ -22,7 +22,7 @@ const PID_NUM_ERRORS: usize = 100;
 /// If the error is inferior to this number, error will be considered 0.
 /// The same constants are used to determine whether this action is finished or not.
 const TARGET_ATTAINED_TOL: f64 = 0.1;
-const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 4.;  // in radian !
+const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 2.;  // in radian !
 
 #[derive(Debug, Clone)]
 struct PIDErr {
@@ -134,7 +134,7 @@ impl PIDErrCounter {
             // this is because we force ourselves to have a strict refresh rate. See `crates/crabe/src/main.rs`
             time_delta = 0.016;
         }
-        (dbg!(cur.err) - dbg!(prev.err)) / time_delta
+        (cur.err - prev.err) / time_delta
     }
 }
 
@@ -183,8 +183,11 @@ impl MoveToPID {
         // change target into basis of robot to compute err
         let robot_basis = self.robot_basis(robot).inverse();
         let pos_err = robot_basis * target_position;
+
         // TODO: error angle should be higher when far from target, and very small when close to it
-        let err_theta= self.angle_wrap(target_orientation - robot.pose.orientation);  //TODO: how do i do dis ?
+        let dist_to_target: f64 = nalgebra::distance(&robot.pose.position, &target_position);
+        let theta_diff = target_orientation - robot.pose.orientation;
+        let err_theta = self.angle_wrap(theta_diff + (dist_to_target + 0.9) * theta_diff);
 
         // consider error is 0. if is it superior to max tolerance
         computed_err.x = if pos_err.x.abs() > TARGET_ATTAINED_TOL { pos_err.x } else { 0. };
@@ -211,7 +214,7 @@ impl Action for MoveToPID {
             self.error_tracker.save(current_error);
 
             // Stop the robot if it has attained its destination
-            if current_error.xy().norm() <= TARGET_ATTAINED_TOL {
+            if current_error.norm() <= TARGET_ATTAINED_TOL + THETA_ATTAINED_TOL {
                 self.state = State::Done;
                 return Command::default();
             }
@@ -223,8 +226,7 @@ impl Action for MoveToPID {
 
             dbg!(&i);
             let vec_command: Vector3<f64> = p + i + d;
-
-            dbg!(&vec_command);
+            dbg!(&vec_command.z);
 
             // after computing the PID control values, we increase the index of the current error by one
             // this is necessary, otherwise we'll always replace the value at index 0
@@ -236,7 +238,7 @@ impl Action for MoveToPID {
                 // assuming that the precision lost by casting can be ignored/neglected
                 forward_velocity: vec_command.x as f32,
                 left_velocity: vec_command.y as f32,
-                angular_velocity: 0. as f32,
+                angular_velocity: vec_command.z as f32,
                 charge: false,
                 kick: None,
                 dribbler: 0.0,
