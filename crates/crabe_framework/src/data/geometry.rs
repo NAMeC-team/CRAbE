@@ -47,14 +47,6 @@ impl Default for Geometry {
                 width: 6.0,
             },
 
-            // -- this is a professional comment
-            // You might ask "Why is goal width not the rectangle's width here ?"
-            // This is because the SSL rulebook defines the penalty and goal areas with different words
-            // (from a non-programmer perspective). Recall that this is a multi-field environment.
-            // So instead we're viewing this rectangle as in 2D space in the code, the same way a web
-            // developer would perceive it (width and height attributes in CSS).
-            // Otherwise this would require new devs to understand
-            // this peculiar difference here. This is merely a choice
             ally_goal: Goal::new(
                 1.0, 0.18,
                 Point2::new(-4.68, -0.5),
