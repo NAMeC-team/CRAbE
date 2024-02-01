@@ -1,3 +1,4 @@
+use std::f64::consts::{FRAC_PI_6, FRAC_PI_8};
 use std::ops::Div;
 use nalgebra::{distance, Point2};
 use crabe_framework::data::output::Command;
@@ -43,7 +44,7 @@ impl Strategy for TestVisionMoveTo {
         // WARNING : Not clearing the action_wrapper leads to stuttering
         action_wrapper.clear_all();
         let sign = if self.positive_half { 1. } else { -1. };
-        let mut y_target = 0.;
+        let mut y_target;
         let mut next_status = TestVisionMoveToStatus::Placement;
         match self.status {
             TestVisionMoveToStatus::Placement => {
@@ -77,7 +78,7 @@ impl Strategy for TestVisionMoveTo {
             .filter(|(ally_id, _)| self.ids.contains(ally_id))
             .for_each(|(ally_id, ally_info)| {
                 let target = Point2::new((*ally_id as f64).div(2.) * sign, y_target);
-                action_wrapper.push(*ally_id, MoveTo::new(target, 0.));
+                action_wrapper.push(*ally_id, MoveTo::new(target, FRAC_PI_6 * (*ally_id as f64)));
                 change_status = change_status && distance(&target, &ally_info.pose.position) <= DIST_TARGET_REACHED
             });
         if change_status {
