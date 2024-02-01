@@ -44,11 +44,21 @@ impl Strategy for TestVisionMoveTo {
         action_wrapper.clear_all();
         let sign = if self.positive_half { 1. } else { -1. };
         let mut y_target = 0.;
-        let mut next_status = TestVisionMoveToStatus::MovingForward;
+        let mut next_status = TestVisionMoveToStatus::Placement;
         match self.status {
             TestVisionMoveToStatus::Placement => {
                 y_target = 0.;
-                next_status = TestVisionMoveToStatus::MovingForward;
+                let allies_placed =
+                    world.allies_bot
+                        .iter()
+                        .filter(|(id, rob)|
+                            self.ids.contains(id) && rob.pose.position.y <= DIST_TARGET_REACHED
+                        ).count();
+
+                if allies_placed == self.ids.len() {
+                    next_status = TestVisionMoveToStatus::MovingForward
+                }
+
             }
             TestVisionMoveToStatus::MovingForward => {
                 y_target = 1.;
