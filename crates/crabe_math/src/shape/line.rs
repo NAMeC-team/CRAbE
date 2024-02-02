@@ -44,4 +44,8 @@ impl Line{
         let p_y = self.start.y + x * (self.end.y - self.start.y);
         return Point2::new(p_x, p_y);
     }
+
+    pub fn middle(&self) -> Point2<f64>{
+        return self.point_allong_line(0.5);
+    }
 }
