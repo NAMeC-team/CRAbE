@@ -6,6 +6,7 @@ use crabe_framework::data::geometry::Penalty;
 use crabe_framework::data::geometry::{Field, Geometry};
 use crabe_framework::data::world::World;
 use crabe_math::shape::Circle;
+use crabe_math::shape::Line;
 use nalgebra::Point2;
 
 pub struct GeometryFilter;
@@ -58,10 +59,16 @@ fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
     Goal {
         width: cam_geometry.goal_width,
         depth: cam_geometry.goal_depth,
-        top_left_position: Point2::new(
-            factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
-            factor * (cam_geometry.goal_width / 2.0),
-        ),
+        front_line_center: Point2::new(factor * ((cam_geometry.field_length / 2.0) ),0.),
+        front_line: Line::new(
+            Point2::new(
+                factor * ((cam_geometry.field_length / 2.0)),
+                factor * (cam_geometry.goal_width / 2.0),
+            ),Point2::new(
+                factor * ((cam_geometry.field_length / 2.0) ),
+                -factor * (cam_geometry.goal_width / 2.0),
+            ),
+        )
     }
 }
 
