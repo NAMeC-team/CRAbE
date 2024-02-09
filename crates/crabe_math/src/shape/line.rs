@@ -22,7 +22,6 @@ impl Line{
         }
     }
 
-    
 
     // return the intersection point between two lines
     // (not working if center of line is 0)
@@ -39,18 +38,20 @@ impl Line{
         
         let x = x_nominator / denominator;
         let y = y_nominator / denominator;
-        println!("{:?}", self);
-        println!("{:?}", line);
         return Some(Point2::new(x, y));
     }
 
 
     // return the intersection point between a segment and a line
     // from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection equations
-    // pub fn intersection_segment_line(&self, line: &Line) -> Option<Point2<f64>>{
-    //     //TODO
-    //     return None;
-    // }
+    pub fn intersection_segment_line(&self, line: &Line) -> Option<Point2<f64>>{
+        if let Some(intersection) = self.intersection_line(line){
+            if let Some(_) = self.orthogonal_projection_point_on_segment(&intersection){
+                return Some(intersection);
+            }
+        }
+        None
+    }
 
 
     // return the intersection point between two segments
@@ -96,14 +97,32 @@ impl Line{
         }
     
         let t = point_direction.dot(&line_direction) / line_length_squared;
-        if t < 0.0 {// The point is closest to the start of the line segment.
+        if t < 0.0 {// The point is closest to the start of the segment.
             return self.start;
-        } else if t > 1.0 {// The point is closest to the end of the line segment.
+        } else if t > 1.0 {// The point is closest to the end of the segment.
             return self.end;
         }
     
         // The point is closest to a point on the segment.
         self.start + t * line_direction
+    }
+
+
+    // return the closest point on the segment if it falls on him
+    pub fn orthogonal_projection_point_on_segment(&self, point: &Point2<f64>) -> Option<Point2<f64>>{
+        let line_direction = self.end - self.start;
+        let point_direction = *point - self.start;
+    
+        let line_length_squared = line_direction.norm_squared();
+        if line_length_squared == 0.0 {// The line segment has zero length, return the start point.
+            return None;
+        }
+    
+        let t = point_direction.dot(&line_direction) / line_length_squared;
+        if t < 0. || t > 1. {return None;}// The point don't fall on the segment.
+    
+        // The point is closest to a point on the segment.
+        Some(self.start + t * line_direction)
     }
 
     
