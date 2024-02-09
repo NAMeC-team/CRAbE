@@ -22,6 +22,8 @@ impl Line{
         }
     }
 
+    
+
     // return the intersection point between two lines
     // (not working if center of line is 0)
     // from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection equations
@@ -66,6 +68,45 @@ impl Line{
         return Some(self.point_allong_line(t));
     }
 
+
+    // return the closest point on the line
+    pub fn closest_point_on_line(&self, point: &Point2<f64>) -> Point2<f64>{
+        let line_direction = self.end - self.start;
+        let point_direction = *point - self.start;
+    
+        let line_length_squared = line_direction.norm_squared();
+        if line_length_squared == 0.0 {// The line segment has zero length, return the start point.
+            return self.start;
+        }
+        let t = point_direction.dot(&line_direction) / line_length_squared;
+
+        // The point is closest to a point on the segment.
+        self.start + t * line_direction
+    }
+
+
+    // return the closest point on the segment
+    pub fn closest_point_on_segment(&self, point: &Point2<f64>) -> Point2<f64>{
+        let line_direction = self.end - self.start;
+        let point_direction = *point - self.start;
+    
+        let line_length_squared = line_direction.norm_squared();
+        if line_length_squared == 0.0 {// The line segment has zero length, return the start point.
+            return self.start;
+        }
+    
+        let t = point_direction.dot(&line_direction) / line_length_squared;
+        if t < 0.0 {// The point is closest to the start of the line segment.
+            return self.start;
+        } else if t > 1.0 {// The point is closest to the end of the line segment.
+            return self.end;
+        }
+    
+        // The point is closest to a point on the segment.
+        self.start + t * line_direction
+    }
+
+    
     // takes a number between 0 and 1 and return the point along the line situated at the specified dist
     // for example with 0. it will return the starting point, and with 0.5 it will return the center of the line
     pub fn point_allong_line(&self, x: f64) -> Point2<f64> {
