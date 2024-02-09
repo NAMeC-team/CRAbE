@@ -22,9 +22,38 @@ impl Line{
         }
     }
 
-    // return the intersection point between two lines (lines, not infinite long lines)
+    // return the intersection point between two lines
+    // (not working if center of line is 0)
     // from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection equations
     pub fn intersection_line(&self, line: &Line) -> Option<Point2<f64>>{
+        let x_nominator = (self.start.x * self.end.y - self.start.y * self.end.x) * (line.start.x - line.end.x) - (self.start.x - self.end.x) * (line.start.x * line.end.y - line.start.y * line.end.x);
+        let y_nominator = (self.start.x * self.end.y - self.start.y * self.end.x) * (line.start.y - line.end.y) - (self.start.y - self.end.y) * (line.start.x * line.end.y - line.start.y * line.end.x);
+
+        let denominator = ((self.start.x - self.end.x)*(line.start.y - line.end.y)) - ((self.start.y - self.end.y) * (line.start.x - line.end.x));
+        if denominator == 0.  {
+            println!("[line.rs] Lines are parrallel");    
+            return None;
+        }
+        
+        let x = x_nominator / denominator;
+        let y = y_nominator / denominator;
+        println!("{:?}", self);
+        println!("{:?}", line);
+        return Some(Point2::new(x, y));
+    }
+
+
+    // return the intersection point between a segment and a line
+    // from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection equations
+    // pub fn intersection_segment_line(&self, line: &Line) -> Option<Point2<f64>>{
+    //     //TODO
+    //     return None;
+    // }
+
+
+    // return the intersection point between two segments
+    // from https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection equations
+    pub fn intersection_segment(&self, line: &Line) -> Option<Point2<f64>>{
         let t_nominator = ((self.start.x - line.start.x)*(line.start.y - line.end.y)) - ((self.start.y - line.start.y) * (line.start.x - line.end.x));
         let u_nominator = -((self.start.x - self.end.x)*(self.start.y - line.start.y)) - ((self.start.y - self.end.y) * (self.start.x - line.start.x));
 
