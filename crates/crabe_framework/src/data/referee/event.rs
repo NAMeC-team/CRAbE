@@ -1,19 +1,35 @@
 use chrono::Duration;
-use crabe_framework::data::world::TeamColor;
+use crate::data::world::TeamColor;
 use crabe_protocol::protobuf::game_controller_packet;
 use crabe_protocol::protobuf::game_controller_packet::game_event::Type;
 use nalgebra::Point2;
+use serde::{Serialize, Serializer};
+use serde::ser::SerializeStruct;
 
+/// Used by the referee to notify both teams
+/// of an event that occurred on the field.
+/// This struct is used for specific occurrences,
+/// such as fouls, bot substitution, challenge flags
+/// (when a team doesn't agree with a decision),
+/// and for informative events (for example,
+/// `AimlessKick` is used to mention that a bot
+/// kicked without aiming properly towards the goal)
+///
+/// Not all GameEvents lead to a change of state
+///
 /// GameEvent contains exactly one game event.
 /// Each game event has optional and required fields.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct GameEvent {
     /// Event type of this Game
+    #[serde(skip)]
     pub type_event: Option<GameEventType>,
     /// The origins of this game event.
     /// Empty, if it originates from game controller.
+    #[serde(skip)]
     pub origin: Vec<EventOrigin>,
     /// Unix timestamp in microseconds when the event was created.
+    #[serde(skip)]
     pub created_timestamp: Option<u64>,
     /// the event that occurred
     pub event: Event,
@@ -128,7 +144,7 @@ impl From<Type> for GameEventType {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub enum Event {
     // Ball out of field events (Stopping)
     BallLeftFieldTouchLine(BallLeftField),
@@ -186,7 +202,7 @@ pub enum Event {
 //////////////////////////////////////////////////////
 
 /// Represents an event where the ball left the field normally.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BallLeftField {
     /// The team that last touched the ball.
     pub by_team: TeamColor,
@@ -197,7 +213,7 @@ pub struct BallLeftField {
 }
 
 /// Represents an event where the ball left the field via goal line and a team committed an aimless kick.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct AimlessKick {
     /// The team that last touched the ball
     pub by_team: TeamColor,
@@ -210,7 +226,7 @@ pub struct AimlessKick {
 }
 
 /// Represents an event where an attacking robot is located too close to the opponent's defense area during a stoppage or free kick.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct AttackerTooCloseToDefenseArea {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -225,7 +241,7 @@ pub struct AttackerTooCloseToDefenseArea {
 }
 
 /// Represents an event where a defender other than the keeper was fully located inside its own defense and touched the ball.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct DefenderInDefenseArea {
     /// The team that found guilty
     pub by_team: TeamColor,
@@ -238,7 +254,7 @@ pub struct DefenderInDefenseArea {
 }
 
 /// Represents an event where a robot chipped the ball over the field boundary out of the playing surface.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BoundaryCrossing {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -257,8 +273,18 @@ pub struct KeeperHeldBall {
     pub duration: Option<Duration>,
 }
 
+impl Serialize for KeeperHeldBall {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut ser = serializer.serialize_struct("TeamColor", 3)?;
+        ser.serialize_field("by_team", &self.by_team)?;
+        ser.serialize_field("location", &self.location)?;
+        ser.serialize_field("duration", &self.duration.unwrap_or(Duration::seconds(0)).num_seconds())?;
+        ser.end()
+    }
+}
+
 /// Represents an event where a bot dribbled to ball too far.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotDribbledBallTooFar {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -271,7 +297,7 @@ pub struct BotDribbledBallTooFar {
 }
 
 /// Represents an event where a bot pushed another bot over a significant distance.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotPushedBot {
     /// The team that pushed the other team.
     pub by_team: TeamColor,
@@ -298,8 +324,19 @@ pub struct BotHeldBallDeliberately {
     pub duration: Option<Duration>,
 }
 
+impl Serialize for BotHeldBallDeliberately {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut ser = serializer.serialize_struct("BotHeldBallDeliberately", 4)?;
+        ser.serialize_field("by_team", &self.by_team)?;
+        ser.serialize_field("by_bot", &self.by_bot)?;
+        ser.serialize_field("location", &self.location)?;
+        ser.serialize_field("duration", &self.duration.unwrap_or(Duration::seconds(0)).num_seconds())?;
+        ser.end()
+    }
+}
+
 /// Represents an event where a bot tipped over.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotTippedOver {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -312,7 +349,7 @@ pub struct BotTippedOver {
 }
 
 /// Represents an event where an attacker touched the ball inside the opponent defense area.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct AttackerTouchedBallInDefenseArea {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -325,7 +362,7 @@ pub struct AttackerTouchedBallInDefenseArea {
 }
 
 /// Represents an event where a bot kicked the ball too fast.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotKickedBallTooFast {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -340,7 +377,7 @@ pub struct BotKickedBallTooFast {
 }
 
 /// Represents an event where two robots crashed into each other and one team was found guilty to due significant speed difference.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotCrashUnique {
     /// The team that caused the crash.
     pub by_team: TeamColor,
@@ -360,7 +397,7 @@ pub struct BotCrashUnique {
     pub crash_angle: Option<f64>,
 }
 /// Represents an event where two robots crashed into each other with similar speeds
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotCrashDrawn {
     /// The bot of the yellow team.
     pub bot_yellow: Option<u32>,
@@ -379,7 +416,7 @@ pub struct BotCrashDrawn {
 }
 
 /// Represents an event where a bot of the defending team got too close to the kick point during a free kick.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct DefenderTooCloseToKickPoint {
     /// The team that was found guilty.
     pub by_team: TeamColor,
@@ -392,7 +429,7 @@ pub struct DefenderTooCloseToKickPoint {
 }
 
 /// Represents an event where a bot moved too fast while the game was stopped.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotTooFastInStop {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -405,7 +442,7 @@ pub struct BotTooFastInStop {
 }
 
 /// Represents an event where a bot interfered the ball placement of the other team.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct BotInterferedPlacement {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -416,7 +453,7 @@ pub struct BotInterferedPlacement {
 }
 
 /// Represents an event where a team shot a goal
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct Goal {
     /// The team that scored the goal.
     pub by_team: TeamColor,
@@ -439,7 +476,7 @@ pub struct Goal {
 }
 
 /// Represents an event where an attacker touched the ball multiple times when it was not allowed to.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct AttackerDoubleTouchedBall {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -450,7 +487,7 @@ pub struct AttackerDoubleTouchedBall {
 }
 
 /// Represents an event where a team successfully placed the ball.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct PlacementSucceeded {
     /// The team that did the placement.
     pub by_team: TeamColor,
@@ -463,7 +500,7 @@ pub struct PlacementSucceeded {
 }
 
 /// Represents an event where the penalty kick failed (by time or by keeper).
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct PenaltyKickFailed {
     /// The team that last touched the ball.
     pub by_team: TeamColor,
@@ -482,8 +519,17 @@ pub struct NoProgressInGame {
     pub time: Option<Duration>,
 }
 
+impl Serialize for NoProgressInGame {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
+        let mut ser = serializer.serialize_struct("NoProgressInGame", 2)?;
+        ser.serialize_field("location", &self.location)?;
+        ser.serialize_field("time", &self.time.unwrap_or(Duration::seconds(0)).num_seconds())?;
+        ser.end()
+    }
+}
+
 /// Represents an event where the ball placement failed.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct PlacementFailed {
     /// The team that failed.
     pub by_team: TeamColor,
@@ -492,7 +538,7 @@ pub struct PlacementFailed {
 }
 
 /// Represents an event where a team collected multiple fouls, which results in a yellow card.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct MultipleFouls {
     /// The team that collected multiple fouls.
     pub by_team: TeamColor,
@@ -501,7 +547,7 @@ pub struct MultipleFouls {
 }
 
 /// Represents an event where a team has too many robots on the field.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct TooManyRobots {
     /// The team that has too many robots.
     pub by_team: TeamColor,
@@ -514,7 +560,7 @@ pub struct TooManyRobots {
 }
 
 /// Represents an event where a team was found guilty for minor unsporting behavior.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct UnsportingBehaviorMinor {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -523,7 +569,7 @@ pub struct UnsportingBehaviorMinor {
 }
 
 /// Represents an event where a team was found guilty for minor unsporting behavior.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct UnsportingBehaviorMajor {
     /// The team that found guilty.
     pub by_team: TeamColor,
@@ -532,7 +578,7 @@ pub struct UnsportingBehaviorMajor {
 }
 
 /// Enum that represent the origin of the event.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub enum EventOrigin {
     GameController,
     Autorefs(Vec<String>),

@@ -1,7 +1,5 @@
 pub mod camera;
 
-pub mod referee;
-
 use crate::constant;
 use crate::data::camera::{CamBall, CamGeometry, CamRobot};
 use chrono::{DateTime, Utc};
@@ -10,7 +8,7 @@ use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
 use std::time::Instant;
-use crate::data::referee::Referee;
+use crabe_framework::data::referee::Referee;
 
 #[derive(Clone, Debug)]
 pub struct FrameInfo {

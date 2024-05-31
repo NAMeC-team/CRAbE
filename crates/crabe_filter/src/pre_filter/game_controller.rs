@@ -12,9 +12,9 @@ use crabe_protocol::protobuf::game_controller_packet::game_event::{Event as Prot
 
 use crabe_protocol::protobuf::game_controller_packet::{GameEvent as ProtocolEvent, game_event::Type as ProtocolType, MatchType as ProtocolMatchType, Referee as ProtocolReferee, Vector2 as ProtocolVector2};
 use crabe_protocol::protobuf::game_controller_packet::referee::{Command as ProtocolCommand, Command, Point as ProtocolPoint, Stage as ProtocolStage};
-use crate::data::referee::event::{Event, EventOrigin,AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehaviorMajor, UnsportingBehaviorMinor, GameEventType};
+use crabe_framework::data::referee::event::{Event, EventOrigin, AimlessKick, AttackerDoubleTouchedBall, AttackerTooCloseToDefenseArea, AttackerTouchedBallInDefenseArea, BallLeftField, BotCrashDrawn, BotCrashUnique, BotDribbledBallTooFar, BotHeldBallDeliberately, BotInterferedPlacement, BotKickedBallTooFast, BotPushedBot, BotTippedOver, BotTooFastInStop, BoundaryCrossing, DefenderInDefenseArea, DefenderTooCloseToKickPoint, GameEvent, Goal, KeeperHeldBall, MultipleFouls, NoProgressInGame, PenaltyKickFailed, PlacementFailed, PlacementSucceeded, TooManyRobots, UnsportingBehaviorMajor, UnsportingBehaviorMinor, GameEventType};
 
-use crate::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo, MatchType};
+use crabe_framework::data::referee::{GameEventProposalGroup, Referee, RefereeCommand, Stage, TeamInfo, MatchType};
 use crabe_protocol::protobuf::game_controller_packet::Team as ProtocolTeam;
 pub struct GameControllerPreFilter;
 
