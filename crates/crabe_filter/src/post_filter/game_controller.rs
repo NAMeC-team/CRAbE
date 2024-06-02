@@ -1,10 +1,10 @@
 use std::time::Instant;
 use crabe_framework::data::referee::referee_orders::RefereeOrders;
 use crabe_framework::data::referee::{Referee, RefereeCommand, TeamInfo};
-use crabe_framework::data::state_handler::game_state_handler::{ForceStartStateBranch, HaltStateBranch, DeprecatedStateBranch, NormalStartStateBranch, StopStateBranch};
+use crabe_framework::data::state_handler::game_state_handler::{ForceStartStateBranch, HaltStateBranch, DeprecatedStateBranch, NormalStartStateBranch, StopStateBranch, PrepareKickoffStateBranch, PreparePenaltyStateBranch, FreekickStateBranch, TimeoutStateBranch, BallPlacementStateBranch};
 use crabe_framework::data::state_handler::{GameStateBranch, StateData};
 use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState};
-use crabe_framework::data::world::World;
+use crabe_framework::data::world::{TeamColor, World};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
@@ -21,6 +21,9 @@ pub struct GameControllerPostFilter {
     timer: Option<Instant>,
     /// Contains multiple information about the current state of the match
     state_data: StateData,
+    /// If the current referee command mentions a team
+    /// (like for a kickoff), it is stored here
+    last_cmd_for_team: Option<TeamColor>,
 }
 
 
@@ -50,31 +53,44 @@ impl Default for GameControllerPostFilter {
             prev_command: RefereeCommand::Halt,
             timer: None,
             state_data: StateData::default(),
+            last_cmd_for_team: None,
         }
     }
 }
 
 impl GameControllerPostFilter {
-    fn resolve_branch(&self, referee_command: &RefereeCommand) -> impl GameStateBranch {
-        return HaltStateBranch;
-        // match referee_command {
-        //     RefereeCommand::Halt => HaltStateBranch,
-        //     RefereeCommand::Stop => StopStateBranch,
-        //     RefereeCommand::NormalStart => NormalStartStateBranch,
-        //     RefereeCommand::ForceStart => ForceStartStateBranch,
-        //     RefereeCommand::PrepareKickoff(_) => PrepareKickoffStateBranch
-        //     RefereeCommand::PreparePenalty(_) => PreparePenaltyStateBranch,
-        //     RefereeCommand::DirectFree(_) => DirectFreeStateBranch,
-        //     RefereeCommand::Timeout(_) => TimeoutStateBranch,
-        //     RefereeCommand::BallPlacement(_) => BallPlacementBranch
+    fn resolve_branch(&mut self, referee_command: &RefereeCommand) -> Box<dyn GameStateBranch> {
+        // update which team is the command for
+        // TODO: this looks exotic, can someone check it out ?
+        match referee_command {
+            RefereeCommand::PrepareKickoff(team)
+            | RefereeCommand::PreparePenalty(team)
+            | RefereeCommand::DirectFree(team)
+            | RefereeCommand::Timeout(team)
+            | RefereeCommand::BallPlacement(team) => { self.last_cmd_for_team = Some(*team) }
+
+            _ => { self.last_cmd_for_team = None }
+        };
+
         //
-        //     // Deprecated states (as per the protobuf files)
-        //     RefereeCommand::Goal(_) // Seems weird, but the protobuf file mentioned
-        //                             // we shouldn't base ourselves off this command
-        //                             // Tests show this is never sent
-        //     | RefereeCommand::IndirectFree(_)
-        //     | RefereeCommand::Deprecated => DeprecatedStateBranch
-        // }
+        match referee_command {
+            RefereeCommand::Halt => Box::new(HaltStateBranch),
+            RefereeCommand::Stop => Box::new(StopStateBranch),
+            RefereeCommand::NormalStart => Box::new(NormalStartStateBranch),
+            RefereeCommand::ForceStart => Box::new(ForceStartStateBranch),
+            RefereeCommand::PrepareKickoff(_) => Box::new(PrepareKickoffStateBranch),
+            RefereeCommand::PreparePenalty(_) => Box::new(PreparePenaltyStateBranch),
+            RefereeCommand::DirectFree(_) => Box::new(FreekickStateBranch),
+            RefereeCommand::Timeout(_) => Box::new(TimeoutStateBranch),
+            RefereeCommand::BallPlacement(_) => Box::new(BallPlacementStateBranch),
+
+            // Deprecated states (as per the protobuf files)
+            RefereeCommand::Goal(_) // Seems weird, but the protobuf file mentioned
+                                    // we shouldn't base ourselves off this command
+                                    // Tests show this is never sent
+            | RefereeCommand::IndirectFree(_)
+            | RefereeCommand::Deprecated => Box::new(DeprecatedStateBranch)
+        }
     }
 }
 
@@ -82,10 +98,6 @@ impl PostFilter for GameControllerPostFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         if let Some(referee) = filter_data.referee.last() {
             let mut new_state = world.data.ref_orders.state;
-
-            // if let Some(time_remaining) = &referee.current_action_time_remaining {
-            //     if time_remaining.num_milliseconds() > 0 { dbg!(time_remaining); }
-            // }
 
             // change state only if a new referee command has been issued,
             // or a timer is currently being used
@@ -95,6 +107,13 @@ impl PostFilter for GameControllerPostFilter {
                 dbg!(&referee.designated_position);
                 dbg!(&referee.ally.score);
                 dbg!(&referee.enemy.score);
+
+                new_state = self.resolve_branch(&referee.command)
+                    .process_state(world,
+                                   referee,
+                                   &mut self.timer,
+                                   self.last_cmd_for_team,
+                                   &self.state_data);
 
                 self.save_if_first_kickoff_occurred(world.data.ref_orders.state);
                 self.update_team_scores(referee);

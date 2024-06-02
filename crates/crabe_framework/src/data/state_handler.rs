@@ -24,8 +24,8 @@ pub trait GameStateBranch {
     /// - `referee`                   | The current data issued from the referee
     /// - `timer`                     | Used for specific events. Set to None if it is not in use
     /// - `for_team`                  | The team concerned for the referee command
-    ///                             | If the blue team is doing a kickoff,
-    ///                             | `for_team` will be set to TeamColor::Blue
+    ///                               | If the blue team is doing a kickoff,
+    ///                               | `for_team` will be set to TeamColor::Blue
     /// - `previous_state_data`       | Stores information about the latest
     ///                             valid state we encountered. It is a capture
     ///                             of the *previous* state
@@ -36,7 +36,7 @@ pub trait GameStateBranch {
                      world: &World,
                      referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     for_team: &TeamColor,
+                     for_team: Option<TeamColor>,
                      previous_state_data: &StateData) -> GameState;
 }
 
