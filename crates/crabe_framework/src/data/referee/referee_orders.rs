@@ -65,6 +65,7 @@ impl RefereeOrders {
     pub fn update(&mut self, game_state: GameState, game_event: Option<&GameEvent>) {
         self.state = game_state;
         self.speed_limit = Self::get_speed_limit_during(game_state);
+        self.min_dist_from_ball = Self::get_min_dist_from_ball_during(game_state);
 
         // dev note : this one is a bit weird
         // it's either this or putting lifetimes onto structs (notably on the `World` struct)
