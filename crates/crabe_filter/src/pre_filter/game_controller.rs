@@ -213,7 +213,7 @@ fn map_event(event: ProtocolEventData) -> Option<Event> {
                 Some(Event::BallLeftFieldTouchLine(map_ball_left_field(data)))
             }
             ProtocolEventData::BallLeftFieldGoalLine(data) => {
-                Some(Event::BallLeftFieldTouchLine(map_ball_left_field(data)))
+                Some(Event::BallLeftFieldGoalLine(map_ball_left_field(data)))
             }
             ProtocolEventData::AimlessKick(data) => {
                 Some(Event::AimlessKick(AimlessKick {

@@ -162,7 +162,7 @@ pub enum Event {
     BotHeldBallDeliberately(BotHeldBallDeliberately),
     BotTippedOver(BotTippedOver),
 
-    // Non-Stopping Fouls
+    //  Non-Stopping Fouls
     AttackerTouchedBallInDefenseArea(AttackerTouchedBallInDefenseArea),
     BotKickedBallTooFast(BotKickedBallTooFast),
     BotCrashUnique(BotCrashUnique),
@@ -213,7 +213,7 @@ pub struct BallLeftField {
 }
 
 /// Represents an event where the ball left the field via goal line and a team committed an aimless kick.
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Copy)]
 pub struct AimlessKick {
     /// The team that last touched the ball
     pub by_team: TeamColor,

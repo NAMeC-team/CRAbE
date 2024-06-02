@@ -21,6 +21,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
 use crate::pre_filter::game_controller::GameControllerPreFilter;
+use crate::post_filter::game_controller::GameControllerPostFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -44,7 +45,7 @@ impl FilterPipeline {
 
         if common_config.gc {
             pre_filters.push(Box::new(GameControllerPreFilter));
-            // post_filters.push(Box::)
+            post_filters.push(Box::new(GameControllerPostFilter::default()));
         }
 
         Self {

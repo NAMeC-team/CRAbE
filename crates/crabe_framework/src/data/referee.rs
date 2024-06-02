@@ -2,6 +2,7 @@ use chrono::{DateTime, Duration, Utc};
 use crate::data::world::TeamColor;
 use event::GameEvent;
 use nalgebra::Point2;
+use crate::data::referee::referee_orders::RefereeOrders;
 
 pub mod event;
 pub mod referee_orders;
@@ -54,7 +55,7 @@ pub struct Referee {
     pub enemy: TeamInfo,
     /// The coordinates of the designated Position (in millimeters).
     /// Use only in the case of a ball placement command.
-    pub designated_position: Option<Point2<f64>>,
+    pub designated_position: Option<Point2<f64>>, // TODO: send that to the viewer
     /// Information about the direction of play.
     /// True, if the blue team will have it's goal on the positive x-axis of the ssl-vision coordinate system.
     /// Obviously, the yellow team will play on the opposite half.
@@ -119,7 +120,7 @@ pub enum Stage {
 
 /// The `RefereeCommand` enum represents a set of possible commands that a referee can issue during a game.
 /// These commands control the state of the game and dictate the actions that robots are allowed to perform at any given moment.
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Copy, Hash)]
 pub enum RefereeCommand {
     /// Command indicating that all robots must halt movement immediately.
     Halt,
