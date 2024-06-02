@@ -21,9 +21,6 @@ pub struct GameControllerPostFilter {
     timer: Option<Instant>,
     /// Contains multiple information about the current state of the match
     state_data: StateData,
-    /// If the current referee command mentions a team
-    /// (like for a kickoff), it is stored here
-    last_cmd_for_team: Option<TeamColor>,
 }
 
 
@@ -53,36 +50,22 @@ impl Default for GameControllerPostFilter {
             prev_command: RefereeCommand::Halt,
             timer: None,
             state_data: StateData::default(),
-            last_cmd_for_team: None,
         }
     }
 }
 
 impl GameControllerPostFilter {
     fn resolve_branch(&mut self, referee_command: &RefereeCommand) -> Box<dyn GameStateBranch> {
-        // update which team is the command for
-        // TODO: this looks exotic, can someone check it out ?
-        match referee_command {
-            RefereeCommand::PrepareKickoff(team)
-            | RefereeCommand::PreparePenalty(team)
-            | RefereeCommand::DirectFree(team)
-            | RefereeCommand::Timeout(team)
-            | RefereeCommand::BallPlacement(team) => { self.last_cmd_for_team = Some(*team) }
-
-            _ => { self.last_cmd_for_team = None }
-        };
-
-        //
         match referee_command {
             RefereeCommand::Halt => Box::new(HaltStateBranch),
             RefereeCommand::Stop => Box::new(StopStateBranch),
             RefereeCommand::NormalStart => Box::new(NormalStartStateBranch),
             RefereeCommand::ForceStart => Box::new(ForceStartStateBranch),
-            RefereeCommand::PrepareKickoff(_) => Box::new(PrepareKickoffStateBranch),
-            RefereeCommand::PreparePenalty(_) => Box::new(PreparePenaltyStateBranch),
-            RefereeCommand::DirectFree(_) => Box::new(FreekickStateBranch),
-            RefereeCommand::Timeout(_) => Box::new(TimeoutStateBranch),
-            RefereeCommand::BallPlacement(_) => Box::new(BallPlacementStateBranch),
+            RefereeCommand::PrepareKickoff(for_team) => Box::new(PrepareKickoffStateBranch::new(*for_team)),
+            RefereeCommand::PreparePenalty(for_team) => Box::new(PreparePenaltyStateBranch::new(*for_team)),
+            RefereeCommand::DirectFree(for_team) => Box::new(FreekickStateBranch::new(*for_team)),
+            RefereeCommand::Timeout(for_team) => Box::new(TimeoutStateBranch::new(*for_team)),
+            RefereeCommand::BallPlacement(by_team) => Box::new(BallPlacementStateBranch::new(*by_team)),
 
             // Deprecated states (as per the protobuf files)
             RefereeCommand::Goal(_) // Seems weird, but the protobuf file mentioned
@@ -112,7 +95,6 @@ impl PostFilter for GameControllerPostFilter {
                     .process_state(world,
                                    referee,
                                    &mut self.timer,
-                                   self.last_cmd_for_team,
                                    &self.state_data);
 
                 self.save_if_first_kickoff_occurred(world.data.ref_orders.state);

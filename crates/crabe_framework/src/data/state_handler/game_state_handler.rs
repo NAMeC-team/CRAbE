@@ -5,7 +5,7 @@ use crate::data::referee::{Referee, RefereeCommand};
 use crate::data::referee::event::{BallLeftField, Event, GameEvent, GameEventType};
 use crate::data::state_handler::{GameStateBranch, StateData};
 use crate::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
-use crate::data::world::{Ball, TeamColor, World};
+use crate::data::world::{Ball, Team, TeamColor, World};
 
 /// Checks whether the ball moved from its designated position
 /// It is based on the designated position sent by the referee, if there is one
@@ -32,31 +32,31 @@ fn ball_moved_from_designated_pos(referee: &Referee, ball_opt: &Option<Ball>) ->
 pub struct HaltStateBranch;
 
 impl GameStateBranch for HaltStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _for_team: Option<TeamColor>,
                      _latest_data: &StateData) -> GameState {
         return GameState::Halted(HaltedState::Halt);
     }
 }
 
-pub struct TimeoutStateBranch;
+pub struct TimeoutStateBranch {
+    for_team: TeamColor
+}
+
+impl TimeoutStateBranch {
+    pub fn new(for_team: TeamColor) -> Self { Self { for_team } }
+}
+
 impl GameStateBranch for TimeoutStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     for_team: Option<TeamColor>,
                      _latest_data: &StateData) -> GameState {
         // TODO: maybe send information about the timeout
-        if let Some(team) = for_team {
-            GameState::Halted(HaltedState::Timeout(team))
-        } else {
-            error!("[FOR_TEAM VALUE ??] Cannot guess which team is having a timeout, assuming us");
-            GameState::Halted(HaltedState::Timeout(_world.team_color))
-        }
+        GameState::Halted(HaltedState::Timeout(self.for_team))
     }
 }
 
@@ -135,11 +135,10 @@ impl StopStateBranch {
 }
 
 impl GameStateBranch for StopStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      world: &World,
                      referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _for_team: Option<TeamColor>,
                      latest_data: &StateData) -> GameState {
 
         // handle first kickoff of the match
@@ -222,11 +221,10 @@ impl GameStateBranch for StopStateBranch {
 pub struct ForceStartStateBranch;
 
 impl GameStateBranch for ForceStartStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _for_team: Option<TeamColor>,
                      _latest_data: &StateData) -> GameState {
         return GameState::Running(RunningState::Run);
     }
@@ -238,11 +236,10 @@ impl GameStateBranch for ForceStartStateBranch {
 pub struct NormalStartStateBranch;
 
 impl GameStateBranch for NormalStartStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      world: &World,
                      referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     _for_team: Option<TeamColor>,
                      latest_data: &StateData) -> GameState {
         // Here is how the game starts (or resumes after a goal)
         // -> Halt
@@ -310,24 +307,28 @@ impl GameStateBranch for NormalStartStateBranch {
 pub struct DeprecatedStateBranch;
 
 impl GameStateBranch for DeprecatedStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _for_team: Option<TeamColor>,
                      _latest_data: &StateData) -> GameState {
         return world.data.ref_orders.state;
     }
 }
 
-pub struct FreekickStateBranch;
+pub struct FreekickStateBranch {
+    for_team: TeamColor
+}
+
+impl FreekickStateBranch {
+    pub fn new(for_team: TeamColor) -> Self { Self { for_team } }
+}
 
 impl GameStateBranch for FreekickStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      world: &World,
                      referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     for_team: Option<TeamColor>,
                      _previous_state_data: &StateData) -> GameState {
         // If the ball moved at least 0.05 meters from its designated position,
         // the kicker bot is considered to have touched the ball, and the game can resume normally
@@ -340,7 +341,7 @@ impl GameStateBranch for FreekickStateBranch {
             // If 10 seconds haven't passed
             if timer.elapsed() < Duration::from_secs(10) {
                 // There is still some time for the team to perform the freekick
-                GameState::Running(RunningState::FreeKick(for_team.unwrap_or(world.team_color.opposite())))
+                GameState::Running(RunningState::FreeKick(self.for_team))
             } else {
                 // Free kick time has ended, moving on to the next state
                 // it is required to update the state in this case, because the referee
@@ -351,7 +352,7 @@ impl GameStateBranch for FreekickStateBranch {
         } else {
             // A freekick has just started, save a timer to measure the time
             *timer_opt = Some(Instant::now());
-            GameState::Running(RunningState::FreeKick(for_team.unwrap_or(world.team_color.opposite())))
+            GameState::Running(RunningState::FreeKick(self.for_team))
         }
     }
 }
@@ -360,58 +361,59 @@ impl GameStateBranch for FreekickStateBranch {
 /// We actually set this state way earlier compared to the referee, because
 /// the mentioned command is sent to give us a 2 seconds preparation for our robots,
 /// even though we're already allowed to prepare ourselves
-pub struct PrepareKickoffStateBranch;
+pub struct PrepareKickoffStateBranch {
+    for_team: TeamColor
+}
+
+impl PrepareKickoffStateBranch {
+    pub fn new(for_team: TeamColor) -> Self { Self { for_team } }
+}
 
 impl GameStateBranch for PrepareKickoffStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     for_team: Option<TeamColor>,
                      _previous_state_data: &StateData) -> GameState {
-        if let Some(team) = for_team {
-            GameState::Stopped(StoppedState::PrepareKickoff(team))
-        } else {
-            error!("[FOR_TEAM VALUE ??] Cannot guess who is doing ball placement, assuming enemy");
-            GameState::Stopped(StoppedState::PrepareKickoff(for_team.unwrap_or(_world.team_color.opposite())))
-        }
+        GameState::Stopped(StoppedState::PrepareKickoff(self.for_team))
     }
 }
 
-pub struct BallPlacementStateBranch;
+pub struct BallPlacementStateBranch {
+    by_team: TeamColor
+}
+
+impl BallPlacementStateBranch {
+    pub fn new(by_team: TeamColor) -> Self { Self { by_team } }
+}
 
 impl GameStateBranch for BallPlacementStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     for_team: Option<TeamColor>,
                      _previous_state_data: &StateData) -> GameState {
-        if let Some(team) = for_team {
-            GameState::Stopped(StoppedState::BallPlacement(team))
-        } else {
-            error!("[FOR_TEAM VALUE ??] Cannot guess who is doing ball placement, assuming enemy");
-            GameState::Stopped(StoppedState::BallPlacement(_world.team_color.opposite()))
-        }
+
+        GameState::Stopped(StoppedState::BallPlacement(self.by_team))
     }
 }
 
-pub struct PreparePenaltyStateBranch;
+pub struct PreparePenaltyStateBranch {
+    for_team: TeamColor
+}
+
+impl PreparePenaltyStateBranch {
+    pub fn new(for_team: TeamColor) -> Self { Self { for_team } }
+}
 
 impl GameStateBranch for PreparePenaltyStateBranch {
-    fn process_state(&mut self,
+    fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     for_team: Option<TeamColor>,
                      _previous_state_data: &StateData) -> GameState {
         //TODO: improve this branch, with more StoppedState penalty states
         // to define precisely what we should be doing
-        if let Some(team) = for_team {
-            GameState::Stopped(StoppedState::PreparePenalty(team))
-        } else {
-            error!("[FOR_TEAM VALUE ??] Cannot guess which team is the penalty for, assuming for enemy");
-            GameState::Stopped(StoppedState::PrepareKickoff(_world.team_color.opposite()))
-        }
+        GameState::Stopped(StoppedState::PreparePenalty(self.for_team))
     }
 }
