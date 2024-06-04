@@ -1,6 +1,7 @@
+use std::cell::Ref;
 use std::time::{Duration, Instant};
 use log::{error, warn};
-use nalgebra::distance;
+use nalgebra::{distance, Point2};
 use crate::data::referee::{Referee, RefereeCommand};
 use crate::data::referee::event::{BallLeftField, Event, GameEvent, GameEventType};
 use crate::data::state_handler::{GameStateBranch, StateData};
@@ -12,16 +13,21 @@ use crate::data::world::{Ball, Team, TeamColor, World};
 /// This function should only be called for states that require it
 /// (such as the FreeKick state, that implies the ball must be placed
 /// at a specific location to perform the free kick)
-fn ball_moved_from_designated_pos(referee: &Referee, ball_opt: &Option<Ball>) -> bool {
-    return if let Some(designated_pos) = referee.designated_position {
-        if let Some(ball) = &ball_opt {
-            distance(&ball.position.xy(), &designated_pos.xy()) >= 0.05
-        } else {
-            false
-        }
+fn ball_moved_from_designated_pos(designated_position: &Point2<f64>, ball_opt: &Option<Ball>) -> bool {
+    return if let Some(ball) = &ball_opt {
+        distance(&ball.position.xy(), &designated_position.xy()) >= 0.05
     } else {
         false
     }
+}
+
+/// Returns where the ball should be placed
+/// if team `for_team` is going to do a penalty
+fn get_penalty_designated_ball_pos(for_team: TeamColor, referee: &Referee) -> Point2<f64> {
+    referee.designated_position.unwrap_or(|| -> Point2<f64> {
+        // TODO: penalty position
+        Point2::new(0., 0.)
+    }())
 }
 
 /// Definition of branches to follow for each
@@ -36,7 +42,7 @@ impl GameStateBranch for HaltStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _latest_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         return GameState::Halted(HaltedState::Halt);
     }
 }
@@ -54,7 +60,7 @@ impl GameStateBranch for TimeoutStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _latest_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         // TODO: maybe send information about the timeout
         GameState::Halted(HaltedState::Timeout(self.for_team))
     }
@@ -139,7 +145,7 @@ impl GameStateBranch for StopStateBranch {
                      world: &World,
                      referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     latest_data: &StateData) -> GameState {
+                     latest_data: &mut StateData) -> GameState {
 
         // handle first kickoff of the match
         if !latest_data.kicked_off_once { return GameState::Stopped(StoppedState::PrepareForGameStart); };
@@ -225,7 +231,7 @@ impl GameStateBranch for ForceStartStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _latest_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         return GameState::Running(RunningState::Run);
     }
 }
@@ -240,18 +246,21 @@ impl GameStateBranch for NormalStartStateBranch {
                      world: &World,
                      referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     latest_data: &StateData) -> GameState {
+                     latest_data: &mut StateData) -> GameState {
         // Here is how the game starts (or resumes after a goal)
         // -> Halt
         // -> Stop | Robots place themselves on their side of field
         // -> PrepareKickoff | Kickoff preparation starts (2 seconds)
         // -> NormalStart | Kickoff lasts for 10 seconds
+
+        latest_data.kicked_off_once = true;
+
         match latest_data.prev_ref_cmd {
             RefereeCommand::PrepareKickoff(of_team) => {
                 // A kickoff ends in two ways
 
                 // -> The ball moved from its designated position (ball is now in play)
-                if ball_moved_from_designated_pos(referee, &world.ball) {
+                if ball_moved_from_designated_pos(&referee.designated_position.unwrap_or(Point2::new(0., 0.)), &world.ball) {
                     *timer_opt = None;
                     GameState::Running(RunningState::Run)
                 }
@@ -277,7 +286,7 @@ impl GameStateBranch for NormalStartStateBranch {
                 // but penalties have their own particularities, which are not
                 // completely handled (whether it's failed or successful, for example)
                 // the following will be the minimum required, we can change it later
-                if ball_moved_from_designated_pos(referee, &world.ball) {
+                if ball_moved_from_designated_pos(&get_penalty_designated_ball_pos(of_team, referee), &world.ball) {
                     *timer_opt = None;
                     GameState::Running(RunningState::Run)
                 }
@@ -311,7 +320,7 @@ impl GameStateBranch for DeprecatedStateBranch {
                      world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _latest_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         return world.data.ref_orders.state;
     }
 }
@@ -329,10 +338,15 @@ impl GameStateBranch for FreekickStateBranch {
                      world: &World,
                      referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     _previous_state_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         // If the ball moved at least 0.05 meters from its designated position,
         // the kicker bot is considered to have touched the ball, and the game can resume normally
-        if ball_moved_from_designated_pos(referee, &world.ball) {
+        if ball_moved_from_designated_pos(
+            &referee.designated_position.unwrap_or(|| -> Point2<f64> {
+                warn!("Free kick designated position was not given by referee");
+                Ball::default().position_2d()
+            }()),
+            &world.ball) {
             *timer_opt = None;
             return GameState::Running(RunningState::Run)
         }
@@ -374,7 +388,7 @@ impl GameStateBranch for PrepareKickoffStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _previous_state_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         GameState::Stopped(StoppedState::PrepareKickoff(self.for_team))
     }
 }
@@ -392,7 +406,7 @@ impl GameStateBranch for BallPlacementStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _previous_state_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
 
         GameState::Stopped(StoppedState::BallPlacement(self.by_team))
     }
@@ -411,7 +425,7 @@ impl GameStateBranch for PreparePenaltyStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _timer_opt: &mut Option<Instant>,
-                     _previous_state_data: &StateData) -> GameState {
+                     _latest_data: &mut StateData) -> GameState {
         //TODO: improve this branch, with more StoppedState penalty states
         // to define precisely what we should be doing
         GameState::Stopped(StoppedState::PreparePenalty(self.for_team))

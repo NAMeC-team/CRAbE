@@ -2,7 +2,7 @@ pub mod game_state_handler;
 
 use std::time::Instant;
 use crate::data::referee::{Referee, RefereeCommand};
-use crate::data::world::game_state::GameState;
+use crate::data::world::game_state::{GameState, HaltedState};
 use crate::data::world::{TeamColor, World};
 
 /// This trait defines how each game state should be handled
@@ -24,8 +24,10 @@ pub trait GameStateBranch {
     /// - `referee`                   | The current data issued from the referee
     /// - `timer`                     | Used for specific events. Set to None if it is not in use
     /// - `previous_state_data`       | Stores information about the latest
-    ///                             valid state we encountered. It is a capture
-    ///                             of the *previous* state
+    ///                                 valid state we encountered. It is a capture
+    ///                                 of the *previous* state. Responsible to modify
+    ///                                 this with updated state data, if required (used to remember
+    ///                                 if first kickoff occurred)
     ///
     /// Returns
     /// - The game state in which we are in
@@ -33,7 +35,7 @@ pub trait GameStateBranch {
                      world: &World,
                      referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     previous_state_data: &StateData) -> GameState;
+                     previous_state_data: &mut StateData) -> GameState;
 }
 
 /// This struct contains the strict minimum required
