@@ -59,21 +59,6 @@ impl BigBro {
         }
     }
 
-    // /// Moves a bot from its current strategy to an existing strategy.
-    // ///
-    // /// # Arguments
-    // /// - `bot_id`: The id of the bot to move.
-    // /// - `strategy_index`: The index of the strategy (in the strategies list) to move the bot to.
-    // pub fn move_bot_to_existing_strategy(&mut self, bot_id: u8, strategy_index: usize) {
-    //     let current_strategy_index = self.strategies.iter().position(|s| s.get_ids().contains(&bot_id)).unwrap();
-    //     let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
-    //     ids.remove(current_strategy_index);
-    //     self.strategies[current_strategy_index].put_ids(ids);
-    //     ids = self.strategies[strategy_index].as_ref().get_ids();
-    //     ids.push(bot_id);
-    //     self.strategies[strategy_index].put_ids(ids);
-    // }
-
     pub fn move_bot_to_new_strategy(&mut self, bot_id: u8, strategy: Box<dyn Strategy>) {
         let current_strategy_index = self
             .strategies
