@@ -80,6 +80,11 @@ pub enum StoppedState {
     /// dev note: we use this state directly after a goal is scored
     PrepareKickoff(TeamColor),
 
+    /// [Non-official]
+    /// The team `TeamColor` will perform a free kick and
+    /// must put its robots in position
+    PrepareFreekick(TeamColor),
+
     /// The team `TeamColor` must prepare for a penalty kick
     PreparePenalty(TeamColor),
 

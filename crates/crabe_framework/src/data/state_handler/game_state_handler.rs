@@ -167,17 +167,6 @@ impl GameStateBranch for StopStateBranch {
 
         // determine the reason of this Stop command
 
-        // is it because a goal was scored ?
-        // Dev note : When a goal is scored, these are the transitions happening
-        //  -> Halt | Human referee validates goal
-        //  -> Stop | Scores are updated, bots must prepare for kickoff
-        // To simplify, we'll just say that we will be put in the PrepareKickoff state
-        // after a goal is scored, to allow our robots to prepare themselves in advance
-        // It is not against the rules to do so (I believe)
-        else if let Some(scoring_team) = self.was_goal_scored(world, referee, latest_data) {
-            return GameState::Stopped(StoppedState::PrepareKickoff(scoring_team.opposite()));
-        }
-
         // otherwise, it might be because of an event that occurred
         // (ball out of field, double touch foul etc...)
         else if let Some(game_event) = referee.game_events.last() {
@@ -201,6 +190,42 @@ impl GameStateBranch for StopStateBranch {
                 // The game is not progressing
                 Event::NoProgressInGame(_) => StoppedState::NoProgressInGame,
 
+                Event::PossibleGoal(_) => {
+                    // is it because a goal was scored ?
+
+                    // Dev note : When a goal is scored, these are the transitions happening
+                    //  -> Halt | Human referee validates goal
+                    //  -> Stop | One of the following happens
+                    //      - Goal is validated, scores are updated, bots must prepare for kickoff
+                    //      - Goal is not validated, we move forward onto a free kick
+                    //
+                    // To simplify, we'll just say that we will be put in the PrepareKickoff state
+                    // after a goal has been scored, to allow our robots to prepare themselves in advance
+                    // It is not against the rules to do so (I believe)
+
+                    if let Some(scoring_team) = self.was_goal_scored(world, referee, latest_data) {
+                        // goal is accepted
+                        StoppedState::PrepareKickoff(scoring_team.opposite())
+                    } else {
+                        // goal is refused, we move on to a free kick
+                        // generally, the ref will provide the next command
+                        match referee.next_command {
+                            Some(cmd) => {
+                                if let RefereeCommand::DirectFree(for_team) = cmd {
+                                    StoppedState::PrepareFreekick(for_team)
+                                } else {
+                                    error!("Next command after a PossibleGoal is not a direct free ??");
+                                    StoppedState::PrepareFreekick(world.team_color.opposite())
+                                }
+                            }
+                            None => {
+                                warn!("Referee did not provide next command for the following free kick");
+                                StoppedState::PrepareFreekick(world.team_color.opposite())
+                            }
+                        }
+                    }
+                }
+
                 // Non-Stopping Fouls that can be ignored (or that never happen during a Stop state)
                 // TODO: more events might need management
                 // Event::AttackerTouchedBallInDefenseArea(_) => {}
@@ -210,8 +235,7 @@ impl GameStateBranch for StopStateBranch {
                 // Event::DefenderTooCloseToKickPoint(_) => {}
                 // Event::BotTooFastInStop(_) => {}
                 // Event::BotInterferedPlacement(_) => {}
-                // Event::PossibleGoal(_) => {}
-                // Event::Goal(_) => {}
+                // Event::Goal(_) => {}  // do not use this, not recommended
                 // Event::InvalidGoal(_) => {}
                 // Event::AttackerDoubleTouchedBall(_) => {}
                 // Event::PlacementSucceeded(_) => {}
@@ -362,10 +386,11 @@ impl GameStateBranch for FreekickStateBranch {
         // the kicker bot is considered to have touched the ball, and the game can resume normally
         if ball_moved_from_designated_pos(
             &referee.designated_position.unwrap_or(|| -> Point2<f64> {
+                // TODO: IRL tests to check if this warning happens in a real situation
                 warn!("Free kick designated position was not given by referee");
                 Ball::default().position_2d()
-            }()),
-            &world.ball) {
+            }()), &world.ball) {
+
             *timer_opt = None;
             return GameState::Running(RunningState::Run)
         }
