@@ -148,7 +148,22 @@ impl GameStateBranch for StopStateBranch {
                      latest_data: &mut StateData) -> GameState {
 
         // handle first kickoff of the match
-        if !latest_data.kicked_off_once { return GameState::Stopped(StoppedState::PrepareForGameStart); };
+        if !latest_data.kicked_off_once {
+            return match referee.next_command {
+                None => GameState::Stopped(StoppedState::PrepareForGameStart),
+                Some(next) => {
+                    match next {
+                        // normally, we should be able to fetch which team will perform the next
+                        // kickoff, so we can consider that the Stop state right after a goal
+                        // is the same as preparing for a kickoff
+                        RefereeCommand::PrepareKickoff(for_team) => {
+                            GameState::Stopped(StoppedState::PrepareKickoff(for_team))
+                        }
+                        _ => GameState::Stopped(StoppedState::PrepareForGameStart)
+                    }
+                }
+            }
+        }
 
         // determine the reason of this Stop command
 
@@ -159,13 +174,13 @@ impl GameStateBranch for StopStateBranch {
         // To simplify, we'll just say that we will be put in the PrepareKickoff state
         // after a goal is scored, to allow our robots to prepare themselves in advance
         // It is not against the rules to do so (I believe)
-        if let Some(scoring_team) = self.was_goal_scored(world, referee, latest_data) {
+        else if let Some(scoring_team) = self.was_goal_scored(world, referee, latest_data) {
             return GameState::Stopped(StoppedState::PrepareKickoff(scoring_team.opposite()));
         }
 
         // otherwise, it might be because of an event that occurred
         // (ball out of field, double touch foul etc...)
-        if let Some(game_event) = referee.game_events.last() {
+        else if let Some(game_event) = referee.game_events.last() {
             let stopped_state: StoppedState = match &game_event.event {
                 // Common occurrences in a match
                 Event::BallLeftFieldTouchLine(data) => StoppedState::BallLeftFieldTouchLine(data.by_team),
@@ -187,7 +202,7 @@ impl GameStateBranch for StopStateBranch {
                 Event::NoProgressInGame(_) => StoppedState::NoProgressInGame,
 
                 // Non-Stopping Fouls that can be ignored (or that never happen during a Stop state)
-                // TODO: more events might need management, but I was running low on time to sort everything
+                // TODO: more events might need management
                 // Event::AttackerTouchedBallInDefenseArea(_) => {}
                 // Event::BotKickedBallTooFast(_) => {}
                 // Event::BotCrashUnique(_) => {}

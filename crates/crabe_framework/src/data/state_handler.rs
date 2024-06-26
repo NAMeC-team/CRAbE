@@ -47,6 +47,8 @@ pub struct StateData {
     pub kicked_off_once: bool,
     /// The previous referee command, different from the current one
     pub prev_ref_cmd: RefereeCommand,
+    /// The most recent referee command issued
+    pub last_ref_cmd: RefereeCommand,
     /// Last saved score of the ally team
     pub ally_score: u32,
     /// Last saved score of the enemy team
@@ -58,6 +60,7 @@ impl Default for StateData {
         Self {
             kicked_off_once: false,
             prev_ref_cmd: RefereeCommand::Halt,
+            last_ref_cmd: RefereeCommand::Halt,
             ally_score: 0,
             enemy_score: 0,
         }

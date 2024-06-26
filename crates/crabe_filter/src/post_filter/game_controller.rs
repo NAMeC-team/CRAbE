@@ -36,7 +36,10 @@ impl GameControllerPostFilter {
     /// is `kicked_off_once`. State branches are responsible for
     /// updating this field instead
     fn update_latest_state_data(&mut self, referee: &Referee) {
-        self.state_data.prev_ref_cmd = referee.command;
+        if referee.command != self.state_data.last_ref_cmd {
+            self.state_data.prev_ref_cmd = self.state_data.last_ref_cmd;
+        }
+        self.state_data.last_ref_cmd = referee.command;
         self.state_data.ally_score = referee.ally.score;
         self.state_data.enemy_score = referee.enemy.score;
     }
@@ -81,12 +84,12 @@ impl PostFilter for GameControllerPostFilter {
 
             // change state only if a new referee command has been issued,
             // or a timer is currently being used
-            if self.state_data.prev_ref_cmd != referee.command || self.timer != None {
+            if self.state_data.last_ref_cmd != referee.command || self.timer != None {
                 dbg!(&referee.command);
-                // dbg!(&referee.game_events.last());
-                // dbg!(&referee.designated_position);
-                // dbg!(&referee.ally.score);
-                // dbg!(&referee.enemy.score);
+                dbg!(referee.next_command);
+
+                self.update_team_scores(referee);
+                self.update_latest_state_data(referee);
 
                 // TODO: bug, don't updat prev ref command if we get here using self.timer != None branch
                 new_state = self.resolve_branch(&referee.command)
@@ -97,8 +100,6 @@ impl PostFilter for GameControllerPostFilter {
 
                 dbg!(&new_state);
 
-                self.update_team_scores(referee);
-                self.update_latest_state_data(referee);
                 world.data.ref_orders.update(new_state, referee.game_events.last());
             }
 
