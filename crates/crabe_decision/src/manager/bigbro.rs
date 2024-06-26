@@ -3,10 +3,9 @@ use std::vec;
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::message::MessageData;
-use crate::strategy::offensive::Attacker;
-use crate::strategy::offensive::Receiver;
-use crate::strategy::defensive::Defensor;
 use crate::strategy::Strategy;
+use crate::strategy::testing::GoLeft;
+use crate::strategy::testing::GoRight;
 use crate::message::Message;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -26,7 +25,7 @@ impl BigBro {
     /// Creates a new `BigBro` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Attacker::new(0)), Box::new(Defensor::new(vec![1, 2, 3]))],
+            strategies: vec![Box::new(GoLeft::new(1))],
         }
     }
 
@@ -56,10 +55,14 @@ impl BigBro {
     pub fn process_messages(&mut self, messages: Vec<MessageData>) {
         messages.iter().for_each(| m| {
             match m.message {
-                Message::SearchingReceiver => {
-                    println!("SearchingReceiver");
-                    self.move_bot_to_existing_strategy(m.id, 1);
-                }
+                Message::WantToGoRight => {
+                    let strategy = Box::new(GoRight::new(m.id));
+                    self.move_bot_to_new_strategy(m.id, strategy);
+                },
+                Message::WantToGoLeft => {
+                    let strategy = Box::new(GoLeft::new(m.id));
+                    self.move_bot_to_new_strategy(m.id, strategy);
+                },
                 _ => {}
             }
         });

@@ -7,9 +7,6 @@ use crabe_framework::data::world::World;
 /// are not meant to be used in an actual game but rather to test specific functionalities or to
 /// experiment with different behaviors.
 pub mod testing;
-pub mod placement;
-pub mod offensive;
-pub mod defensive;
 
 pub struct StrategyData {
     pub ids: Vec<u8>,

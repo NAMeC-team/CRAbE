@@ -9,21 +9,21 @@ use nalgebra::Point2;
 use std::f64::consts::PI;
 
 #[derive(Default)]
-pub struct Attacker {
+pub struct GoLeft {
     id: u8,
     messages: Vec<MessageData>,
 }
 
-impl Attacker {
-    /// Creates a new Attacker instance with the desired robot id.
+impl GoLeft {
+    /// Creates a new GoLeft instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id, messages: vec![]}
     }
 }
 
-impl Strategy for Attacker {
+impl Strategy for GoLeft {
     fn name(&self) -> &'static str {
-        "Attacker"
+        "GoLeft"
     }
 
     fn get_messages(&self) -> &Vec<MessageData> {
@@ -45,18 +45,18 @@ impl Strategy for Attacker {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         action_wrapper.clear(self.id);
+        let dest = Point2::new(-1.0, 0.0);
         self.messages.clear();
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4.0, 0.0, false, None),
+            MoveTo::new(dest, -PI / 4.0, 0.0, false, None),
         );
-        match  world.allies_bot.get(&self.id) {
-            Some(bot) => {
-                
+        match world.allies_bot.get(&self.id) {
+            Some(bot) => {  
                 let bot_position = bot.pose.position;
-                let dist = (bot_position - Point2::new(-1.0, 1.0)).norm();
+                let dist = (bot_position - dest).norm();
                 if dist < 0.1 {
-                    self.messages.push(MessageData::new(Message::SearchingReceiver, self.id));
+                    self.messages.push(MessageData::new(Message::WantToGoRight, self.id));
                 }
             }
             None => {}

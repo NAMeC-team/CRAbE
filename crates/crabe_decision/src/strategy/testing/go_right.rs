@@ -9,27 +9,26 @@ use nalgebra::Point2;
 use std::f64::consts::PI;
 
 #[derive(Default)]
-pub struct Receiver {
+pub struct GoRight {
     id: u8,
     messages: Vec<MessageData>,
 }
 
-impl Receiver {
-    /// Creates a new Receiver instance with the desired robot id.
+impl GoRight {
+    /// Creates a new GoRight instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id, messages: vec![]}
     }
 }
 
-impl Strategy for Receiver {
+impl Strategy for GoRight {
     fn name(&self) -> &'static str {
-        "Receiver"
+        "GoRight"
     }
 
     fn get_messages(&self) -> &Vec<MessageData> {
         &self.messages
     }   
-
     fn get_ids(&self) -> Vec<u8> {
         vec![self.id]
     }
@@ -45,16 +44,23 @@ impl Strategy for Receiver {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.clear_all();
+        action_wrapper.clear(self.id);
+        let dest = Point2::new(1.0, 0.0);
         self.messages.clear();
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(1.0, -1.0), -PI / 4.0, 0.0, false, None),
+            MoveTo::new(dest, -PI / 4.0, 0.0, false, None),
         );
-        let bot_position = world.allies_bot.get(&self.id).unwrap().pose.position;
-        // if (bot_position - Point2::new(1.0, -1.0)).norm() < 0.1 {
-        //     self.messages.push(MessageData::new(Message::SearchingReciever, self.id));
-        // }
+        match world.allies_bot.get(&self.id) {
+            Some(bot) => {  
+                let bot_position = bot.pose.position;
+                let dist = (bot_position - dest).norm();
+                if dist < 0.1 {
+                    self.messages.push(MessageData::new(Message::WantToGoLeft, self.id));
+                }
+            }
+            None => {}
+        }
         false
     }
 }
