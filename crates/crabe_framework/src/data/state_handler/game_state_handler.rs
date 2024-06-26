@@ -41,8 +41,10 @@ impl GameStateBranch for HaltStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     timer_opt: &mut Option<Instant>,
                      _latest_data: &mut StateData) -> GameState {
+        // reset timer
+        *timer_opt = None;
         return GameState::Halted(HaltedState::Halt);
     }
 }
