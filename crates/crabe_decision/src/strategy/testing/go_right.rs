@@ -56,7 +56,7 @@ impl Strategy for GoRight {
                 let bot_position = bot.pose.position;
                 let dist = (bot_position - dest).norm();
                 if dist < 0.1 {
-                    self.messages.push(MessageData::new(Message::WantToGoLeft, self.id));
+                    self.messages.push(MessageData::new(Message::WantToBeAligned, self.id));
                 }
             }
             None => {}

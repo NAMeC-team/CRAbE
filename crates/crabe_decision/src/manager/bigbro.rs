@@ -6,6 +6,7 @@ use crate::message::MessageData;
 use crate::strategy::Strategy;
 use crate::strategy::testing::GoLeft;
 use crate::strategy::testing::GoRight;
+use crate::strategy::testing::Aligned;
 use crate::message::Message;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -25,19 +26,40 @@ impl BigBro {
     /// Creates a new `BigBro` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(GoLeft::new(1))],
+            strategies: vec![Box::new(GoLeft::new(1)), Box::new(Aligned::new(vec![2, 3, 4, 5]))],
         }
     }
 
+    /// Moves a bot from its current strategy to an existing strategy.
+    /// 
+    /// # Arguments
+    /// - `bot_id`: The id of the bot to move.
+    /// - `strategy_index`: The index of the strategy (in the strategies list) to move the bot to.
     pub fn move_bot_to_existing_strategy(&mut self, bot_id: u8, strategy_index: usize) {
-        let current_strategy_index = self.strategies.iter().position(|s| s.get_ids().contains(&bot_id)).unwrap();
-        let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
-        ids.remove(current_strategy_index);
-        self.strategies[current_strategy_index].put_ids(ids);
+        let bot_current_strategy_index = self.strategies.iter().position(|s| s.get_ids().contains(&bot_id)).unwrap();
+        println!("bot_current_strategy_index: {:?}", bot_current_strategy_index);
+        let mut ids = self.strategies[bot_current_strategy_index].as_ref().get_ids();
+        ids.retain(|&id| id != bot_id);
+        self.strategies[bot_current_strategy_index].put_ids(ids);
         ids = self.strategies[strategy_index].as_ref().get_ids();
         ids.push(bot_id);
         self.strategies[strategy_index].put_ids(ids);
     }
+
+    // /// Moves a bot from its current strategy to an existing strategy.
+    // /// 
+    // /// # Arguments
+    // /// - `bot_id`: The id of the bot to move.
+    // /// - `strategy_index`: The index of the strategy (in the strategies list) to move the bot to.
+    // pub fn move_bot_to_existing_strategy(&mut self, bot_id: u8, strategy_index: usize) {
+    //     let current_strategy_index = self.strategies.iter().position(|s| s.get_ids().contains(&bot_id)).unwrap();
+    //     let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
+    //     ids.remove(current_strategy_index);
+    //     self.strategies[current_strategy_index].put_ids(ids);
+    //     ids = self.strategies[strategy_index].as_ref().get_ids();
+    //     ids.push(bot_id);
+    //     self.strategies[strategy_index].put_ids(ids);
+    // }
     
     pub fn move_bot_to_new_strategy(&mut self, bot_id: u8, strategy: Box<dyn Strategy>) {
         let current_strategy_index = self.strategies.iter().position(|s| s.get_ids().contains(&bot_id)).unwrap();
@@ -52,7 +74,14 @@ impl BigBro {
         }
     }
 
+    /// Processes the messages received from the strategies and updates the strategies accordingly.
+    /// 
+    /// # Arguments
+    /// - `messages`: A list of `MessageData` instances containing the messages received from the strategies.
     pub fn process_messages(&mut self, messages: Vec<MessageData>) {
+        if messages.len() > 0 {
+            println!("messages: {:?}", messages.len());
+        }
         messages.iter().for_each(| m| {
             match m.message {
                 Message::WantToGoRight => {
@@ -60,8 +89,14 @@ impl BigBro {
                     self.move_bot_to_new_strategy(m.id, strategy);
                 },
                 Message::WantToGoLeft => {
+                    println!("WantToGoLeft");
                     let strategy = Box::new(GoLeft::new(m.id));
                     self.move_bot_to_new_strategy(m.id, strategy);
+                },
+                Message::WantToBeAligned => {
+                    //find strategy index with name "Aligned"
+                    let strategy_index = self.strategies.iter().position(|s| s.name() == "Aligned").unwrap();
+                    self.move_bot_to_existing_strategy(m.id, strategy_index);
                 },
                 _ => {}
             }
@@ -77,7 +112,8 @@ impl Manager for BigBro {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        // we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them
+        // mailbox to grab the messages
+        // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
         let mut messages: Vec<MessageData> = vec![];
         
         // grab all the messages from the strategies
