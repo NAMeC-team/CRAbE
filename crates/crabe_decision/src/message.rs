@@ -1,4 +1,4 @@
-// data type to share information from the bot to the manager 
+// Possible messages types to transmit
 #[derive(Clone)]
 pub enum Message {
     WantToGoRight = 0,
@@ -6,7 +6,7 @@ pub enum Message {
     WantToBeAligned = 2,
 }
 
-// data type to share information from the bot to the manager
+// Data type to share information from the bot to the manager
 #[derive(Clone)]
 pub struct MessageData {
     pub message: Message,
@@ -18,4 +18,3 @@ impl MessageData {
         Self { message, id }
     }
 }
-
