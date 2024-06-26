@@ -91,7 +91,6 @@ impl PostFilter for GameControllerPostFilter {
                 self.update_team_scores(referee);
                 self.update_latest_state_data(referee);
 
-                // TODO: bug, don't updat prev ref command if we get here using self.timer != None branch
                 new_state = self.resolve_branch(&referee.command)
                     .process_state(world,
                                    referee,
