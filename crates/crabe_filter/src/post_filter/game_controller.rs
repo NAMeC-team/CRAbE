@@ -40,8 +40,6 @@ impl GameControllerPostFilter {
             self.state_data.prev_ref_cmd = self.state_data.last_ref_cmd;
         }
         self.state_data.last_ref_cmd = referee.command;
-        self.state_data.ally_score = referee.ally.score;
-        self.state_data.enemy_score = referee.enemy.score;
     }
 }
 
@@ -88,7 +86,6 @@ impl PostFilter for GameControllerPostFilter {
                 dbg!(&referee.command);
                 dbg!(referee.next_command);
 
-                self.update_team_scores(referee);
                 self.update_latest_state_data(referee);
 
                 new_state = self.resolve_branch(&referee.command)
@@ -99,6 +96,7 @@ impl PostFilter for GameControllerPostFilter {
 
                 dbg!(&new_state);
 
+                self.update_team_scores(referee);
                 world.data.ref_orders.update(new_state, referee.game_events.last());
             }
 
