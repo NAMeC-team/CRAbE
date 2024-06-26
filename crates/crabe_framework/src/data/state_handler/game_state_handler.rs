@@ -246,9 +246,11 @@ impl GameStateBranch for ForceStartStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     _latest_data: &mut StateData) -> GameState {
+                     latest_data: &mut StateData) -> GameState {
         // reset timer
         *timer_opt = None;
+        // implies that the first kick-off was issued already
+        latest_data.kicked_off_once = true;
         return GameState::Running(RunningState::Run);
     }
 }
@@ -281,7 +283,7 @@ impl GameStateBranch for NormalStartStateBranch {
                     *timer_opt = None;
                     GameState::Running(RunningState::Run)
                 }
-                else if let Some(timer) = timer_opt {
+                else if let Some(timer) = timer_opt { // todo: we could use referee.current_action_time_remaining instead
                     // -> 10 seconds have elapsed
                     if timer.elapsed() > Duration::from_secs(10) {
                         *timer_opt = None;
