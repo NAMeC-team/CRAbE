@@ -72,7 +72,13 @@ impl RefereeOrders {
         self.state = game_state;
         self.speed_limit = Self::get_speed_limit_during(game_state);
         self.min_dist_from_ball = Self::get_min_dist_from_ball_during(game_state);
-        self.event = *referee.game_events.last();
+        // dev note : this one is a bit weird
+        // it's either this or putting lifetimes onto structs (notably on the `World` struct)
+        self.event = match referee.game_events.last() {
+            None => None,
+            Some(ge_ref) => { Some(ge_ref.clone()) }
+        };
+
         self.designated_position = referee.designated_position;
     }
 }
