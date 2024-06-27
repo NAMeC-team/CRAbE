@@ -1,5 +1,7 @@
+use nalgebra::Point2;
 use serde::Serialize;
 use crate::data::referee::event::GameEvent;
+use crate::data::referee::Referee;
 use crate::data::world::game_state::{GameState, HaltedState};
 
 /// Retains information sent by the game controller
@@ -18,6 +20,9 @@ pub struct RefereeOrders {
     /// There might not be any distance required, for example
     /// during a normal running state
     pub min_dist_from_ball: Option<f32>,
+    /// The last designated position for a ball placement event
+    /// If no ball placement is required, this field is set to None
+    pub designated_position: Option<Point2<f64>>,
 }
 
 const MAX_SPEED_HALTED: f32 = 0.;
@@ -57,22 +62,18 @@ impl RefereeOrders {
             event: game_event,
             speed_limit: Self::get_speed_limit_during(game_state),
             min_dist_from_ball: None,
+            designated_position: None,
         }
     }
 
     /// Updates the struct with the new information provided
     /// Convenience function to avoid having to create/drop similar objects
-    pub fn update(&mut self, game_state: GameState, game_event: Option<&GameEvent>) {
+    pub fn update(&mut self, game_state: GameState, referee: &Referee) {
         self.state = game_state;
         self.speed_limit = Self::get_speed_limit_during(game_state);
         self.min_dist_from_ball = Self::get_min_dist_from_ball_during(game_state);
-
-        // dev note : this one is a bit weird
-        // it's either this or putting lifetimes onto structs (notably on the `World` struct)
-        self.event = match game_event {
-            None => None,
-            Some(ge_ref) => { Some(ge_ref.clone()) }
-        };
+        self.event = *referee.game_events.last();
+        self.designated_position = referee.designated_position;
     }
 }
 
@@ -83,6 +84,7 @@ impl Default for RefereeOrders {
             event: None,
             speed_limit: MAX_SPEED_HALTED,
             min_dist_from_ball: None,
+            designated_position: None,
         }
     }
 }

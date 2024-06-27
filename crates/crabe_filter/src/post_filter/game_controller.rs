@@ -84,7 +84,7 @@ impl PostFilter for GameControllerPostFilter {
             let mut new_state = world.data.ref_orders.state;
 
             // change state only if a new referee command has been issued,
-            // or a timer is currently being used
+            // or if the state is time-dependent
             if self.state_data.last_ref_cmd != referee.command || self.time_based_refresh {
                 dbg!(&referee.command);
                 dbg!(referee.next_command);
@@ -102,7 +102,7 @@ impl PostFilter for GameControllerPostFilter {
                 dbg!(&new_state);
 
                 self.update_team_scores(referee);
-                world.data.ref_orders.update(new_state, referee.game_events.last());
+                world.data.ref_orders.update(new_state, referee);
             }
 
             // update positive half, to see which team resides on the positive
@@ -111,11 +111,6 @@ impl PostFilter for GameControllerPostFilter {
                 world.data.positive_half = team_on_positive_half
             }
 
-            // self.resolve_branch(&referee.command).process_state(world, referee, self.timer, self.prev_command);
-            // read referee command
-            // if new command != previous command or timer is used
-            //   => run associated branch
-            //   => update world.data.ref_orders
         };
     }
 }
