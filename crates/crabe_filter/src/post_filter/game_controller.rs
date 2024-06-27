@@ -2,7 +2,7 @@ use std::time::Instant;
 use crabe_framework::data::referee::referee_orders::RefereeOrders;
 use crabe_framework::data::referee::{Referee, RefereeCommand, TeamInfo};
 use crabe_framework::data::state_handler::game_state_handler::{ForceStartStateBranch, HaltStateBranch, DeprecatedStateBranch, NormalStartStateBranch, StopStateBranch, PrepareKickoffStateBranch, PreparePenaltyStateBranch, FreekickStateBranch, TimeoutStateBranch, BallPlacementStateBranch};
-use crabe_framework::data::state_handler::{GameStateBranch, StateData};
+use crabe_framework::data::state_handler::{GameStateBranch, GameStateData};
 use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState};
 use crabe_framework::data::world::{TeamColor, World};
 use crate::data::FilterData;
@@ -17,7 +17,7 @@ pub struct GameControllerPostFilter {
     /// because it depends on a timer provided by the referee
     time_based_refresh: bool,
     /// Contains multiple information about the current state of the match
-    state_data: StateData,
+    state_data: GameStateData,
 }
 
 
@@ -50,7 +50,7 @@ impl Default for GameControllerPostFilter {
     fn default() -> Self {
         Self {
             time_based_refresh: false,
-            state_data: StateData::default(),
+            state_data: GameStateData::default(),
         }
     }
 }

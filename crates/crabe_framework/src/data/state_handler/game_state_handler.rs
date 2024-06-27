@@ -4,7 +4,7 @@ use log::{error, warn};
 use nalgebra::{distance, Point2};
 use crate::data::referee::{Referee, RefereeCommand};
 use crate::data::referee::event::{BallLeftField, Event, GameEvent, GameEventType};
-use crate::data::state_handler::{GameStateBranch, StateData};
+use crate::data::state_handler::{GameStateBranch, GameStateData};
 use crate::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
 use crate::data::world::{Ball, Team, TeamColor, World};
 
@@ -43,7 +43,7 @@ impl GameStateBranch for HaltStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      time_based_refresh: &mut bool,
-                     _latest_data: &mut StateData) -> GameState {
+                     _latest_data: &mut GameStateData) -> GameState {
 
         *time_based_refresh = false;
         return GameState::Halted(HaltedState::Halt);
@@ -63,7 +63,7 @@ impl GameStateBranch for TimeoutStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _time_based_refresh: &mut bool,
-                     _latest_data: &mut StateData) -> GameState {
+                     _latest_data: &mut GameStateData) -> GameState {
         // TODO: maybe send information about the timeout
         GameState::Halted(HaltedState::Timeout(self.for_team))
     }
@@ -131,7 +131,7 @@ impl StopStateBranch {
     }
 
     /// Checks whether a goal has been scored
-    fn was_goal_scored(&self, world: &World, referee: &Referee, latest_data: &StateData) -> Option<TeamColor> {
+    fn was_goal_scored(&self, world: &World, referee: &Referee, latest_data: &GameStateData) -> Option<TeamColor> {
         let our_team_color = world.team_color;
         return if referee.ally.score > latest_data.ally_score {
             Some(our_team_color)
@@ -148,7 +148,7 @@ impl GameStateBranch for StopStateBranch {
                      world: &World,
                      referee: &Referee,
                      _time_based_refresh: &mut bool,
-                     latest_data: &mut StateData) -> GameState {
+                     latest_data: &mut GameStateData) -> GameState {
 
         // handle first kickoff of the match
         if !latest_data.kicked_off_once {
@@ -276,7 +276,7 @@ impl GameStateBranch for ForceStartStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      time_based_refresh: &mut bool,
-                     latest_data: &mut StateData) -> GameState {
+                     latest_data: &mut GameStateData) -> GameState {
         *time_based_refresh = false;
         // implies that the first kick-off was issued already
         latest_data.kicked_off_once = true;
@@ -294,7 +294,7 @@ impl GameStateBranch for NormalStartStateBranch {
                      world: &World,
                      referee: &Referee,
                      time_based_refresh: &mut bool,
-                     latest_data: &mut StateData) -> GameState {
+                     latest_data: &mut GameStateData) -> GameState {
         // Here is how the game starts (or resumes after a goal)
         // -> Halt
         // -> Stop | Robots place themselves on their side of field
@@ -368,7 +368,7 @@ impl GameStateBranch for DeprecatedStateBranch {
                      world: &World,
                      _referee: &Referee,
                      _time_based_refresh: &mut bool,
-                     _latest_data: &mut StateData) -> GameState {
+                     _latest_data: &mut GameStateData) -> GameState {
         warn!("Deprecated state has been used");
         return world.data.ref_orders.state;
     }
@@ -387,7 +387,7 @@ impl GameStateBranch for FreekickStateBranch {
                      world: &World,
                      referee: &Referee,
                      time_based_refresh: &mut bool,
-                     latest_data: &mut StateData) -> GameState {
+                     latest_data: &mut GameStateData) -> GameState {
         // If the ball moved at least 0.05 meters from its designated position,
         // the kicker bot is considered to have touched the ball, and the game can resume normally
         // precondition: the last designated pos has been provided by the referee
@@ -434,7 +434,7 @@ impl GameStateBranch for PrepareKickoffStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _time_based_refresh: &mut bool,
-                     _latest_data: &mut StateData) -> GameState {
+                     _latest_data: &mut GameStateData) -> GameState {
         GameState::Stopped(StoppedState::PrepareKickoff(self.for_team))
     }
 }
@@ -452,7 +452,7 @@ impl GameStateBranch for BallPlacementStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _time_based_refresh: &mut bool,
-                     _latest_data: &mut StateData) -> GameState {
+                     _latest_data: &mut GameStateData) -> GameState {
 
         GameState::Stopped(StoppedState::BallPlacement(self.by_team))
     }
@@ -471,7 +471,7 @@ impl GameStateBranch for PreparePenaltyStateBranch {
                      _world: &World,
                      _referee: &Referee,
                      _time_based_refresh: &mut bool,
-                     _latest_data: &mut StateData) -> GameState {
+                     _latest_data: &mut GameStateData) -> GameState {
         //TODO: improve this branch, with more StoppedState penalty states
         // to define precisely what we should be doing
         GameState::Stopped(StoppedState::PreparePenalty(self.for_team))

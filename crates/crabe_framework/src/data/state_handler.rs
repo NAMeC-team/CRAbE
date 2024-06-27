@@ -38,14 +38,14 @@ pub trait GameStateBranch {
                      world: &World,
                      referee: &Referee,
                      time_based_refresh: &mut bool,
-                     previous_state_data: &mut StateData) -> GameState;
+                     previous_state_data: &mut GameStateData) -> GameState;
 }
 
 /// This struct contains the strict minimum required
 /// to help us determine what will be the next valid
 /// state of the match, depending on the commands issued
 /// from the referee
-pub struct StateData {
+pub struct GameStateData {
     /// Whether the first kickoff already occurred or not
     pub kicked_off_once: bool,
     /// The previous referee command, different from the current one
@@ -60,7 +60,7 @@ pub struct StateData {
     pub enemy_score: u32,
 }
 
-impl Default for StateData {
+impl Default for GameStateData {
     fn default() -> Self {
         Self {
             kicked_off_once: false,
