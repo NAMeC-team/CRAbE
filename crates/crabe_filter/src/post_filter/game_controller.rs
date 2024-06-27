@@ -13,10 +13,9 @@ use crate::post_filter::PostFilter;
 /// Translates the received events and referee commands
 /// into specific game state for the game
 pub struct GameControllerPostFilter {
-    /// Timer used for events that rely on specific durations.
-    /// One example is the duration of the kickoff, during which
-    /// if the opponent does not touch the ball after
-    timer: Option<Instant>,
+    /// If true, means we must re-enter the current state branch
+    /// because it depends on a timer provided by the referee
+    time_based_refresh: bool,
     /// Contains multiple information about the current state of the match
     state_data: StateData,
 }
@@ -50,7 +49,7 @@ impl GameControllerPostFilter {
 impl Default for GameControllerPostFilter {
     fn default() -> Self {
         Self {
-            timer: None,
+            time_based_refresh: false,
             state_data: StateData::default(),
         }
     }
@@ -86,17 +85,18 @@ impl PostFilter for GameControllerPostFilter {
 
             // change state only if a new referee command has been issued,
             // or a timer is currently being used
-            if self.state_data.last_ref_cmd != referee.command || self.timer != None {
+            if self.state_data.last_ref_cmd != referee.command || self.time_based_refresh {
                 dbg!(&referee.command);
                 dbg!(referee.next_command);
                 dbg!(&referee.designated_position);
+                dbg!(&referee.current_action_time_remaining);
 
                 self.update_latest_state_data(referee);
 
                 new_state = self.resolve_branch(&referee.command)
                     .process_state(world,
                                    referee,
-                                   &mut self.timer,
+                                   &mut self.time_based_refresh,
                                    &mut self.state_data);
 
                 dbg!(&new_state);

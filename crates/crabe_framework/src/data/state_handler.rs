@@ -23,7 +23,9 @@ pub trait GameStateBranch {
     /// Parameters :
     /// - `world`                     | Information on the world
     /// - `referee`                   | The current data issued from the referee
-    /// - `timer`                     | Used for specific events. Set to None if it is not in use
+    /// - `time_based_refresh`        | Set to true if we need to refresh the state constantly
+    ///                                 (for example, a free kick state is time based, we need to update
+    ///                                 the state again to check if we switch to another state or not)
     /// - `previous_state_data`       | Stores information about the latest
     ///                                 valid state we encountered. It is a capture
     ///                                 of the *previous* state. Responsible to modify
@@ -35,7 +37,7 @@ pub trait GameStateBranch {
     fn process_state(&self,
                      world: &World,
                      referee: &Referee,
-                     timer_opt: &mut Option<Instant>,
+                     time_based_refresh: &mut bool,
                      previous_state_data: &mut StateData) -> GameState;
 }
 

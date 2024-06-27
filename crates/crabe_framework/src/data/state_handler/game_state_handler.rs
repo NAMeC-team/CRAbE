@@ -42,10 +42,10 @@ impl GameStateBranch for HaltStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     timer_opt: &mut Option<Instant>,
+                     time_based_refresh: &mut bool,
                      _latest_data: &mut StateData) -> GameState {
-        // reset timer
-        *timer_opt = None;
+
+        *time_based_refresh = false;
         return GameState::Halted(HaltedState::Halt);
     }
 }
@@ -62,7 +62,7 @@ impl GameStateBranch for TimeoutStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     _time_based_refresh: &mut bool,
                      _latest_data: &mut StateData) -> GameState {
         // TODO: maybe send information about the timeout
         GameState::Halted(HaltedState::Timeout(self.for_team))
@@ -147,7 +147,7 @@ impl GameStateBranch for StopStateBranch {
     fn process_state(&self,
                      world: &World,
                      referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     _time_based_refresh: &mut bool,
                      latest_data: &mut StateData) -> GameState {
 
         // handle first kickoff of the match
@@ -275,10 +275,9 @@ impl GameStateBranch for ForceStartStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     timer_opt: &mut Option<Instant>,
+                     time_based_refresh: &mut bool,
                      latest_data: &mut StateData) -> GameState {
-        // reset timer
-        *timer_opt = None;
+        *time_based_refresh = false;
         // implies that the first kick-off was issued already
         latest_data.kicked_off_once = true;
         return GameState::Running(RunningState::Run);
@@ -294,7 +293,7 @@ impl GameStateBranch for NormalStartStateBranch {
     fn process_state(&self,
                      world: &World,
                      referee: &Referee,
-                     timer_opt: &mut Option<Instant>,
+                     time_based_refresh: &mut bool,
                      latest_data: &mut StateData) -> GameState {
         // Here is how the game starts (or resumes after a goal)
         // -> Halt
@@ -310,22 +309,22 @@ impl GameStateBranch for NormalStartStateBranch {
 
                 // -> The ball moved from its designated position (ball is now in play)
                 if ball_moved_from_designated_pos(&referee.designated_position.unwrap_or(Point2::new(0., 0.)), &world.ball) {
-                    *timer_opt = None;
+                    *time_based_refresh = false;
                     GameState::Running(RunningState::Run)
                 }
-                else if let Some(timer) = timer_opt { // todo: we could use referee.current_action_time_remaining instead
+                else if let Some(time_remaining) = referee.current_action_time_remaining { // todo: we could use referee.current_action_time_remaining instead
                     // -> 10 seconds have elapsed
-                    if timer.elapsed() > Duration::from_secs(10) {
-                        *timer_opt = None;
+                    if time_remaining.num_seconds() <= -1 { // TODO (bug): <= -1 is valid only when .num_seconds() attains -2
+                        *time_based_refresh = false;
                         GameState::Running(RunningState::Run)
                     } else {
                         // otherwise we're still doing a kickoff
+                        *time_based_refresh = true;
                         GameState::Running(RunningState::KickOff(of_team))
                     }
                 } else {
-                    // if there's no timer defined,
-                    // the kickoff just started, retain a timer to update
-                    *timer_opt = Some(Instant::now());
+                    warn!("Referee did not provide time remaining for kickoff");
+                    *time_based_refresh = true;
                     GameState::Running(RunningState::KickOff(of_team))
                 }
             }
@@ -336,22 +335,22 @@ impl GameStateBranch for NormalStartStateBranch {
                 // completely handled (whether it's failed or successful, for example)
                 // the following will be the minimum required, we can change it later
                 if ball_moved_from_designated_pos(&get_penalty_designated_ball_pos(of_team, referee), &world.ball) {
-                    *timer_opt = None;
+                    *time_based_refresh = false;
                     GameState::Running(RunningState::Run)
                 }
-                else if let Some(timer) = timer_opt {
+                else if let Some(time_remaining) = referee.current_action_time_remaining {
                     // -> 10 seconds have elapsed
-                    if timer.elapsed() > Duration::from_secs(10) {
-                        *timer_opt = None;
+                    if time_remaining.num_seconds() <= -1 {
+                        *time_based_refresh = false;
                         GameState::Running(RunningState::Run)
                     } else {
                         // otherwise we're still doing a penalty
+                        *time_based_refresh = true;
                         GameState::Running(RunningState::Penalty(of_team))
                     }
                 } else {
-                    // if there's no timer defined,
-                    // the penalty just started, retain a timer to update
-                    *timer_opt = Some(Instant::now());
+                    warn!("Referee did not provide time remaining for penalty");
+                    *time_based_refresh = true;
                     GameState::Running(RunningState::Penalty(of_team))
                 }
             }
@@ -368,8 +367,9 @@ impl GameStateBranch for DeprecatedStateBranch {
     fn process_state(&self,
                      world: &World,
                      _referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     _time_based_refresh: &mut bool,
                      _latest_data: &mut StateData) -> GameState {
+        warn!("Deprecated state has been used");
         return world.data.ref_orders.state;
     }
 }
@@ -385,32 +385,33 @@ impl FreekickStateBranch {
 impl GameStateBranch for FreekickStateBranch {
     fn process_state(&self,
                      world: &World,
-                     _referee: &Referee,
-                     timer_opt: &mut Option<Instant>,
+                     referee: &Referee,
+                     time_based_refresh: &mut bool,
                      latest_data: &mut StateData) -> GameState {
         // If the ball moved at least 0.05 meters from its designated position,
         // the kicker bot is considered to have touched the ball, and the game can resume normally
         // precondition: the last designated pos has been provided by the referee
         if ball_moved_from_designated_pos(&latest_data.last_designated_pos, &world.ball) {
-            *timer_opt = None;
+            *time_based_refresh = false;
             return GameState::Running(RunningState::Run)
         }
         // otherwise, check if we are still in the freekick state
-        else if let Some(timer) = &timer_opt {
+        else if let Some(time_remaining) = referee.current_action_time_remaining {
             // If 10 seconds haven't passed
-            if timer.elapsed() < Duration::from_secs(10) {
+            if !time_remaining.num_seconds() <= -1 {
                 // There is still some time for the team to perform the freekick
+                *time_based_refresh = true;
                 GameState::Running(RunningState::FreeKick(self.for_team))
             } else {
                 // Free kick time has ended, moving on to the next state
                 // it is required to update the state in this case, because the referee
                 // will not send a new command telling us we can resume normal play
-                *timer_opt = None;
+                *time_based_refresh = false;
                 GameState::Running(RunningState::Run)
             }
         } else {
-            // A freekick has just started, save a timer to measure the time
-            *timer_opt = Some(Instant::now());
+            warn!("Referee did not provide time remaining for free kick");
+            *time_based_refresh = true;
             GameState::Running(RunningState::FreeKick(self.for_team))
         }
     }
@@ -432,7 +433,7 @@ impl GameStateBranch for PrepareKickoffStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     _time_based_refresh: &mut bool,
                      _latest_data: &mut StateData) -> GameState {
         GameState::Stopped(StoppedState::PrepareKickoff(self.for_team))
     }
@@ -450,7 +451,7 @@ impl GameStateBranch for BallPlacementStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     _time_based_refresh: &mut bool,
                      _latest_data: &mut StateData) -> GameState {
 
         GameState::Stopped(StoppedState::BallPlacement(self.by_team))
@@ -469,7 +470,7 @@ impl GameStateBranch for PreparePenaltyStateBranch {
     fn process_state(&self,
                      _world: &World,
                      _referee: &Referee,
-                     _timer_opt: &mut Option<Instant>,
+                     _time_based_refresh: &mut bool,
                      _latest_data: &mut StateData) -> GameState {
         //TODO: improve this branch, with more StoppedState penalty states
         // to define precisely what we should be doing
