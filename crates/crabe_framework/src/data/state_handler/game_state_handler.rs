@@ -15,7 +15,8 @@ use crate::data::world::{Ball, Team, TeamColor, World};
 /// at a specific location to perform the free kick)
 fn ball_moved_from_designated_pos(designated_position: &Point2<f64>, ball_opt: &Option<Ball>) -> bool {
     return if let Some(ball) = &ball_opt {
-        distance(&ball.position.xy(), &designated_position.xy()) >= 0.05
+        let dist = distance(&ball.position.xy(), &designated_position.xy());
+        dist >= 0.05
     } else {
         false
     }
@@ -228,6 +229,10 @@ impl GameStateBranch for StopStateBranch {
                     }
                 }
 
+                Event::AttackerDoubleTouchedBall(foul) => {
+                    StoppedState::PrepareFreekick(foul.by_team.opposite())
+                }
+
                 // Non-Stopping Fouls that can be ignored (or that never happen during a Stop state)
                 // TODO: more events might need management
                 // Event::AttackerTouchedBallInDefenseArea(_) => {}
@@ -239,7 +244,6 @@ impl GameStateBranch for StopStateBranch {
                 // Event::BotInterferedPlacement(_) => {}
                 // Event::Goal(_) => {}  // do not use this, not recommended
                 // Event::InvalidGoal(_) => {}
-                // Event::AttackerDoubleTouchedBall(_) => {}
                 // Event::PlacementSucceeded(_) => {}
                 // Event::PenaltyKickFailed(_) => {}
                 // Event::PlacementFailed(_) => {}
@@ -381,18 +385,13 @@ impl FreekickStateBranch {
 impl GameStateBranch for FreekickStateBranch {
     fn process_state(&self,
                      world: &World,
-                     referee: &Referee,
+                     _referee: &Referee,
                      timer_opt: &mut Option<Instant>,
-                     _latest_data: &mut StateData) -> GameState {
+                     latest_data: &mut StateData) -> GameState {
         // If the ball moved at least 0.05 meters from its designated position,
         // the kicker bot is considered to have touched the ball, and the game can resume normally
-        if ball_moved_from_designated_pos(
-            &referee.designated_position.unwrap_or(|| -> Point2<f64> {
-                // TODO: IRL tests to check if this warning happens in a real situation
-                warn!("Free kick designated position was not given by referee");
-                Ball::default().position_2d()
-            }()), &world.ball) {
-
+        // precondition: the last designated pos has been provided by the referee
+        if ball_moved_from_designated_pos(&latest_data.last_designated_pos, &world.ball) {
             *timer_opt = None;
             return GameState::Running(RunningState::Run)
         }

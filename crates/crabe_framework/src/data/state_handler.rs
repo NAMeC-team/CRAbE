@@ -1,6 +1,7 @@
 pub mod game_state_handler;
 
 use std::time::Instant;
+use nalgebra::Point2;
 use crate::data::referee::{Referee, RefereeCommand};
 use crate::data::world::game_state::{GameState, HaltedState};
 use crate::data::world::{TeamColor, World};
@@ -49,6 +50,8 @@ pub struct StateData {
     pub prev_ref_cmd: RefereeCommand,
     /// The most recent referee command issued
     pub last_ref_cmd: RefereeCommand,
+    /// Latest designated position provided by the referee
+    pub last_designated_pos: Point2<f64>,
     /// Last saved score of the ally team
     pub ally_score: u32,
     /// Last saved score of the enemy team
@@ -61,6 +64,7 @@ impl Default for StateData {
             kicked_off_once: false,
             prev_ref_cmd: RefereeCommand::Halt,
             last_ref_cmd: RefereeCommand::Halt,
+            last_designated_pos: Point2::new(0., 0.),
             ally_score: 0,
             enemy_score: 0,
         }

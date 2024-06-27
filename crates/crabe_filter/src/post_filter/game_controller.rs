@@ -40,6 +40,10 @@ impl GameControllerPostFilter {
             self.state_data.prev_ref_cmd = self.state_data.last_ref_cmd;
         }
         self.state_data.last_ref_cmd = referee.command;
+
+        if let Some(designated_pos) = referee.designated_position {
+            self.state_data.last_designated_pos = designated_pos / 1000.;
+        }
     }
 }
 
@@ -85,6 +89,7 @@ impl PostFilter for GameControllerPostFilter {
             if self.state_data.last_ref_cmd != referee.command || self.timer != None {
                 dbg!(&referee.command);
                 dbg!(referee.next_command);
+                dbg!(&referee.designated_position);
 
                 self.update_latest_state_data(referee);
 
