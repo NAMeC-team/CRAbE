@@ -8,6 +8,7 @@ use crate::data::world::game_state::{GameState, HaltedState};
 /// to both teams, about the current game state,
 /// the maximum speed allowed
 #[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct RefereeOrders {
     /// Current game state
     pub state: GameState,
