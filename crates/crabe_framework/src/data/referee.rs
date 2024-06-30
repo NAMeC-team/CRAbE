@@ -1,8 +1,10 @@
+// Original author: Benjamin CHEW
+
 use chrono::{DateTime, Duration, Utc};
 use crate::data::world::TeamColor;
 use event::GameEvent;
 use nalgebra::Point2;
-use crate::data::referee::referee_orders::RefereeOrders;
+use serde::Serialize;
 
 pub mod event;
 pub mod referee_orders;
@@ -85,7 +87,8 @@ pub struct GameEventProposalGroup {
     pub accepted: Option<bool>,
 }
 /// `Stage` represents different stages of a game.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug, Copy)]
+#[serde(rename_all = "camelCase")]
 #[repr(i32)]
 pub enum Stage {
     /// Indicates that the first half is about to start.
@@ -150,7 +153,7 @@ pub enum RefereeCommand {
 }
 
 /// Information about a single team.
-#[derive(Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 pub struct TeamInfo {
     /// The team's name (empty string if operator has not typed anything).
     pub name: String,
@@ -185,4 +188,26 @@ pub struct TeamInfo {
     pub ball_placement_failures_reached: Option<bool>,
     /// The team is allowed to substitute one or more robots currently
     pub bot_substitution_allowed: Option<bool>,
+}
+
+impl Default for TeamInfo {
+    fn default() -> Self {
+        Self {
+            name: "".to_string(),
+            score: 0,
+            red_cards: 0,
+            yellow_card_times: vec![],
+            yellow_cards: 0,
+            timeouts: 0,
+            timeout_time: 0,
+            goalkeeper: 0,
+            foul_counter: None,
+            ball_placement_failures: None,
+            can_place_ball: None,
+            max_allowed_bots: None,
+            bot_substitution_intent: None,
+            ball_placement_failures_reached: None,
+            bot_substitution_allowed: None,
+        }
+    }
 }

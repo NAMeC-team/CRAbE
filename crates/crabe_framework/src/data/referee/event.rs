@@ -275,7 +275,7 @@ pub struct KeeperHeldBall {
 
 impl Serialize for KeeperHeldBall {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> where S: Serializer {
-        let mut ser = serializer.serialize_struct("TeamColor", 3)?;
+        let mut ser = serializer.serialize_struct("TeamColor", 3)?; //TODO: isn't the struct's name wrong ?
         ser.serialize_field("by_team", &self.by_team)?;
         ser.serialize_field("location", &self.location)?;
         ser.serialize_field("duration", &self.duration.unwrap_or(Duration::seconds(0)).num_seconds())?;

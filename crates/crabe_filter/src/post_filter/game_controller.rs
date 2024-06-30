@@ -1,10 +1,7 @@
-use std::time::Instant;
-use crabe_framework::data::referee::referee_orders::RefereeOrders;
-use crabe_framework::data::referee::{Referee, RefereeCommand, TeamInfo};
+use crabe_framework::data::referee::{Referee, RefereeCommand};
 use crabe_framework::data::state_handler::game_state_handler::{ForceStartStateBranch, HaltStateBranch, DeprecatedStateBranch, NormalStartStateBranch, StopStateBranch, PrepareKickoffStateBranch, PreparePenaltyStateBranch, FreekickStateBranch, TimeoutStateBranch, BallPlacementStateBranch};
 use crabe_framework::data::state_handler::{GameStateBranch, GameStateData};
-use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState};
-use crabe_framework::data::world::{TeamColor, World};
+use crabe_framework::data::world::World;
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
@@ -24,7 +21,8 @@ pub struct GameControllerPostFilter {
 
 impl GameControllerPostFilter {
 
-    /// Updates the team scores of both teams
+    /// Updates the team scores of both teams in the latest
+    /// saved state (does not update world, only internal)
     fn update_team_scores(&mut self, referee: &Referee) {
         self.state_data.ally_score = referee.ally.score;
         self.state_data.enemy_score = referee.enemy.score;
@@ -76,34 +74,39 @@ impl GameControllerPostFilter {
             | RefereeCommand::Deprecated => Box::new(DeprecatedStateBranch)
         }
     }
+
+    fn update_state(&mut self, world: &mut World, referee: &Referee) {
+        let mut new_state = world.data.ref_orders.state;
+
+        // change state only if a new referee command has been issued,
+        // or if the state is time-dependent
+        if self.state_data.last_ref_cmd != referee.command || self.time_based_refresh {
+            dbg!(&referee.command);
+            dbg!(referee.next_command);
+            dbg!(&referee.designated_position);
+            dbg!(&referee.current_action_time_remaining);
+
+            self.update_latest_state_data(referee);
+
+            new_state = self.resolve_branch(&referee.command)
+                .process_state(world,
+                               referee,
+                               &mut self.time_based_refresh,
+                               &mut self.state_data);
+
+            dbg!(&new_state);
+
+            self.update_team_scores(referee);
+            world.data.ref_orders.update(new_state, referee);
+        }
+    }
 }
 
 impl PostFilter for GameControllerPostFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         if let Some(referee) = filter_data.referee.last() {
-            let mut new_state = world.data.ref_orders.state;
 
-            // change state only if a new referee command has been issued,
-            // or if the state is time-dependent
-            if self.state_data.last_ref_cmd != referee.command || self.time_based_refresh {
-                dbg!(&referee.command);
-                dbg!(referee.next_command);
-                dbg!(&referee.designated_position);
-                dbg!(&referee.current_action_time_remaining);
-
-                self.update_latest_state_data(referee);
-
-                new_state = self.resolve_branch(&referee.command)
-                    .process_state(world,
-                                   referee,
-                                   &mut self.time_based_refresh,
-                                   &mut self.state_data);
-
-                dbg!(&new_state);
-
-                self.update_team_scores(referee);
-                world.data.ref_orders.update(new_state, referee);
-            }
+            self.update_state(world, referee);
 
             // update positive half, to see which team resides on the positive
             // side of the field
@@ -111,6 +114,13 @@ impl PostFilter for GameControllerPostFilter {
                 world.data.positive_half = team_on_positive_half
             }
 
+            // update stage information
+            world.data.stage_info.stage = referee.stage;
+            world.data.stage_info.time_left = referee.stage_time_left;
+
+            // update team infos
+            world.data.ally.update_info(&referee.ally);
+            world.data.enemy.update_info(&referee.enemy);
         };
     }
 }
