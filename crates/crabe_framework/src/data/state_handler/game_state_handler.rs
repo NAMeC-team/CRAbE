@@ -152,29 +152,11 @@ impl GameStateBranch for StopStateBranch {
 
         *time_based_refresh = false;
 
-        // handle first kickoff of the match
-        if !latest_data.kicked_off_once {
-            return match referee.next_command {
-                None => GameState::Stopped(StoppedState::PrepareForGameStart),
-                Some(next) => {
-                    match next {
-                        // normally, we should be able to fetch which team will perform the next
-                        // kickoff, so we can consider that the Stop state right after a goal
-                        // is the same as preparing for a kickoff
-                        RefereeCommand::PrepareKickoff(for_team) => {
-                            GameState::Stopped(StoppedState::PrepareKickoff(for_team))
-                        }
-                        _ => GameState::Stopped(StoppedState::PrepareForGameStart)
-                    }
-                }
-            }
-        }
-
         // determine the reason of this Stop command
 
         // otherwise, it might be because of an event that occurred
         // (ball out of field, double touch foul etc...)
-        else if let Some(game_event) = referee.game_events.last() {
+        if let Some(game_event) = referee.game_events.last() {
             let stopped_state: StoppedState = match &game_event.event {
                 // Common occurrences in a match
                 Event::BallLeftFieldTouchLine(data) => StoppedState::BallLeftFieldTouchLine(data.by_team),
@@ -264,9 +246,20 @@ impl GameStateBranch for StopStateBranch {
         }
 
 
-        // Default behaviour is to return a bland stop state,
-        // in case of no recent event or first kickoff
-        return GameState::Stopped(StoppedState::Stop);
+        return match referee.next_command {
+            Some(next) => {
+                match next {
+                    // normally, we should be able to fetch which team will perform the next
+                    // kickoff, so we can consider that the Stop state right after a goal
+                    // is the same as preparing for a kickoff
+                    RefereeCommand::PrepareKickoff(for_team) => {
+                        GameState::Stopped(StoppedState::PrepareKickoff(for_team))
+                    }
+                    _ => GameState::Stopped(StoppedState::PrepareForGameStart)
+                }
+            }
+            None => GameState::Stopped(StoppedState::Stop),
+        }
     }
 }
 
@@ -393,9 +386,12 @@ impl GameStateBranch for FreekickStateBranch {
         // If the ball moved at least 0.05 meters from its designated position,
         // the kicker bot is considered to have touched the ball, and the game can resume normally
         // precondition: the last designated pos has been provided by the referee
-        if ball_moved_from_designated_pos(&latest_data.last_designated_pos, &world.ball) {
-            *time_based_refresh = false;
-            return GameState::Running(RunningState::Run)
+        if let Some(designated_pos) = &latest_data.last_designated_pos {
+            if ball_moved_from_designated_pos(designated_pos, &world.ball) {
+                *time_based_refresh = false;
+                return GameState::Running(RunningState::Run)
+            }
+            return GameState::Running(RunningState::FreeKick(self.for_team))
         }
         // otherwise, check if we are still in the freekick state
         else if let Some(time_remaining) = referee.current_action_time_remaining {

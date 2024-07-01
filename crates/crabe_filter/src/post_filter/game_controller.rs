@@ -38,9 +38,18 @@ impl GameControllerPostFilter {
         }
         self.state_data.last_ref_cmd = referee.command;
 
-        if let Some(designated_pos) = referee.designated_position {
-            self.state_data.last_designated_pos = designated_pos / 1000.;
-        }
+        match self.state_data.prev_ref_cmd {
+            RefereeCommand::PrepareKickoff(_)
+            | RefereeCommand::PreparePenalty(_)
+            | RefereeCommand::DirectFree(_) => {
+                self.state_data.last_designated_pos = None
+            }
+            _ => {
+                if let Some(designated_pos) = referee.designated_position {
+                    self.state_data.last_designated_pos = Some(designated_pos / 1000.);
+                }
+            }
+       }
     }
 }
 
@@ -86,7 +95,7 @@ impl GameControllerPostFilter {
             dbg!(&referee.designated_position);
             dbg!(&referee.current_action_time_remaining);
 
-            self.update_latest_state_data(referee);
+            self.update_latest_state_data(referee, );
 
             new_state = self.resolve_branch(&referee.command)
                 .process_state(world,
