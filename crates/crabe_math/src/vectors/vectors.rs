@@ -2,7 +2,7 @@ use std::ops::Sub;
 
 use nalgebra::{Point2, Vector2, Rotation2};
 
-/// Returns the angle to look at a point from another point (from the (1,0) vector base)
+/// Returns the angle to look at a point from another point (from the robot point of view)
 /// 
 /// # Arguments
 /// p1 - The point to look from
@@ -57,7 +57,7 @@ pub fn rotate_vector(v: Vector2<f64>, angle: f64) -> Vector2<f64> {
     rotated_vector
 }
 
-/// Create a vector from an a radian angle
+/// Create a vector from an a radian angle ((1, 0) is the default vector)
 /// 
 /// # Arguments
 /// angle - The angle in radians
