@@ -6,10 +6,7 @@ use std::collections::HashMap;
 /// The `AllyInfo` struct represents the information related to allies in the game.
 #[derive(Serialize, Clone, Default, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct AllyInfo {
-    pub state: String,
-    pub message: String,
-}
+pub struct AllyInfo;
 
 /// The `EnemyInfo` struct represents the information related to enemies in the game.
 #[derive(Serialize, Clone, Default, Debug)]
