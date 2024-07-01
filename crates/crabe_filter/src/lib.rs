@@ -20,6 +20,8 @@ use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
+use crate::pre_filter::game_controller::GameControllerPreFilter;
+use crate::post_filter::game_controller::GameControllerPostFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -34,23 +36,26 @@ pub struct FilterPipeline {
 
 impl FilterPipeline {
     pub fn with_config(_config: FilterConfig, common_config: &CommonConfig) -> Self {
+        let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
+        let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
+            Box::new(RobotFilter),
+            Box::new(GeometryFilter),
+            Box::new(BallFilter),
+        ];
+
+        if common_config.gc {
+            pre_filters.push(Box::new(GameControllerPreFilter));
+            post_filters.push(Box::new(GameControllerPostFilter::default()));
+        }
+
         Self {
-            pre_filters: vec![Box::new(VisionFilter::new())],
+            pre_filters,
             filters: vec![
                 Box::new(PassthroughFilter),
                 Box::<InactiveFilter>::default(),
             ],
-            post_filters: vec![
-                Box::new(RobotFilter),
-                Box::new(GeometryFilter),
-                Box::new(BallFilter),
-            ],
-            filter_data: FilterData {
-                allies: Default::default(),
-                enemies: Default::default(),
-                ball: Default::default(),
-                geometry: Default::default(),
-            },
+            post_filters,
+            filter_data: FilterData::default(),
             team_color: if common_config.yellow {
                 TeamColor::Yellow
             } else {
@@ -65,10 +70,10 @@ impl Component for FilterPipeline {
 }
 
 impl FilterComponent for FilterPipeline {
-    fn step(&mut self, inbound_data: InboundData, world: &mut World) {
+    fn step(&mut self, mut inbound_data: InboundData, world: &mut World) {
         self.pre_filters
             .iter_mut()
-            .for_each(|f| f.step(&inbound_data, &self.team_color, &mut self.filter_data));
+            .for_each(|f| f.step(&mut inbound_data, &self.team_color, &mut self.filter_data));
 
         self.filters
             .iter_mut()
