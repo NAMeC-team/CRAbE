@@ -41,9 +41,6 @@ impl Rectangle {
     /// assert(not(Rec.is_in(Point2::new(-1., 2.))));
     /// assert(not(Rec.is_in(Point2::new(2., -1.))));
     /// ```
-
-    
-    
     pub fn is_in(&self, point: Point2<f64>) -> bool {
         let x = point.x - self.position.x;
         let y = point.y - self.position.y;
