@@ -95,7 +95,7 @@ impl GameControllerPostFilter {
             dbg!(&referee.designated_position);
             dbg!(&referee.current_action_time_remaining);
 
-            self.update_latest_state_data(referee, );
+            self.update_latest_state_data(referee);
 
             new_state = self.resolve_branch(&referee.command)
                 .process_state(world,
