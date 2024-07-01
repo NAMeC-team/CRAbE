@@ -1,4 +1,5 @@
 use crate::action::ActionWrapper;
+use crate::message::MessageData;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 
@@ -7,6 +8,13 @@ use crabe_framework::data::world::World;
 /// experiment with different behaviors.
 pub mod testing;
 
+pub struct StrategyData {
+    pub ids: Vec<u8>,
+    pub name: &'static str,
+    pub strategy: Box<dyn Strategy>,
+    pub messages: Vec<MessageData>,
+}
+
 /// The `Strategy` trait defines the interface for a behavior that one or multiple robots can adopt to achieve a certain goal.
 /// A strategy receives information about the state of the world and its own state, and issues commands to the robot
 /// through an `ActionWrapper` instance. A strategy can run for multiple time steps, until it decides to
@@ -14,7 +22,9 @@ pub mod testing;
 pub trait Strategy {
     /// Name of the strategy, that we use as simple reference
     fn name(&self) -> &'static str;
-
+    fn get_messages(&self) -> &Vec<MessageData> ;
+    fn get_ids(&self) -> Vec<u8>;
+    fn put_ids(&mut self, ids: Vec<u8>);
     /// Executes one step of the strategy, updating the state of the robot and issuing commands
     /// to it through the given `ActionWrapper`.
     ///
