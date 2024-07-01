@@ -147,8 +147,10 @@ impl GameStateBranch for StopStateBranch {
     fn process_state(&self,
                      world: &World,
                      referee: &Referee,
-                     _time_based_refresh: &mut bool,
+                     time_based_refresh: &mut bool,
                      latest_data: &mut GameStateData) -> GameState {
+
+        *time_based_refresh = false;
 
         // handle first kickoff of the match
         if !latest_data.kicked_off_once {
