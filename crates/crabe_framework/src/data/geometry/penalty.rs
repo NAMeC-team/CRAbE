@@ -12,6 +12,8 @@ pub struct Penalty {
     pub depth: f64,
     /// The front line of the penalty area
     pub front_line: Line,
+    /// The back line of the penalty area
+    pub back_line: Line,
     /// The left line of the penalty area (looking from the center of the field)
     pub left_line: Line,
     /// The right line of the penalty area (looking from the center of the field)
@@ -29,6 +31,10 @@ impl Penalty {
             front_line: Line::new(
                 Point2::new(self.front_line.start.x - factor * offset,self.front_line.start.y + factor*offset), 
                 Point2::new(self.front_line.end.x - factor * offset, self.front_line.end.y - factor*offset)
+            ),
+            back_line: Line::new(
+                Point2::new(self.back_line.start.x - factor * offset,self.back_line.start.y - factor*offset), 
+                Point2::new(self.back_line.end.x - factor * offset,self.back_line.end.y + factor*offset), 
             ),
             left_line: Line::new(
                 Point2::new(self.left_line.start.x,self.left_line.start.y + factor*offset), 

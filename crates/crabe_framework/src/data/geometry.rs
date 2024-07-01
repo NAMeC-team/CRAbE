@@ -50,17 +50,18 @@ impl Default for Geometry {
             ally_goal: Goal {
                 width: 1.0,
                 depth: 0.18,
-                front_line: Line::new(Point2::new(-4.5, -0.5),Point2::new(-4.5, 0.5)),
+                line: Line::new(Point2::new(-4.5, -0.5),Point2::new(-4.5, 0.5)),
             },
             enemy_goal: Goal {
                 width: 1.0,
                 depth: 0.18,
-                front_line: Line::new(Point2::new(4.5, -0.5),Point2::new(4.5, 0.5)),
+                line: Line::new(Point2::new(4.5, -0.5),Point2::new(4.5, 0.5)),
             },
             ally_penalty: Penalty {
                 width: 2.0,
                 depth: 1.0,
                 front_line: Line::new(Point2::new(-3.5, -1.0),Point2::new(-3.5, 1.0)),
+                back_line: Line::new(Point2::new(-4.5, -1.0),Point2::new(-4.5, 1.0)),
                 left_line: Line::new(Point2::new(-4.5, -1.0),Point2::new(-3.5, -1.0)),
                 right_line: Line::new(Point2::new(-4.5, 1.0),Point2::new(-3.5, 1.0)),
             },
@@ -68,6 +69,7 @@ impl Default for Geometry {
                 width: 2.0,
                 depth: 1.0,
                 front_line: Line::new(Point2::new(3.5, -1.0),Point2::new(3.5, 1.0)),
+                back_line: Line::new(Point2::new(4.5, -1.0),Point2::new(4.5, 1.0)),
                 left_line: Line::new(Point2::new(4.5, -1.0),Point2::new(3.5, -1.0)),
                 right_line: Line::new(Point2::new(4.5, 1.0),Point2::new(3.5, 1.0)),
             },

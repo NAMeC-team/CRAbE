@@ -10,7 +10,7 @@ pub struct Goal {
     /// The depth of the goal
     pub depth: f64,
     /// The front line of the goal area
-    pub front_line: Line
+    pub line: Line
 }
 
 impl Goal {}

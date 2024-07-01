@@ -46,6 +46,16 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
                         -factor * (width / 2.0),
                     ),
                 ),
+                back_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        -factor * (width / 2.0),
+                    ),
+                ),
                 left_line: Line::new(
                     Point2::new(
                         factor * (cam_geometry.field_length / 2.0),
@@ -84,6 +94,16 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
                         -factor * (width / 2.0),
                     ),
                 ),
+                back_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        -factor * (width / 2.0),
+                    ),
+                ),
                 left_line: Line::new(
                     Point2::new(
                         factor * (cam_geometry.field_length / 2.0),
@@ -110,10 +130,11 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
 
 fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
     let factor = if positive { 1.0 } else { -1.0 };
+    println!("cam_geometry.goal_width: {}", cam_geometry.goal_width);
     Goal {
         width: cam_geometry.goal_width,
         depth: cam_geometry.goal_depth,
-        front_line: Line::new(
+        line: Line::new(
             Point2::new(
                 factor * (cam_geometry.field_length / 2.0),
                 factor * (cam_geometry.goal_width / 2.0),
