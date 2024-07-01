@@ -2,7 +2,7 @@ use std::ops::Sub;
 
 use nalgebra::{Point2, Vector2, Rotation2};
 
-/// Returns the angle to look at a point from another point
+/// Returns the angle to look at a point from another point (from the (1,0) vector base)
 /// 
 /// # Arguments
 /// p1 - The point to look from
