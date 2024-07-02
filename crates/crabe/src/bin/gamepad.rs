@@ -1,4 +1,4 @@
-use clap::Parser;
+use clap::{Args, Parser};
 use crabe_decision::pipeline::{DecisionConfig, DecisionPipeline};
 use crabe_filter::{FilterConfig, FilterPipeline};
 use crabe_framework::component::{
@@ -20,6 +20,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 use crabe::gamepad_pipeline::GamepadPipeline;
+use crabe_io::gamepad::GamepadRobotIdConfig;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -51,6 +52,10 @@ pub struct Cli {
     #[command(flatten)]
     #[command(next_help_heading = "Output")]
     pub output_config: OutputConfig,
+
+    #[command(flatten)]
+    #[command(next_help_heading = "Control")]
+    pub gamepad_config: GamepadRobotIdConfig,
 }
 
 #[derive(Default)]
@@ -151,7 +156,7 @@ fn main() {
 
     let mut system = SystemBuilder::default()
         .world(World::with_config(&cli.common))
-        .decision_component(GamepadPipeline::with_config(cli.decision_config, &cli.common))
+        .decision_component(GamepadPipeline::with_config(cli.decision_config, &cli.common, &cli.gamepad_config))
         .tool_component(ToolServer::with_config(cli.tool_config, &cli.common))
         .guard_component(GuardPipeline::with_config(cli.guard_config, &cli.common))
         .output_component(OutputPipeline::with_config(cli.output_config, &cli.common))

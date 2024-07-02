@@ -21,4 +21,6 @@ pub mod league;
 
 pub mod pipeline;
 pub mod tool;
-// pub mod serial;
+
+/// Basic config to test a single robot with a gamepad
+pub mod gamepad;

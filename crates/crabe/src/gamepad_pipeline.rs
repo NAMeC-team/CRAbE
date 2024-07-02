@@ -5,15 +5,17 @@ use crabe_framework::data::output::{Command, CommandMap, Kick};
 use crabe_framework::data::world::World;
 use crabe_framework::component::{Component, DecisionComponent};
 use crabe_framework::config::CommonConfig;
+use crabe_io::gamepad::GamepadRobotIdConfig;
 
 pub struct GamepadPipeline {
     gilrs: Gilrs,
     active_gamepad: Option<GamepadId>,
     is_charging: bool,
+    controlled_id: u8
 }
 
 impl GamepadPipeline {
-    pub fn with_config(_decision_cfg: DecisionConfig, _common_cfg: &CommonConfig) -> Self {
+    pub fn with_config(_decision_cfg: DecisionConfig, _common_cfg: &CommonConfig, gamepad_config: &GamepadRobotIdConfig) -> Self {
         let gilrs = Gilrs::new().unwrap();
 
         // Iterate over all connected gamepads
@@ -25,6 +27,7 @@ impl GamepadPipeline {
             gilrs,
             active_gamepad: None,
             is_charging: false,
+            controlled_id: gamepad_config.robot_id,
         }
     }
 }
@@ -40,8 +43,6 @@ impl DecisionComponent for GamepadPipeline {
         // You can also use cached gamepad state
         if let Some(gamepad) = self.active_gamepad.map(|id| self.gilrs.gamepad(id)) {
             let mut command = Command::default();
-
-           // command = 1; // TODO : Make id changeable
 
             // Move Local Velocity
             if gamepad.value(Axis::LeftStickY).abs() > 0.2 {
@@ -73,7 +74,7 @@ impl DecisionComponent for GamepadPipeline {
                 command.kick = Some(Kick::ChipKick { power: 1.0 });
             }
             let mut command_map = CommandMap::new();
-            command_map.insert(0, command);
+            command_map.insert(self.controlled_id, command);
 
 
             (command_map, ToolData::default())
