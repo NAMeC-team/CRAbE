@@ -1,15 +1,13 @@
-use std::ops::Mul;
-use std::ops::Add;
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
 use crate::utils::closest_bot_to_point;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{World};
-use crabe_math::shape::Line;
-use crabe_math::vectors::{vector_from_angle, self};
-use nalgebra::{Point2, clamp};
+use crabe_framework::data::world::World;
+use crabe_math::{shape::Line, vectors};
+use crabe_math::vectors::vector_from_angle;
+use nalgebra::Point2;
 
 /// The GoalKeeper strategy is responsible for keeping the goal safe by moving the robot to the best position to block the ball.
 #[derive(Default)]
