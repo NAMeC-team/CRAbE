@@ -117,12 +117,15 @@ impl Line {
     /// let line5 = Line::new(Point2::new(0., -1.), Point2::new(0., 1.));
     /// assert_eq!(line4.intersection_segments(&line5), Ok(Point2::new(0., 0.)));
     /// assert_eq!(line4.intersection_segments(&line1), Ok(Point2::new(0., 0.)));
+    /// let line6 = Line::new(Point2::new(4.5, 0.5), Point2::new(4.5, -0.5));
+    /// let line7 = Line::new(Point2::new(2.5, -1.), Point2::new(6.5, 1.));
+    /// assert_eq!(line6.intersection_segments(&line7), Ok(Point2::new(4.5, 0.)));
     /// ```
     pub fn intersection_segments(&self, segment: &Line) -> Result<Point2<f64>, String> {
         let t_nominator = ((self.start.x - segment.start.x) * (segment.start.y - segment.end.y))
             - ((self.start.y - segment.start.y) * (segment.start.x - segment.end.x));
-        let u_nominator = -((self.start.x - self.end.x) * (self.start.y - segment.start.y))
-            - ((self.start.y - self.end.y) * (self.start.x - segment.start.x));
+        let u_nominator = -(((self.start.x - self.end.x) * (self.start.y - segment.start.y))
+            - ((self.start.y - self.end.y) * (self.start.x - segment.start.x)));
 
         let denominator = ((self.start.x - self.end.x) * (segment.start.y - segment.end.y))
             - ((self.start.y - self.end.y) * (segment.start.x - segment.end.x));
