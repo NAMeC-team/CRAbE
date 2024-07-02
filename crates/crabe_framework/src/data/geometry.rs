@@ -37,6 +37,10 @@ pub struct Geometry {
     pub enemy_penalty: Penalty,
     /// The center circle of the field (position in meters and radius in radian).
     pub center: Circle,
+    /// The robot radius in meters.
+    pub robot_radius: f64,
+    /// The ball radius in meters.
+    pub ball_radius: f64,
 }
 
 impl Default for Geometry {
@@ -77,6 +81,8 @@ impl Default for Geometry {
                 center: Point2::new(0.0, 0.0),
                 radius: 0.5,
             },
+            robot_radius: 0.09,
+            ball_radius: 0.0215,
         }
     }
 }

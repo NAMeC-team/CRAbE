@@ -162,6 +162,8 @@ impl PostFilter for GeometryFilter {
             ally_penalty: geometry_to_penalty(cam_geometry, false),
             enemy_penalty: geometry_to_penalty(cam_geometry, true),
             center: geometry_to_center(cam_geometry),
+            robot_radius: cam_geometry.max_robot_radius.unwrap_or(0.09),
+            ball_radius: cam_geometry.ball_radius.unwrap_or(0.0215),
         };
 
         world.geometry = geometry;

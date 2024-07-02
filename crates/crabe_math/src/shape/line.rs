@@ -260,6 +260,33 @@ impl Line {
         Ok(self.start + t * line_direction)
     }
 
+    /// Return the distance between a point and the segment
+    /// 
+    /// # Arguments
+    /// point : the point to calculate the distance from the segment
+    ///     
+    /// # Returns
+    /// The distance between the point and the segment
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::Line;
+    /// use std::f64::consts::SQRT_2;
+    /// let line = Line::new(Point2::new(0., 0.), Point2::new(0., 1.));
+    /// let point = Point2::new(1., 0.5);
+    /// let distance = line.distance_to_point(&point);
+    /// assert_eq!(distance, 1.);
+    /// let point2 = Point2::new(1., 2.);
+    /// let distance2 = line.distance_to_point(&point2);
+    /// assert!((distance2 - SQRT_2).abs() < 0.000001);
+    /// ```
+    pub fn distance_to_point(&self, point: &Point2<f64>) -> f64{
+        let closest_point = self.closest_point_on_segment(point);
+        let delta = closest_point - point;
+        delta.norm()
+    }
+
     /// Returns a point along the line at a specified distance from the start point.
     /// based on a given fraction of the total distance between the two points.
     /// - for example with 0. it will return the starting point
