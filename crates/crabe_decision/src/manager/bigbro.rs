@@ -7,6 +7,7 @@ use crate::message::MessageData;
 use crate::strategy::testing::Aligned;
 use crate::strategy::testing::GoLeft;
 use crate::strategy::testing::GoRight;
+use crate::strategy::defensive::GoalKeeper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -29,6 +30,7 @@ impl BigBro {
             strategies: vec![
                 Box::new(GoLeft::new(1)),
                 Box::new(Aligned::new(vec![2, 3, 4])),
+                Box::new(GoalKeeper::new(0)),
             ],
         }
     }
