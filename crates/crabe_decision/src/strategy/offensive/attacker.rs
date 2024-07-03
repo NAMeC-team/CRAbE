@@ -102,7 +102,7 @@ impl Strategy for Attacker {
         let ball_in_the_way = ball_in_trajectory(&world, self.id, behind_ball_position);
         match self.state {
             ShooterState::PlaceForShoot => {
-                action_wrapper.push(self.id, MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, target_shooting_position), 0., false, None));
+                action_wrapper.push(self.id, MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, target_shooting_position), 0., false, None, false));
                 if shooting_trajectory_will_score 
                     && dot_with_ball > 0.95 // The robot is correctly facing the ball
                 {
@@ -114,7 +114,7 @@ impl Strategy for Attacker {
                 let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.002) { 
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
-                action_wrapper.push(self.id, MoveTo::new(ball_position, vectors::angle_to_point(robot_position,target_shooting_position), 1.,  true, kick));
+                action_wrapper.push(self.id, MoveTo::new(ball_position, vectors::angle_to_point(robot_position,target_shooting_position), 1.,  true, kick, false));
 
                 // If the ball is in the way or the robot is too far from the ball, go back to the placement state
                 if ball_in_the_way || dist_to_ball > distance_to_go_behind_ball+0.1 {

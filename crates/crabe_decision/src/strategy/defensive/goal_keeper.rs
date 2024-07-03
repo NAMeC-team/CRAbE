@@ -97,7 +97,7 @@ impl Strategy for GoalKeeper {
         let orientation = vectors::angle_to_point(robot.pose.position, orientation_target);
 
         // Move the robot to the calculated position and orientation
-        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None));
+        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false));
         false
     }
 
