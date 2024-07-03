@@ -1,5 +1,4 @@
-/// The `square` module contains a strategy that commands a robot to move in a square shape
-/// in a counter-clockwise direction. It is used for testing purposes only and is not intended
+/// The `offensive` module contains a strategies used to attack the opponent's goal.
 /// for use in a game.
 mod attacker;
 pub use self::attacker::Attacker;

@@ -80,12 +80,10 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
 
 fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
     let diff = alpha1 - alpha2;
-    if diff > PI {
-        diff - TAU
-    } else if diff < -PI {
-        diff + TAU
-    } else {
-        diff
+    match diff {
+        d if d > PI => d - TAU,
+        d if d < -PI => d + TAU,
+        d => d,
     }
 }
 
