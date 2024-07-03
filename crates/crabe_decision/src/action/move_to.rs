@@ -18,6 +18,7 @@ pub struct MoveTo {
     charge: bool,
     dribbler: f32,
     kicker: Option<Kick>,
+    overshoot: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -29,6 +30,7 @@ impl From<&mut MoveTo> for MoveTo {
             charge: other.charge,
             dribbler: other.dribbler,
             kicker: other.kicker,
+            overshoot: other.overshoot,
         }
     }
 }
@@ -46,6 +48,7 @@ impl MoveTo {
         dribbler: f32,
         charge: bool,
         kicker: Option<Kick>,
+        overshoot: bool,
     ) -> Self {
         Self {
             state: State::Running,
@@ -54,6 +57,7 @@ impl MoveTo {
             charge,
             dribbler,
             kicker,
+            overshoot,
         }
     }
 }
@@ -91,6 +95,8 @@ const GOTO_SPEED: f64 = 1.5;
 const GOTO_ROTATION: f64 = 1.5;
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.115;
+/// The overshoot distance.
+const OVERSHOOT_DIST: f64 = 2.;
 
 impl Action for MoveTo {
     /// Returns the name of the action.
@@ -115,7 +121,10 @@ impl Action for MoveTo {
         if let Some(robot) = world.allies_bot.get(&id) {
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
+            let target_overshooted = target_in_robot * OVERSHOOT_DIST;
 
+            let error_x_overshooted = target_overshooted.x;
+            let error_y_overshooted = target_overshooted.y;
             let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
@@ -124,11 +133,20 @@ impl Action for MoveTo {
                 self.state = State::Done;
             }
 
-            let order = Vector3::new(
+            let order = 
+            if self.overshoot {
+                Vector3::new(
+                GOTO_SPEED * error_x_overshooted,
+                GOTO_SPEED * error_y_overshooted,
+                GOTO_ROTATION * error_orientation,
+                )
+            } else {
+                Vector3::new(
                 GOTO_SPEED * error_x,
                 GOTO_SPEED * error_y,
                 GOTO_ROTATION * error_orientation,
-            );
+                )
+            };
 
             Command {
                 forward_velocity: order.x as f32,
@@ -137,6 +155,7 @@ impl Action for MoveTo {
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
+                overshoot: self.overshoot,
             }
         } else {
             Command::default()
