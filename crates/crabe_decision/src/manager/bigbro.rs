@@ -5,8 +5,8 @@ use crate::manager::Manager;
 use crate::message::Message;
 use crate::message::MessageData;
 use crate::strategy::testing::Aligned;
-use crate::strategy::testing::GoLeft;
-use crate::strategy::testing::GoRight;
+use crate::strategy::testing::GoLeftKeeper;
+use crate::strategy::testing::GoRightKeeper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -27,8 +27,7 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![
-                Box::new(GoLeft::new(1)),
-                Box::new(Aligned::new(vec![2, 3, 4])),
+                Box::new(GoLeftKeeper::new(0)),
             ],
         }
     }
@@ -84,22 +83,13 @@ impl BigBro {
     pub fn process_messages(&mut self, messages: Vec<MessageData>) {
         messages.iter().for_each(|m| {
             match m.message {
-                Message::WantToGoRight => {
-                    let strategy = Box::new(GoRight::new(m.id));
+                Message::WantToGoRightKeeper => {
+                    let strategy = Box::new(GoRightKeeper::new(m.id));
                     self.move_bot_to_new_strategy(m.id, strategy);
                 }
-                Message::WantToGoLeft => {
-                    let strategy = Box::new(GoLeft::new(m.id));
+                Message::WantToGoLeftKeeper => {
+                    let strategy = Box::new(GoLeftKeeper::new(m.id));
                     self.move_bot_to_new_strategy(m.id, strategy);
-                }
-                Message::WantToBeAligned => {
-                    //find strategy index with name "Aligned"
-                    let strategy_index = self
-                        .strategies
-                        .iter()
-                        .position(|s| s.name() == "Aligned")
-                        .unwrap();
-                    self.move_bot_to_existing_strategy(m.id, strategy_index);
                 }
                 _ => {}
             }

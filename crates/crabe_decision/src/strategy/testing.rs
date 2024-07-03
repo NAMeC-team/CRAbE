@@ -10,3 +10,10 @@ mod go_right;
 pub use self::go_right::GoRight;
 mod aligned;
 pub use self::aligned::Aligned;
+mod goal_line;
+pub use self::goal_line::GoalLine;
+
+mod go_left_keeper;
+pub use self::go_left_keeper::GoLeftKeeper;
+mod go_right_keeper;
+pub use self::go_right_keeper::GoRightKeeper;

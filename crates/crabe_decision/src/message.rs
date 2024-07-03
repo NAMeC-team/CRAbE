@@ -4,6 +4,8 @@ pub enum Message {
     WantToGoRight = 0,
     WantToGoLeft = 1,
     WantToBeAligned = 2,
+    WantToGoRightKeeper = 3,
+    WantToGoLeftKeeper = 4,
 }
 
 // Data type to share information from the bot to the manager
