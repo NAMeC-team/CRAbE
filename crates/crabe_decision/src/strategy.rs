@@ -8,6 +8,7 @@ use crabe_framework::data::world::World;
 /// experiment with different behaviors.
 pub mod testing;
 pub mod defensive;
+pub mod offensive;
 
 pub struct StrategyData {
     pub ids: Vec<u8>,
