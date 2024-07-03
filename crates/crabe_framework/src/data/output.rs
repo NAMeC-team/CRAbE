@@ -43,4 +43,6 @@ pub struct Command {
     pub kick: Option<Kick>,
     /// Dribbler speed in rounds per minute rpm
     pub dribbler: f32,
+    /// Order to overshoot the target
+    pub overshoot: bool,
 }
