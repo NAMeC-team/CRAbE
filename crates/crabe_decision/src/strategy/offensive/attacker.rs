@@ -71,52 +71,52 @@ impl Strategy for Attacker {
             None => return false,
         };
         let robot_position = robot.pose.position;
+        let robot_direction = vectors::vector_from_angle(robot.pose.orientation);
         
+        // Get the ball position, otherwise exit the function
         let ball_position = match world.ball.clone() {
             Some(ball) => ball.position.xy(),
             None => return false,
         };
-        let robot_current_dir = vectors::vector_from_angle(robot.pose.orientation);
         let robot_to_ball = ball_position - robot_position;
-        let dot_with_ball = robot_current_dir.normalize().dot(&robot_to_ball.normalize());
+        let dot_with_ball = robot_direction.normalize().dot(&robot_to_ball.normalize());
         let dist_to_ball = robot_to_ball.norm();
         
+        // Set the target shoot position to the center of the goal
         let target_shooting_position: Point2<f64> = world.geometry.enemy_goal.line.center();
-        let distance_to_go_behind_ball = 0.8;
-        let behind_ball_position = ball_position + (ball_position - target_shooting_position).normalize() * distance_to_go_behind_ball; 
 
+        // Placement distance behind the ball
+        let distance_to_go_behind_ball = 0.8;
+
+        // Calculate the position behind the ball to prepare the shoot
+        let behind_ball_position = ball_position + (ball_position - target_shooting_position).normalize() * distance_to_go_behind_ball; 
+                
+        // Check if the shooting trajectory will score
         let robot_shooting_trajectory = Line::new(robot_position, robot_position + robot_to_ball * 10.);
-        println!("robot_shooting_trajectory: {:?}", robot_shooting_trajectory);
-        
-        print!("enemy_goal: {:?}", world.geometry.enemy_goal.line);
-        action_wrapper.push(0, MoveTo::new(robot_position + robot_to_ball * 2., vectors::angle_to_point(robot_position, target_shooting_position), 0., false, None));
         let shooting_trajectory_will_score = match robot_shooting_trajectory.intersection_segments(&world.geometry.enemy_goal.line) {
-            Ok(intersection) => {
-                true
-            },
-            Err(e) => {
-                println!("error: {:?}", e);
-                false
-            },
+            Ok(_) => true,
+            Err(_) => false,
         };
 
-        println!("shooting trajectory will score: {}", shooting_trajectory_will_score);
-
+        // Check if the ball is in the way of the robot placement, in this case we need to dodge the ball (TODO) 
         let ball_in_the_way = ball_in_trajectory(&world, self.id, behind_ball_position);
         match self.state {
             ShooterState::PlaceForShoot => {
                 action_wrapper.push(self.id, MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, target_shooting_position), 0., false, None));
                 if shooting_trajectory_will_score 
-                    && dot_with_ball > 0.95 
+                    && dot_with_ball > 0.95 // The robot is correctly facing the ball
                 {
                     self.state = ShooterState::Shoot;
                 }
             },
             ShooterState::Shoot => {
-                let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.002) {
+                // If the robot is close enough to the ball, shoot
+                let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.002) { 
                     Some(Kick::StraightKick {  power: 4. }) 
                 }else {None};
                 action_wrapper.push(self.id, MoveTo::new(ball_position, vectors::angle_to_point(robot_position,target_shooting_position), 1.,  true, kick));
+
+                // If the ball is in the way or the robot is too far from the ball, go back to the placement state
                 if ball_in_the_way || dist_to_ball > distance_to_go_behind_ball+0.1 {
                     self.state = ShooterState::PlaceForShoot;
                 }
