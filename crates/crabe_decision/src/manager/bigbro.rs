@@ -11,6 +11,7 @@ use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
 use crabe_framework::data::geometry::Goal;
 use crabe_framework::data::tool::ToolData;
+use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
 
 /// The `BigBro` struct represents a decision manager that executes strategies BigBroly
@@ -118,6 +119,33 @@ impl Manager for BigBro {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
+        match world.data.ref_orders.state {
+            GameState::Halted(halted_state) => match halted_state {
+                HaltedState::GameNotStarted => println!("game not started"),
+                HaltedState::Halt => println!("halt"),
+                HaltedState::Timeout(team) => println!("timeout by {:?}", team),
+            }
+            GameState::Stopped(stopped_state) => match stopped_state {
+                StoppedState::Stop => println!("stop"),
+                StoppedState::PrepareKickoff(team) => println!("prepare kick off {:?}",team),
+                StoppedState::PreparePenalty(team) => println!("prepare penalty {:?}",team),
+                StoppedState::BallPlacement(team) => println!("ball placement {:?}",team),
+                StoppedState::PrepareForGameStart => println!("prepare for game start"),
+                StoppedState::BallLeftFieldTouchLine(_) => println!("ball left field touch line"),
+                StoppedState::CornerKick(_) => println!("corner kick"),
+                StoppedState::GoalKick(_) => println!("goal kick"),
+                StoppedState::AimlessKick(_) => println!("aimless kick"),
+                StoppedState::NoProgressInGame => println!("no progress in game"),
+                StoppedState::PrepareFreekick(_) => println!("prepare freekick"),
+                StoppedState::FoulStop => println!("foul stop"),
+            },
+            GameState::Running(running_state) => match running_state {
+                RunningState::KickOff(team) => println!("kickoff for {:#?}", team),
+                RunningState::Penalty(team) => println!("penalty for {:#?}", team),
+                RunningState::FreeKick(team) => println!("free kick for {:#?}", team),
+                RunningState::Run => println!("run"),
+            }
+        }
         
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
