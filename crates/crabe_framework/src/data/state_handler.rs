@@ -53,7 +53,7 @@ pub struct GameStateData {
     /// The most recent referee command issued
     pub last_ref_cmd: RefereeCommand,
     /// Latest designated position provided by the referee
-    pub last_designated_pos: Point2<f64>,
+    pub last_designated_pos: Option<Point2<f64>>,
     /// Last saved score of the ally team
     pub ally_score: u32,
     /// Last saved score of the enemy team
@@ -66,7 +66,7 @@ impl Default for GameStateData {
             kicked_off_once: false,
             prev_ref_cmd: RefereeCommand::Halt,
             last_ref_cmd: RefereeCommand::Halt,
-            last_designated_pos: Point2::new(0., 0.),
+            last_designated_pos: Some(Point2::new(0., 0.)),
             ally_score: 0,
             enemy_score: 0,
         }
