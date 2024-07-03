@@ -4,7 +4,7 @@ use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
 use nalgebra::{Isometry2, Point2, Vector2, Vector3};
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 
 /// The `MoveTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
 #[derive(Clone)]
@@ -74,8 +74,15 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
     )
 }
 
-fn angle_wrap(alpha: f64) -> f64 {
-    (alpha + PI) % (2.0 * PI) - PI
+fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
+    let positive_alpha1 = (alpha1 + TAU) % TAU;
+    let positive_alpha2 = (alpha2 + TAU) % TAU;
+    let clockwise = (positive_alpha1 - positive_alpha2) % TAU;
+    let counterclockwise = (alpha1 - alpha2) % TAU;
+    if clockwise < counterclockwise {
+        return clockwise;
+    }
+    counterclockwise
 }
 
 /// The default factor speed for the robot to move towards the target position.
@@ -109,7 +116,7 @@ impl Action for MoveTo {
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
 
-            let error_orientation = angle_wrap(self.orientation - robot.pose.orientation);
+            let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
             let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
