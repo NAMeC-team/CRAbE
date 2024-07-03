@@ -4,7 +4,6 @@ use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::message::Message;
 use crate::message::MessageData;
-use crate::strategy::testing::Aligned;
 use crate::strategy::testing::GoLeftKeeper;
 use crate::strategy::testing::GoRightKeeper;
 use crate::strategy::Strategy;

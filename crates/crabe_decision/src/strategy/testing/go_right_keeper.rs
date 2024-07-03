@@ -6,7 +6,6 @@ use crate::message::Message;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::Point2;
-use std::f64::consts::PI;
 
 #[derive(Default)]
 pub struct GoRightKeeper {

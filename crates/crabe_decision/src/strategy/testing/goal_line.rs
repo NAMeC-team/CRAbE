@@ -5,10 +5,8 @@ use crate::message::MessageData;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::Point2;
-use std::f64::consts::PI;
 
-/// The GoalLine struct represents a strategy that commands a robot to move in a GoalLine shape
-/// in a counter-clockwise. It is used for testing purposes.
+/// The GoalLine struct represents a strategy that commands a robot to move in the GoalLine
 #[derive(Default)]
 pub struct GoalLine {
     /// The id of the robot to move.
@@ -41,8 +39,7 @@ impl Strategy for GoalLine {
     }
     /// Executes the GoalLine strategy.
     ///
-    /// This strategy commands the robot with the specified ID to move in a GoalLine shape in a
-    /// counter-clockwise direction.
+    /// This strategy commands the robot with the specified ID to move in the GoalLine
     ///
     /// # Arguments
     ///
