@@ -79,14 +79,14 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
 }
 
 fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
-    let positive_alpha1 = (alpha1 + TAU) % TAU;
-    let positive_alpha2 = (alpha2 + TAU) % TAU;
-    let clockwise = (positive_alpha1 - positive_alpha2) % TAU;
-    let counterclockwise = (alpha1 - alpha2) % TAU;
-    if clockwise < counterclockwise {
-        return clockwise;
+    let diff = alpha1 - alpha2;
+    if diff > PI {
+        diff - TAU
+    } else if diff < -PI {
+        diff + TAU
+    } else {
+        diff
     }
-    counterclockwise
 }
 
 /// The default factor speed for the robot to move towards the target position.
