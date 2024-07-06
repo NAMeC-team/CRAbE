@@ -3,6 +3,7 @@ use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
+use nalgebra::Vector2;
 use log::warn;
 
 pub struct SpeedGuard {
@@ -41,20 +42,19 @@ impl Guard for SpeedGuard {
             if command.forward_velocity.is_nan() {
                 warn!("An attempt was made to send NaN instead of a valid value in forward_velocity. It has been adjusted to 0.");
                 command.forward_velocity = 0.;
-            } else {
-                command.forward_velocity = command
-                    .forward_velocity
-                    .clamp(-self.max_linear, self.max_linear);
-            }
-
+            } 
             if command.left_velocity.is_nan() {
                 warn!("An attempt was made to send NaN instead of a valid value in left_velocity. It has been adjusted to 0.");
                 command.left_velocity = 0.;
-            } else {
-                command.left_velocity = command
-                    .left_velocity
-                    .clamp(-self.max_linear, self.max_linear);
             }
+
+            let direction = Vector2::new(command.forward_velocity, command.left_velocity);
+            if direction.norm() > self.max_linear {
+                let direction_normalized = direction.normalize() * self.max_linear;
+                command.forward_velocity = direction_normalized.x;
+                command.left_velocity = direction_normalized.y;
+            }
+
 
             if command.angular_velocity.is_nan() {
                 warn!("An attempt was made to send NaN instead of a valid value in angular_velocity. It has been adjusted to 0.");
