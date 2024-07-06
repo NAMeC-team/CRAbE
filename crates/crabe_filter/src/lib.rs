@@ -8,6 +8,7 @@ use crate::data::FilterData;
 
 use crate::filter::inactive::InactiveFilter;
 use crate::filter::passthrough::PassthroughFilter;
+use crate::filter::velocity_acceleration::VelocityAccelerationFilter;
 use crate::filter::Filter;
 use crate::post_filter::ball::BallFilter;
 use crate::post_filter::geometry::GeometryFilter;
@@ -52,6 +53,7 @@ impl FilterPipeline {
             pre_filters,
             filters: vec![
                 Box::new(PassthroughFilter),
+                Box::new(VelocityAccelerationFilter),
                 Box::<InactiveFilter>::default(),
             ],
             post_filters,

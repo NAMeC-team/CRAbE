@@ -1,9 +1,11 @@
 use chrono::{DateTime, LocalResult, TimeZone, Utc};
 use log::error;
 
+
+/// t_capture is in milliseconds
 pub fn create_date_time(t_capture: i64) -> DateTime<Utc> {
-    //dbg!(t_capture);
-    match Utc.timestamp_opt(t_capture, 0) {
+    
+    match Utc.timestamp_opt(t_capture / 1000, (t_capture % 1000) as u32 * 1_000_000) {
         LocalResult::Single(dt) => dt,
         LocalResult::None => {
             let now_utc = Utc::now();
