@@ -353,6 +353,7 @@ dependencies = [
  "clap",
  "crabe_framework",
  "log",
+ "nalgebra",
 ]
 
 [[package]]
