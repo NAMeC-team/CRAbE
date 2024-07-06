@@ -22,13 +22,13 @@ fn update_robot_vel_accel<T>(tracked_robots: &mut TrackedRobotMap<T>, robots: &R
                 }
                 let distance = tracked.data.pose.position - robot.pose.position;
                 let angle = tracked.data.pose.orientation - robot.pose.orientation;
-                tracked.data.velocity.linear = distance / millis;
-                tracked.data.velocity.angular = angle / millis;
+                tracked.data.velocity.linear = distance / millis * 1000.0;
+                tracked.data.velocity.angular = angle / millis * 1000.0;
 
                 let linear_diff = tracked.data.velocity.linear - robot.velocity.linear;
-                tracked.data.acceleration.linear = linear_diff / millis;
+                tracked.data.acceleration.linear = linear_diff / millis * 1000.0;
                 let angular_diff = tracked.data.velocity.angular - robot.velocity.angular;
-                tracked.data.acceleration.angular = angular_diff / millis;
+                tracked.data.acceleration.angular = angular_diff / millis * 1000.0;
             }
         }
     })
@@ -40,9 +40,9 @@ fn update_ball_vel_accel(tracked: &mut TrackedBall, ball: &Ball) {
             return;
         }
         let distance = tracked.data.position - ball.position;
-        tracked.data.velocity = distance / millis;
+        tracked.data.velocity = distance / millis * 1000.0;
         let vel_diff = tracked.data.velocity - ball.velocity;
-        tracked.data.acceleration = vel_diff / millis;
+        tracked.data.acceleration = vel_diff / millis * 1000.0;
     }
 }
 
