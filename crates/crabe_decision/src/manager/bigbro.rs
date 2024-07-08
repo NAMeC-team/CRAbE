@@ -7,7 +7,7 @@ use crate::message::MessageData;
 use crate::strategy::testing::Aligned;
 use crate::strategy::testing::GoLeft;
 use crate::strategy::testing::GoRight;
-use crate::strategy::defensive::GoalKeeper;
+use crate::strategy::defensive::{GoalKeeper,BotMarking};
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
