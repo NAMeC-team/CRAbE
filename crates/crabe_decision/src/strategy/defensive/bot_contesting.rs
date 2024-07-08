@@ -1,5 +1,5 @@
 use crate::{
-    action::{move_to::MoveTo, ActionWrapper}, message::MessageData, strategy::Strategy
+    action::{move_to::MoveTo, ActionWrapper}, message::MessageData, strategy::Strategy, utils::closest_bot_to_point
 };
 use crabe_framework::data::{
     output::{Kick::StraightKick},
@@ -19,7 +19,6 @@ pub struct BotContesting {
     /// The id of the robot to move.
     id: u8,
     messages: Vec<MessageData>,
-    enemy_id: u8,
     time: Instant,
 
 }
@@ -32,11 +31,10 @@ fn look_at_target(robot: Point2<f64>, target: Point2<f64>) -> f64 {
 
 impl BotContesting {
     /// Creates a new BotContesting instance with the desired robot id.
-    pub fn new(id: u8, enemy_id: u8) -> Self {
+    pub fn new(id: u8) -> Self {
         Self { 
             id,
             messages: vec![],
-            enemy_id,
             time: Instant::now(),    
         }
     }
@@ -83,15 +81,19 @@ impl Strategy for BotContesting {
                 return false;
             }
         }.pose;
-
-        let enemy = &match world.enemies_bot.get(&self.enemy_id) {
-            Some(r) => r,
+        // We take the closest enemy to the ball and we calculate the direction of the shot by just looking at his orientation
+        let enemy =  &match closest_bot_to_point(world.enemies_bot.values().collect(), ball){
+            Some(closest_enemy) => closest_enemy,
             None => {
                 eprintln!("Cannot get enemy");
                 return false;
             }
         }.pose;
 
+        if (ball - enemy.position).norm() > 0.2 {
+            eprintln!("Ball is too far to enemy");
+            return false;
+        }
 
         let vector = enemy.position - ball;
         let norm = vector.norm();
@@ -102,9 +104,9 @@ impl Strategy for BotContesting {
         
         
         if self.time.elapsed().as_millis()%2 == 0{
-            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle+ANGULAR_DIFFERENCE, 0.0 , false , Some(StraightKick { power: 0.0 }), true ));
+            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle+ANGULAR_DIFFERENCE, 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
         } else {
-             action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle-ANGULAR_DIFFERENCE , 0.0 , false , Some(StraightKick { power: 0.0 }), true ));  
+             action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle-ANGULAR_DIFFERENCE , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));  
         }
         
         
