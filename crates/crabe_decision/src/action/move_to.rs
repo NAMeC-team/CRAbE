@@ -89,10 +89,13 @@ fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
 
 /// The default factor speed for the robot to move towards the target position.
 const GOTO_SPEED: f64 = 1.5;
+/// The overshooting factor to make the robot get faster to the real target.
 const GOTO_SPEED_FAST: f64 = 3.;
 /// The default factor speed for the robot to rotate towards the target orientation.
 const GOTO_ROTATION: f64 = 1.5;
+/// The overshooting factor to make the robot rotate faster to the real target.
 const GOTO_ROTATION_FAST: f64 = 3.;
+
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.1;
 
