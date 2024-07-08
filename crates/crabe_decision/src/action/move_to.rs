@@ -18,7 +18,7 @@ pub struct MoveTo {
     charge: bool,
     dribbler: f32,
     kicker: Option<Kick>,
-    overshoot: bool,
+    fast: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -30,7 +30,7 @@ impl From<&mut MoveTo> for MoveTo {
             charge: other.charge,
             dribbler: other.dribbler,
             kicker: other.kicker,
-            overshoot: other.overshoot,
+            fast: other.fast,
         }
     }
 }
@@ -48,7 +48,7 @@ impl MoveTo {
         dribbler: f32,
         charge: bool,
         kicker: Option<Kick>,
-        overshoot: bool,
+        fast: bool,
     ) -> Self {
         Self {
             state: State::Running,
@@ -57,7 +57,7 @@ impl MoveTo {
             charge,
             dribbler,
             kicker,
-            overshoot,
+            fast,
         }
     }
 }
@@ -89,12 +89,15 @@ fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
 
 /// The default factor speed for the robot to move towards the target position.
 const GOTO_SPEED: f64 = 1.5;
+/// The overshooting factor to make the robot get faster to the real target.
+const GOTO_SPEED_FAST: f64 = 3.;
 /// The default factor speed for the robot to rotate towards the target orientation.
 const GOTO_ROTATION: f64 = 1.5;
+/// The overshooting factor to make the robot rotate faster to the real target.
+const GOTO_ROTATION_FAST: f64 = 3.;
+
 /// The error tolerance for arriving at the target position.
-const ERR_TOLERANCE: f64 = 0.115;
-/// The overshoot distance.
-const OVERSHOOT_DIST: f64 = 2.;
+const ERR_TOLERANCE: f64 = 0.1;
 
 impl Action for MoveTo {
     /// Returns the name of the action.
@@ -119,10 +122,7 @@ impl Action for MoveTo {
         if let Some(robot) = world.allies_bot.get(&id) {
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
-            let target_overshooted = target_in_robot * OVERSHOOT_DIST;
 
-            let error_x_overshooted = target_overshooted.x;
-            let error_y_overshooted = target_overshooted.y;
             let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
@@ -132,11 +132,11 @@ impl Action for MoveTo {
             }
 
             let order = 
-            if self.overshoot {
+            if self.fast {
                 Vector3::new(
-                GOTO_SPEED * error_x_overshooted,
-                GOTO_SPEED * error_y_overshooted,
-                GOTO_ROTATION * error_orientation,
+                GOTO_SPEED_FAST * error_x,
+                GOTO_SPEED_FAST * error_y,
+                GOTO_ROTATION_FAST * error_orientation,
                 )
             } else {
                 Vector3::new(
@@ -153,7 +153,7 @@ impl Action for MoveTo {
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
-                overshoot: self.overshoot,
+                fast: self.fast,
             }
         } else {
             Command::default()
