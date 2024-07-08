@@ -73,7 +73,8 @@ impl Strategy for Prembule {
                 return false;
             }
         }.pose;
-        let speed:f32 = 0.8;    
+        let orient = robot.orientation;
+        let speed:f32 = 3.14;    
         match self.state {
             States::FIRST => {
                 println!("FIRST");
@@ -108,7 +109,7 @@ impl Strategy for Prembule {
                 };
             }
             States::THIRD => {
-                let orient = robot.orientation;
+                
                 action_wrapper.push(
                     self.id,
                     MoveTo::new(robot.position, orient+2. , 0.0 , true , None,false )
@@ -117,6 +118,7 @@ impl Strategy for Prembule {
                     self.id,
                     MoveTo::new(robot.position, orient , 0.0 , false , Some(StraightKick { power: 1.0 }),false )
                 );
+                return true;
             }
 
         
