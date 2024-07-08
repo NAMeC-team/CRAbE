@@ -28,9 +28,9 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![
-                Box::new(GoLeft::new(1)),
-                Box::new(Aligned::new(vec![2, 3, 4])),
-                Box::new(GoalKeeper::new(0)),
+                //Box::new(GoLeft::new(1)),
+                //Box::new(Aligned::new(vec![2, 3, 4])),
+                Box::new(BotContesting::new(0)),
             ],
         }
     }
