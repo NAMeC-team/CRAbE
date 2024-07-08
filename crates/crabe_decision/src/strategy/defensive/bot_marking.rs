@@ -94,7 +94,7 @@ impl Strategy for BotMarking {
 
         let angle = look_at_target(robot.position, ball);
 
-        action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), true ));
+        action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
         
         return false;
 
