@@ -9,6 +9,7 @@ use crate::strategy::testing::GoLeft;
 use crate::strategy::testing::GoRight;
 use crate::strategy::defensive::{GoalKeeper,BotMarking};
 use crate::strategy::Strategy;
+use crabe_framework::data::geometry::Goal;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 
@@ -28,9 +29,9 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![
-                //Box::new(GoLeft::new(1)),
-                //Box::new(Aligned::new(vec![2, 3, 4])),
-                Box::new(BotMarking::new(0,0)),
+                Box::new(GoLeft::new(1)),
+                Box::new(Aligned::new(vec![2, 3, 4])),
+                Box::new(GoalKeeper::new(0)),
             ],
         }
     }
