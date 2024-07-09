@@ -94,22 +94,3 @@ impl Strategy for PrepareKickOff{
         false
     }
 }
-
-// if let Some(bappe) = world.allies_bot.get(&DEFENDER2_ID) {
-//     action_wrapper.push(DEFENDER2_ID, MoveTo::new(Point2::new(-1.5, 1.5), vectors::angle_to_point(ball_pos, bappe.pose.position),0.0 , None, false,false));
-// };
-// if let Some(bappe) = world.allies_bot.get(&PIVOT_ID) {
-//     action_wrapper.push(PIVOT_ID, MoveTo::new(Point2::new(-0.2, 0.0), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
-// };
-// if let Some(bappe) = world.allies_bot.get(&DEFENDER1_ID) {
-//     action_wrapper.push(DEFENDER1_ID, MoveTo::new(Point2::new(-1.5, -1.5), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
-// };
-// if let Some(bappe) = world.allies_bot.get(&ATTACKER2_ID) {
-//     action_wrapper.push(ATTACKER2_ID, MoveTo::new(Point2::new(-0.25, 2.5), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
-// };
-// if let Some(bappe) = world.allies_bot.get(&ATTACKER1_ID) {
-//     action_wrapper.push(ATTACKER1_ID, MoveTo::new(Point2::new(-0.25, -2.5), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
-// };
-// if let Some(bappe) = world.allies_bot.get(&KEEPER_ID) {
-//     action_wrapper.push(KEEPER_ID, MoveTo::new(Point2::new(-4.0, -0.0), vectors::angle_to_point(ball_pos, bappe.pose.position), 0.0,None, false, false));
-// };
