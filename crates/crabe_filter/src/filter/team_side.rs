@@ -5,20 +5,7 @@ use crate::filter::Filter;
 use chrono::{DateTime, Utc};
 use crabe_framework::data::world::{Ball, RobotMap, World};
 
-pub struct TeamSideFilter{
-    last_update_robots: HashMap<u8, DateTime<Utc>>,
-    last_update_ball: Instant,
-}
-
-impl Default for TeamSideFilter {
-    fn default() -> Self {
-        TeamSideFilter {
-            last_update_robots: Default::default(),
-            last_update_ball: Instant::now(),
-        }
-    }
-    
-}
+pub struct TeamSideFilter;
 
 fn get_duration_millis(t1: DateTime<Utc>, t2: DateTime<Utc>) -> Option<f64> {
     let duration = t2 - t1;
@@ -35,9 +22,12 @@ fn change_robots_side<T>(tracked_robots: &mut TrackedRobotMap<T>, robots: &Robot
                 if millis <= 0.0 {
                     return;
                 }
-                println!("Changing side of robot {}", id);
-                tracked.data.pose.position.x = -robot.pose.position.x;
-                tracked.data.pose.orientation = ( std::f64::consts::PI - robot.pose.orientation ).rem_euclid(2.0 * std::f64::consts::PI);
+                tracked.data.pose.position.x = -tracked.data.pose.position.x;
+                tracked.data.pose.position.y = -tracked.data.pose.position.y;
+
+                tracked.data.pose.orientation = (std::f64::consts::PI
+                    + tracked.data.pose.orientation)
+                    .rem_euclid(2.0 * std::f64::consts::PI);
             }
         }
     })
@@ -48,14 +38,17 @@ fn change_ball_side(tracked: &mut TrackedBall, ball: &Ball) {
         if millis <= 0.0 {
             return;
         }
-        tracked.data.position.x = -ball.position.x;
+        tracked.data.position.x = -tracked.data.position.x;
+        tracked.data.position.y = -tracked.data.position.y;
     }
 }
 
 impl Filter for TeamSideFilter {
     fn step(&mut self, filter_data: &mut FilterData, world: &World) {
         let positive_change = world.team_color == world.data.positive_half;
-        if !positive_change {return;}
+        if !positive_change {
+            return;
+        }
 
         change_robots_side(&mut filter_data.allies, &world.allies_bot);
         change_robots_side(&mut filter_data.enemies, &world.enemies_bot);
