@@ -1,5 +1,5 @@
 use crate::{
-    action::{ move_to::MoveTo, order_raw::RawOrder, ActionWrapper}, message::MessageData, strategy::Strategy
+    action::{ self, move_to::MoveTo, order_raw::RawOrder, ActionWrapper}, message::MessageData, strategy::Strategy
 };
 
 use crabe_framework::data::{
@@ -19,13 +19,16 @@ pub struct Prembule {
     messages: Vec<MessageData>,
     state: States,
     start_time: Instant,
+    
 }
+
 
 #[derive(PartialEq, Eq)]
 pub enum States {
     FIRST,
     SECOND,
     THIRD,
+    STOP,
 }
 
 impl Prembule {
@@ -39,6 +42,7 @@ impl Prembule {
             
         }
     }
+    
 }
 
 impl Strategy for Prembule {
@@ -57,6 +61,7 @@ impl Strategy for Prembule {
             self.id = ids[0];
         }
     }
+
     #[allow(unused_variables)]
     fn step(
         &mut self,
@@ -65,7 +70,6 @@ impl Strategy for Prembule {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         
-
         let robot = &match world.allies_bot.get(&self.id) {
             Some(r) => r,
             None => {
@@ -77,7 +81,6 @@ impl Strategy for Prembule {
         let speed:f32 = 3.14;    
         match self.state {
             States::FIRST => {
-                println!("FIRST");
                 if self.start_time.elapsed().as_secs() > 1{
                     self.start_time = Instant::now();
                     self.state = States::SECOND;
@@ -93,7 +96,7 @@ impl Strategy for Prembule {
                 }
             }
             States::SECOND => {
-                println!("SECOND");
+                
                 if self.start_time.elapsed().as_secs() > 1{
                     self.start_time = Instant::now();
                     self.state = States::THIRD;
@@ -118,7 +121,16 @@ impl Strategy for Prembule {
                     self.id,
                     MoveTo::new(robot.position, orient , 0.0 , false , Some(StraightKick { power: 1.0 }),false )
                 );
-                return true;
+                self.state = States::STOP;
+                
+                
+            }
+            States::STOP => {
+
+                if let Some(action) = action_wrapper.actions.get(&self.id) {
+                    return action.actions.len() == 0;
+                }
+
             }
 
         
