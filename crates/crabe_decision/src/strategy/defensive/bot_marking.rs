@@ -8,8 +8,9 @@ use crabe_framework::data::{
 };
 use nalgebra::Point2;
 
-const ROBOT_RADIUS:f64 = 0.09;
-const DISTANCE_TO_BALL:f64 = ROBOT_RADIUS + 0.2;
+use crabe_math::vectors::angle_to_point;
+
+
 /// The BotMarking struct represents a strategy that commands a robot to move in a BotMarking shape
 /// in a counter-clockwise. It is used for testing purposes.
 pub struct BotMarking {
@@ -17,12 +18,6 @@ pub struct BotMarking {
     id: u8,
     messages: Vec<MessageData>,
     enemy_id: u8,
-}
-
-fn look_at_target(robot: Point2<f64>, target: Point2<f64>) -> f64 {
-    let diff_x = target.x - robot.x;
-    let diff_y = target.y - robot.y;
-    diff_y.atan2(diff_x)
 }
 
 impl BotMarking {
@@ -87,12 +82,12 @@ impl Strategy for BotMarking {
         }.pose;
 
 
-        let vector = enemy.position - ball;
-        let norm = vector.norm();
-        let coef = DISTANCE_TO_BALL/norm;
-        let target = enemy.position - Point2::new(vector.x, vector.y)*coef;
+        let enemy_to_ball = enemy.position - ball;
+        let enemy_ball_distance = enemy_to_ball.norm();
+        let coef_distance_to_enemy = world.geometry.robot_radius + 0.2/enemy_ball_distance;
+        let target = enemy.position - Point2::new(enemy_to_ball.x, enemy_to_ball.y)*coef_distance_to_enemy;
 
-        let angle = look_at_target(robot.position, ball);
+        let angle = angle_to_point(robot.position, ball);
 
         action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
         
