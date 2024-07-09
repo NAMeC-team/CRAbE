@@ -8,7 +8,6 @@ use crabe_math::vectors;
 use nalgebra::Point2;
 
 /// The PrepareKickOffstruct represents a strategy that commands the team to set in the PrepareKickOffformation
-/// It is used when the team is in favor of the kick-off
 #[derive(Default)]
 pub struct PrepareKickOff{
     ally: bool,
