@@ -6,9 +6,9 @@ use crabe_framework::data::{
     tool::ToolData,
     world::World,
 };
-use nalgebra::Point2;
+use nalgebra::{Matrix, Point2};
 
-use crabe_math::vectors::angle_to_point;
+use crabe_math::{shape::Line, vectors::angle_to_point};
 
 
 /// The BotMarking struct represents a strategy that commands a robot to move in a BotMarking shape
@@ -57,13 +57,13 @@ impl Strategy for BotMarking {
         
     ) -> bool {
         action_wrapper.clear(self.id);
-        let ball: Point2<f64> = match &world.ball {
+        let ball = match &world.ball {
             Some(b) => b,
             None => {
                 eprintln!("Cannot find ball");
                 return false;
             }
-        }.position_2d();
+        };
 
         let robot = &match world.allies_bot.get(&self.id) {
             Some(r) => r,
@@ -82,14 +82,21 @@ impl Strategy for BotMarking {
         }.pose;
 
 
-        let enemy_to_ball = enemy.position - ball;
-        let enemy_ball_distance = enemy_to_ball.norm();
-        let coef_distance_to_enemy = world.geometry.robot_radius + 0.2/enemy_ball_distance;
-        let target = enemy.position - Point2::new(enemy_to_ball.x, enemy_to_ball.y)*coef_distance_to_enemy;
+        let ball_pos = ball.position_2d();
+        let angle = angle_to_point(robot.position, ball_pos);
+        let ball_velocity_trajectory = Line::new(ball_pos, ball_pos + ball.velocity.xy().normalize() * 100.);
+        if ball.velocity.norm() > 0.1 && ball_velocity_trajectory.distance_to_point(&enemy.position) < 1. {
+            let target = ball_velocity_trajectory.closest_point_on_segment(&robot.position);
+            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
+        } else {
+            let enemy_to_ball = ball_pos - enemy.position;
+            let enemy_ball_distance = enemy_to_ball.norm();
+            let coef_distance_to_enemy: f64 = world.geometry.robot_radius + 0.2/enemy_ball_distance;
+            let target = enemy.position -  Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-coef_distance_to_enemy);
+            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
+        }
 
-        let angle = angle_to_point(robot.position, ball);
-
-        action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
+        
         
         return false;
 
