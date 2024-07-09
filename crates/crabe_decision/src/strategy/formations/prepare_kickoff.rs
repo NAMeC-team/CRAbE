@@ -7,7 +7,7 @@ use crabe_framework::data::world::World;
 use crabe_math::vectors;
 use nalgebra::Point2;
 
-/// The PrepareKickOffstruct represents a strategy that commands the team to set in the PrepareKickOffformation
+/// The PrepareKickOffstruct represents a strategy that commands the team to set in the PrepareKickOff formation
 #[derive(Default)]
 pub struct PrepareKickOff{
     ally: bool,
