@@ -21,6 +21,7 @@ use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
+use filter::team_side::TeamSideFilter;
 use crate::pre_filter::game_controller::GameControllerPreFilter;
 use crate::post_filter::game_controller::GameControllerPostFilter;
 
