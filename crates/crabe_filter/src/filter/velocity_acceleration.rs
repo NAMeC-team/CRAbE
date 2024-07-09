@@ -49,6 +49,7 @@ fn update_ball_vel_accel(tracked: &mut TrackedBall, ball: &Ball) {
 impl Filter for VelocityAccelerationFilter {
     fn step(&mut self, filter_data: &mut FilterData, world: &World) {
         update_robot_vel_accel(&mut filter_data.allies, &world.allies_bot);
+        update_robot_vel_accel(&mut filter_data.enemies, &world.enemies_bot);
         if let Some(ball) = world.ball.as_ref() {
             update_ball_vel_accel(&mut filter_data.ball, ball);
         }
