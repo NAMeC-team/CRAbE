@@ -60,7 +60,6 @@ impl Strategy for BotMarking {
         let ball = match &world.ball {
             Some(b) => b,
             None => {
-                eprintln!("Cannot find ball");
                 return false;
             }
         };
@@ -68,7 +67,6 @@ impl Strategy for BotMarking {
         let robot = &match world.allies_bot.get(&self.id) {
             Some(r) => r,
             None => {
-                eprintln!("Cannot get robot");
                 return false;
             }
         };
@@ -77,7 +75,6 @@ impl Strategy for BotMarking {
         let enemy = &match world.enemies_bot.get(&self.enemy_id) {
             Some(r) => r,
             None => {
-                eprintln!("Cannot get enemy");
                 return false;
             }
         };
