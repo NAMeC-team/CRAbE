@@ -10,7 +10,7 @@ use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot, World};
 use crabe_math::{shape::Line, vectors};
 use crabe_math::vectors::vector_from_angle;
-use nalgebra::Point2;
+use nalgebra::{Point2, SimdPartialOrd};
 
 /// The GoalKeeper strategy is responsible for keeping the goal safe by moving the robot to the best position to block the ball.
 #[derive(Default)]
@@ -122,22 +122,33 @@ impl Strategy for GoalKeeper {
             orientation_target = ball_position;
             if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
                 position_target = intersection;
+                println!("follow_velocity_trajectory");
             } else if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_position){
                 if let Some(intersection) = self.follow_enemy_to_ball_trajectory(ball, world, closest_enemy){
                     position_target = intersection;
+                    println!("follow_enemy_to_ball_trajectory");
                 }else if let Some(intersection) = self.follow_enemy_direction( world, closest_enemy){
                     position_target = intersection;
+                    println!("follow_enemy_direction");
                 }else{
                     position_target = follow_ball_x_position;
+                    println!("follow_ball_x_position");
                 }
             }else{
                 position_target = follow_ball_x_position;
+                println!("follow_ball_x_position");
             }
         }
 
         // Calculate the orientation of the robot towards the orientation target
         let orientation = vectors::angle_to_point(robot.pose.position, orientation_target);
 
+        // clamp the y position of the robot to the goal width so that he's not colliding with the goal walls
+        let goal_half_width = world.geometry.ally_goal.width /2.;
+        if goal_half_width > world.geometry.robot_radius {
+            position_target.y = position_target.y.clamp(-goal_half_width + world.geometry.robot_radius, goal_half_width - world.geometry.robot_radius);
+        }
+        
         // Move the robot to the calculated position and orientation
         action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false));
         false
