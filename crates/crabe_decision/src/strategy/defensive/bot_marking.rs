@@ -71,7 +71,8 @@ impl Strategy for BotMarking {
                 eprintln!("Cannot get robot");
                 return false;
             }
-        }.pose;
+        };
+        let robot_pos = &robot.pose;
 
         let enemy = &match world.enemies_bot.get(&self.enemy_id) {
             Some(r) => r,
@@ -79,21 +80,31 @@ impl Strategy for BotMarking {
                 eprintln!("Cannot get enemy");
                 return false;
             }
-        }.pose;
+        };
+        let enemy_pos = &enemy.pose;
 
-
+        let mut dribbler = 0.0;
         let ball_pos = ball.position_2d();
-        let angle = angle_to_point(robot.position, ball_pos);
+        if robot.distance(&ball_pos) < 1. {
+            dribbler = 1.0;
+        }
+
+        //ANGLE TO BALL
+        let angle = angle_to_point(robot_pos.position, ball_pos);
+
+        // VELOCITY CATCH
         let ball_velocity_trajectory = Line::new(ball_pos, ball_pos + ball.velocity.xy().normalize() * 100.);
-        if ball.velocity.norm() > 0.1 && ball_velocity_trajectory.distance_to_point(&enemy.position) < 1. {
-            let target = ball_velocity_trajectory.closest_point_on_segment(&robot.position);
-            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
+        if ball.velocity.norm() > 0.1 && ball_velocity_trajectory.distance_to_point(&enemy_pos.position) < 1. {
+            let target = ball_velocity_trajectory.closest_point_on_segment(&robot_pos.position);
+            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribbler , false , Some(StraightKick { power: 0.0 }), true ));
         } else {
-            let enemy_to_ball = ball_pos - enemy.position;
+
+            // VECTEUR BALL -> ENEMY
+            let enemy_to_ball = ball_pos - enemy_pos.position;
             let enemy_ball_distance = enemy_to_ball.norm();
             let coef_distance_to_enemy: f64 = world.geometry.robot_radius + 0.2/enemy_ball_distance;
-            let target = enemy.position -  Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-coef_distance_to_enemy);
-            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
+            let target = enemy_pos.position -  Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-coef_distance_to_enemy);
+            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribbler , false , Some(StraightKick { power: 0.0 }), false ));
         }
 
         
