@@ -1,6 +1,8 @@
 use nalgebra::Point2;
 use serde::Serialize;
 
+use super::Circle;
+
 /// A line segment in 2D space, defined by two points.
 ///
 /// Note that the `start` and `end` fields should have the same units of
@@ -315,6 +317,40 @@ impl Line {
         let p_y = self.start.y + x * (self.end.y - self.start.y);
         return Point2::new(p_x, p_y);
     }
+
+
+
+    /// Return the circles touching the segment
+    /// 
+    /// # Arguments
+    /// - circles : the circles to test intersection with
+    /// 
+    /// # Returns
+    /// The object in the trajectory if there is one, None otherwise.
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::{Circle, Line};
+    /// let line = Line::new(Point2::new(0., 0.), Point2::new(0., 1.));
+    /// let circle = Circle::new(Point2::new(0., 0.5), 0.5);
+    /// let circles_on_segment = line.circles_on_segment(&vec![circle], 0.1);
+    /// assert_eq!(circles_on_segment.len(), 1);
+    /// let circle2 = Circle::new(Point2::new(0.5, 0.), 0.3);
+    /// let circles_on_segment2 = line.circles_on_segment(&vec![circle2], 0.1);
+    /// assert_eq!(circles_on_segment2.len(), 0);
+    /// ```
+    pub fn circles_on_segment(&self, circles: &Vec<Circle>, segment_width: f64) -> Vec<Circle> {
+        let mut circles_on_segment = Vec::new();
+        for circle in circles {
+            if self.distance_to_point(&circle.center) <= circle.radius + segment_width {
+                circles_on_segment.push(circle.clone());
+            }
+        }
+        circles_on_segment
+    }
+
+
 
     /// Return the center point of the segment
     /// 

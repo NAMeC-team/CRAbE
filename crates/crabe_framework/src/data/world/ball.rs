@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use crabe_math::shape::Circle;
 use nalgebra::{Point2, Point3, Vector3};
 use serde::Serialize;
 
@@ -20,5 +21,9 @@ impl Ball {
     /// Returns the position of the ball as a 2D point (x and y-coordinate), with respect to the center of the field.
     pub fn position_2d(&self) -> Point2<f64> {
         Point2::new(self.position.x, self.position.y)
+    }
+
+    pub fn to_circle(&self, radius: f64) -> Circle {
+        Circle::new(self.position_2d(), radius)
     }
 }
