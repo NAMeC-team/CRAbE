@@ -11,8 +11,8 @@ use std::{time::Instant, vec};
 use crabe_math::vectors::angle_to_point;
 
 const DISTANCE_TO_BALL:f64 = 0.06;
-const DINANCE_TO_ROBOT:f64 = 0.02;
-const ANGULAR_DIFFERENCE:f64 = 1.0;
+const DINANCE_TO_ROBOT:f64 = 0.2;
+const ANGULAR_DIFFERENCE:f64 = 2.0;
 /// The BotContesting struct represents a strategy that commands a robot to move in a BotContesting shape
 /// in a counter-clockwise. It is used for testing purposes.
 pub struct BotContesting {
