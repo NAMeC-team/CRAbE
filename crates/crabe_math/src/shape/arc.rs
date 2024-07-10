@@ -16,3 +16,15 @@ pub struct Arc {
     /// The ending angle of the arc.
     pub end: f64,
 }
+
+impl Arc {
+    /// Create a new arc with the given center, radius, and angles (start and end).
+    pub fn new(center: Point2<f64>, radius: f64, start: f64, end: f64) -> Self {
+        Self {
+            center,
+            radius,
+            start,
+            end,
+        }
+    }
+}
