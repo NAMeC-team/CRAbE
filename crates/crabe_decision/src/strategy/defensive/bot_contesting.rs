@@ -8,10 +8,10 @@ use crabe_framework::data::{
 };
 use nalgebra::Point2;
 use std::{time::Instant, vec};
+use crabe_math::vectors::angle_to_point;
 
-const ROBOT_RADIUS:f64 = 0.09;
-const BALL_RADIUS:f64 = 0.02;
-const DISTANCE_TO_BALL:f64 = ROBOT_RADIUS + BALL_RADIUS + 0.06;
+const DISTANCE_TO_BALL:f64 = 0.06;
+const DINANCE_TO_ROBOT:f64 = 0.02;
 const ANGULAR_DIFFERENCE:f64 = 1.0;
 /// The BotContesting struct represents a strategy that commands a robot to move in a BotContesting shape
 /// in a counter-clockwise. It is used for testing purposes.
@@ -23,11 +23,6 @@ pub struct BotContesting {
 
 }
 
-fn look_at_target(robot: Point2<f64>, target: Point2<f64>) -> f64 {
-    let diff_x = target.x - robot.x;
-    let diff_y = target.y - robot.y;
-    diff_y.atan2(diff_x)
-}
 
 impl BotContesting {
     /// Creates a new BotContesting instance with the desired robot id.
@@ -66,13 +61,15 @@ impl Strategy for BotContesting {
         
     ) -> bool {
         action_wrapper.clear(self.id);
-        let ball: Point2<f64> = match &world.ball {
+        let ball = match &world.ball {
             Some(b) => b,
             None => {
                 eprintln!("Cannot find ball");
                 return false;
             }
-        }.position_2d();
+        };
+
+        let ball_pos = &ball.position_2d();
 
         let robot = &match world.allies_bot.get(&self.id) {
             Some(r) => r,
@@ -80,34 +77,69 @@ impl Strategy for BotContesting {
                 eprintln!("Cannot get robot");
                 return false;
             }
-        }.pose;
+        };
+        let robot_pos = &robot.pose;
+
         // We take the closest enemy to the ball and we calculate the direction of the shot by just looking at his orientation
-        let enemy =  &match closest_bot_to_point(world.enemies_bot.values().collect(), ball){
+        let enemy =  &match closest_bot_to_point(world.enemies_bot.values().collect(), *ball_pos){
             Some(closest_enemy) => closest_enemy,
             None => {
                 eprintln!("Cannot get enemy");
                 return false;
             }
-        }.pose;
+        };
+        let enemy_pos = &enemy.pose;
 
-        if (ball - enemy.position).norm() > 0.2 {
-            eprintln!("Ball is too far to enemy");
-            return false;
+        if (ball_pos - enemy_pos.position).norm() > 0.2 {
+             eprintln!("Ball is too far to enemy");
+             return false;
         }
 
-        let vector = enemy.position - ball;
-        let norm = vector.norm();
-        let coef = DISTANCE_TO_BALL/norm;
-        let target = enemy.position - Point2::new(vector.x, vector.y)*coef;
-        let angle = look_at_target(robot.position, enemy.position);
 
-        
-        
-        if self.time.elapsed().as_millis()%2 == 0{
-            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle+ANGULAR_DIFFERENCE, 0.0 , false , Some(StraightKick { power: 0.0 }), false ));
+        let mut target = Point2::new(0., 0.) - Point2::new(0., 0.);
+        let mut dribble = 0.0;
+        let enemy_to_ball = ball_pos - enemy_pos.position;
+        let robot_to_ball = ball_pos - robot_pos.position;
+        let dot_robot_and_enemy_to_ball = robot_to_ball.normalize().dot(&enemy_to_ball.normalize());
+
+
+        if dot_robot_and_enemy_to_ball > -0.1 {
+            let enemy_to_goal = world.geometry.ally_goal.line.center() - enemy_pos.position;
+            let distance_to_robot = 
+            (world.geometry.robot_radius + DINANCE_TO_ROBOT) 
+            /enemy.distance(&world.geometry.ally_goal.line.center());
+
+            target = 
+            enemy_pos.position - Point2::new(enemy_to_goal.x, enemy_to_goal.y)*(-distance_to_robot);
+            
+
         } else {
-             action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle-ANGULAR_DIFFERENCE , 0.0 , false , Some(StraightKick { power: 0.0 }), false ));  
+
+            
+            dribble = 1.0;
+            let distance_to_robot = (DISTANCE_TO_BALL+ world.geometry.ball_radius + world.geometry.robot_radius)/enemy.distance(ball_pos);
+            target = enemy_pos.position - Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-distance_to_robot);
+        
         }
+        
+        
+
+        let mut angle = 0.;
+        if robot.distance(&ball_pos) < 0.3 {
+            angle = angle_to_point(robot_pos.position, *ball_pos);
+            if self.time.elapsed().as_millis()%2 == 0{
+                angle = angle+ANGULAR_DIFFERENCE;
+            } else {
+                angle = angle-ANGULAR_DIFFERENCE;
+            }
+        } else {
+            angle = angle_to_point(robot_pos.position, enemy_pos.position);
+        }
+
+        let fast = robot.distance(&enemy.pose.position) > 1.;
+        
+
+        action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribble , false , Some(StraightKick { power: 0.0 }), fast ));
         
         
         
