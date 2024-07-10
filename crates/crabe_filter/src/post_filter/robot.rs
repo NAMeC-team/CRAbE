@@ -7,11 +7,12 @@ pub struct RobotFilter;
 
 fn insert_tracked<'a, T: Clone + 'a>(
     robot_map: &mut RobotMap<T>,
-    tracked: impl Iterator<Item = (&'a u8, &'a TrackedRobot<T>)>,
+    tracked: impl Iterator<Item = (&'a u8, &'a TrackedRobot<T>)>
 ) {
     robot_map.clear();
-    robot_map
-        .extend(tracked.map(|(robot_id, tracked_robot)| (*robot_id, tracked_robot.data.clone())))
+    robot_map.extend(
+        tracked.map(|(robot_id, tracked_robot)| (robot_id.clone(), tracked_robot.data.clone())),
+    );
 }
 
 impl PostFilter for RobotFilter {

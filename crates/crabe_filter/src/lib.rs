@@ -11,9 +11,11 @@ use crate::filter::passthrough::PassthroughFilter;
 use crate::filter::velocity_acceleration::VelocityAccelerationFilter;
 use crate::filter::Filter;
 use crate::post_filter::ball::BallFilter;
+use crate::post_filter::game_controller::GameControllerPostFilter;
 use crate::post_filter::geometry::GeometryFilter;
 use crate::post_filter::robot::RobotFilter;
 use crate::post_filter::PostFilter;
+use crate::pre_filter::game_controller::GameControllerPreFilter;
 use crate::pre_filter::vision::VisionFilter;
 use crate::pre_filter::PreFilter;
 use clap::Args;
@@ -21,8 +23,7 @@ use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
-use crate::pre_filter::game_controller::GameControllerPreFilter;
-use crate::post_filter::game_controller::GameControllerPostFilter;
+use filter::team_side::TeamSideFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {}
@@ -53,6 +54,7 @@ impl FilterPipeline {
             pre_filters,
             filters: vec![
                 Box::new(PassthroughFilter),
+                Box::new(TeamSideFilter),
                 Box::new(VelocityAccelerationFilter),
                 Box::<InactiveFilter>::default(),
             ],
