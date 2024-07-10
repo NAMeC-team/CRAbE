@@ -4,6 +4,9 @@ pub mod move_to;
 /// The `orient_to` module contains the `OrientTo` action which orient a robot to a target orientation.
 pub mod orient_to;
 
+/// The `go_to` module contains the `GoTo` moves a robot to a specific location on the field.
+pub mod go_to;
+
 /// The `order_raw` module contains the `RawOrder` action which sends a raw command to the robot.
 pub mod order_raw;
 
@@ -17,6 +20,7 @@ pub mod state;
 
 use crate::action::move_to::MoveTo;
 use crate::action::orient_to::OrientTo;
+use crate::action::go_to::GoTo;
 use crate::action::order_raw::RawOrder;
 use crate::action::sequencer::Sequencer;
 use crabe_framework::data::output::{Command, CommandMap};
@@ -44,6 +48,7 @@ pub trait Action {
 pub enum Actions {
     MoveTo(MoveTo),
     OrientTo(OrientTo),
+    GoTo(GoTo),
     RawOrder(RawOrder),
 }
 

@@ -4,7 +4,7 @@ use crate::message::MessageData;
 use crate::strategy::Strategy;
 use crate::utils::closest_bot_to_point;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{Ball, EnemyInfo, Robot, World};
+use crabe_framework::data::world::World;
 use crabe_math::{shape::Line, vectors};
 use crabe_math::vectors::vector_from_angle;
 use nalgebra::Point2;
@@ -21,45 +21,6 @@ impl GoalKeeper {
     /// Creates a new GoalKeeper instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id, messages: vec![]}
-    }
-
-    /// Calculates the trajectory of the ball based on its velocity.
-    /// The trajectory is calculated by extending the ball's position in the direction of its velocity.
-    /// If the ball's velocity is too low (less than 0.1), the function returns None.
-    fn follow_velocity_trajectory(&self, ball: &Ball, world: &World) -> Option<Point2<f64>> {
-        let ball_pos = ball.position_2d();
-        let ball_velocity_trajectory = Line::new(ball_pos, ball_pos + ball.velocity.xy().normalize() * 100.);
-        if ball.velocity.norm() > 0.1 {
-            if let Ok(intersection) = world.geometry.ally_goal.line.intersection_segments(&ball_velocity_trajectory) {
-                return Some(intersection);
-            }
-        }
-        None
-    }
-
-    /// Calculates the trajectory of the ball based on the enemy's position.
-    /// The trajectory is calculated by extending the line from the enemy to the ball's position.
-    /// If the trajectory intersects with the goal line, the function returns the intersection point.
-    fn follow_enemy_to_ball_trajectory(&self, ball: &Ball, world: &World, enemy: &Robot<EnemyInfo>) -> Option<Point2<f64>> {
-        let ball_pos = ball.position_2d();
-        let enemy_to_ball = ball_pos - enemy.pose.position;
-        let enemy_to_ball_trajectory = Line::new(ball_pos, ball_pos + enemy_to_ball.normalize() * 100.);
-        if let Ok(intersection) = world.geometry.ally_goal.line.intersection_segments(&enemy_to_ball_trajectory) {
-            return Some(intersection);
-        }
-        None
-    }
-
-    /// Calculates the trajectory of the ball based on the enemy's direction.
-    /// The trajectory is calculated by extending the line from the enemy in the direction of its orientation.
-    /// If the trajectory intersects with the goal line, the function returns the intersection point.
-    fn follow_enemy_direction(&self, world: &World, enemy: &Robot<EnemyInfo>) -> Option<Point2<f64>> {
-        let enemy_dir = vector_from_angle(enemy.pose.orientation) * 100.;
-        let enemy_dir_trajectory = Line::new(enemy.pose.position, enemy.pose.position + enemy_dir);
-        if let Ok(intersection) = world.geometry.ally_goal.line.intersection_segments(&enemy_dir_trajectory) {
-            return Some(intersection);
-        }
-        None
     }
 }
 
@@ -114,33 +75,27 @@ impl Strategy for GoalKeeper {
         
         // If the ball is present, the position and orientation have to be updated
         if let Some(ball) = &world.ball{
-            let ball_position = ball.position_2d();
-            let follow_ball_x_position = Point2::new(world.geometry.ally_goal.line.start.x, ball_position.y);
-            orientation_target = ball_position;
-            if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
+            let ball_pos = ball.position_2d();
+            orientation_target = ball_pos;
+            let mut enemy_shoot_dir = Line::new(ball_pos,Point2::new(-10.,ball.position.y));
+        
+            // We take the closest enemy to the ball and we calculate the direction of the shot by just looking at his orientation
+            if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_pos){
+                let enemy_dir = vector_from_angle(closest_enemy.pose.orientation) * 10.;
+                enemy_shoot_dir.end = ball_pos + enemy_dir;
+            }
+
+            // If the shoot direction intersect with the goal line, we move the robot to the intersection point
+            if let Ok(intersection) = world.geometry.ally_goal.line.intersection_segments(&enemy_shoot_dir) {
                 position_target = intersection;
-            } else if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_position){
-                if let Some(intersection) = self.follow_enemy_to_ball_trajectory(ball, world, closest_enemy){
-                    position_target = intersection;
-                }else if let Some(intersection) = self.follow_enemy_direction( world, closest_enemy){
-                    position_target = intersection;
-                }else{
-                    position_target = follow_ball_x_position;
-                }
-            }else{
-                position_target = follow_ball_x_position;
+            } else { // Otherwise we move the robot to the closest point of the goal line to the ball (resulting in following the y axis of the ball)
+                position_target = world.geometry.ally_goal.line.closest_point_on_segment(&ball_pos);
             }
         }
 
         // Calculate the orientation of the robot towards the orientation target
         let orientation = vectors::angle_to_point(robot.pose.position, orientation_target);
 
-        // clamp the y position of the robot to the goal width so that he's not colliding with the goal walls
-        let goal_half_width = world.geometry.ally_goal.width /2.;
-        if goal_half_width > world.geometry.robot_radius {
-            position_target.y = position_target.y.clamp(-goal_half_width + world.geometry.robot_radius, goal_half_width - world.geometry.robot_radius);
-        }
-        
         // Move the robot to the calculated position and orientation
         action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false));
         false

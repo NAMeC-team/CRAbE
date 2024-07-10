@@ -2,27 +2,27 @@ use crate::action::state::State;
 use crate::action::Action;
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::World;
-use std::f64::consts::{PI, TAU};
+use crabe_framework::data::world::{AllyInfo, Robot, World};
+use nalgebra::{Isometry2, Point2, Vector2, Vector3};
 
-/// The `OrientTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
+/// The `GoTo` struct represents an action that moves the robot to a specific location on the field without moving orientation.
 #[derive(Clone)]
-pub struct OrientTo {
+pub struct GoTo {
     /// The current state of the action.
     state: State,
-    /// The target orientation of the robot.
-    orientation: f64,
+    /// The target position to move to.
+    target: Point2<f64>,
     charge: bool,
     dribbler: f32,
     kicker: Option<Kick>,
     fast: bool,
 }
 
-impl From<&mut OrientTo> for OrientTo {
-    fn from(other: &mut OrientTo) -> OrientTo {
-        OrientTo {
+impl From<&mut GoTo> for GoTo {
+    fn from(other: &mut GoTo) -> GoTo {
+        GoTo {
             state: other.state,
-            orientation: other.orientation,
+            target: other.target,
             charge: other.charge,
             dribbler: other.dribbler,
             kicker: other.kicker,
@@ -31,14 +31,15 @@ impl From<&mut OrientTo> for OrientTo {
     }
 }
 
-impl OrientTo {
-    /// Creates a new `OrientTo` instance.
+impl GoTo {
+    /// Creates a new `GoTo` instance.
     ///
     /// # Arguments
     ///
+    /// * `target`: The target position on the field to move the robot to.
     /// * `orientation`: The target orientation of the robot.
     pub fn new(
-        orientation: f64,
+        target: Point2<f64>,
         dribbler: f32,
         charge: bool,
         kicker: Option<Kick>,
@@ -46,7 +47,7 @@ impl OrientTo {
     ) -> Self {
         Self {
             state: State::Running,
-            orientation,
+            target,
             charge,
             dribbler,
             kicker,
@@ -55,29 +56,35 @@ impl OrientTo {
     }
 }
 
-
-
-fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
-    let diff = alpha1 - alpha2;
-    match diff {
-        d if d > PI => d - TAU,
-        d if d < -PI => d + TAU,
-        d => d,
-    }
+fn frame(x: f64, y: f64, orientation: f64) -> Isometry2<f64> {
+    Isometry2::new(Vector2::new(x, y), orientation)
 }
 
-/// The default factor speed for the robot to rotate towards the target orientation.
-const GOTO_ROTATION: f64 = 1.5;
-/// The overshooting factor to make the robot rotate faster to the real target.
-const GOTO_ROTATION_FAST: f64 = 3.;
+fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
+    frame.inverse()
+}
+
+fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
+    frame(
+        robot.pose.position.x,
+        robot.pose.position.y,
+        robot.pose.orientation,
+    )
+}
+
+
+/// The default factor speed for the robot to move towards the target position.
+const GOTO_SPEED: f64 = 1.5;
+/// The overshooting factor to make the robot get faster to the real target.
+const GOTO_SPEED_FAST: f64 = 3.;
 
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.1;
 
-impl Action for OrientTo {
+impl Action for GoTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
-        String::from("OrientTo")
+        String::from("GoTo")
     }
 
     /// Returns the state of the action.
@@ -95,23 +102,32 @@ impl Action for OrientTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
+            let ti = frame_inv(robot_frame(robot));
+            let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
 
-
-            let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
-            let arrived = error_orientation < ERR_TOLERANCE;
+            let error_x = target_in_robot[0];
+            let error_y = target_in_robot[1];
+            let arrived = Vector2::new(error_x, error_y).norm() < ERR_TOLERANCE;
             if arrived {
                 self.state = State::Done;
             }
 
-            let order:f64 = 
+            let order = 
             if self.fast {
-                GOTO_ROTATION_FAST * error_orientation
+                Vector2::new(
+                GOTO_SPEED_FAST * error_x,
+                GOTO_SPEED_FAST * error_y,
+                )
             } else {
-                GOTO_ROTATION * error_orientation
+                Vector2::new(
+                GOTO_SPEED * error_x,
+                GOTO_SPEED * error_y,
+                )
             };
 
             Command {
-                angular_velocity: order as f32,
+                forward_velocity: order.x as f32,
+                left_velocity: order.y as f32,
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
