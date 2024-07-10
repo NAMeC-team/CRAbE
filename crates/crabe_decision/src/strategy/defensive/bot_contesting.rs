@@ -20,7 +20,6 @@ pub struct BotContesting {
     id: u8,
     messages: Vec<MessageData>,
     time: Instant,
-
 }
 
 
@@ -58,13 +57,11 @@ impl Strategy for BotContesting {
         world: &World,
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
-        
     ) -> bool {
         action_wrapper.clear(self.id);
         let ball = match &world.ball {
             Some(b) => b,
             None => {
-                eprintln!("Cannot find ball");
                 return false;
             }
         };
@@ -74,7 +71,6 @@ impl Strategy for BotContesting {
         let robot = &match world.allies_bot.get(&self.id) {
             Some(r) => r,
             None => {
-                eprintln!("Cannot get robot");
                 return false;
             }
         };
@@ -84,19 +80,17 @@ impl Strategy for BotContesting {
         let enemy =  &match closest_bot_to_point(world.enemies_bot.values().collect(), *ball_pos){
             Some(closest_enemy) => closest_enemy,
             None => {
-                eprintln!("Cannot get enemy");
                 return false;
             }
         };
         let enemy_pos = &enemy.pose;
 
         if (ball_pos - enemy_pos.position).norm() > 0.2 {
-             eprintln!("Ball is too far to enemy");
-             return false;
+            // Ball is too far to enemy
+            return false;
         }
 
-
-        let mut target = Point2::new(0., 0.) - Point2::new(0., 0.);
+        let target ;
         let mut dribble = 0.0;
         let enemy_to_ball = ball_pos - enemy_pos.position;
         let robot_to_ball = ball_pos - robot_pos.position;
@@ -106,24 +100,16 @@ impl Strategy for BotContesting {
         if dot_robot_and_enemy_to_ball > -0.1 {
             let enemy_to_goal = world.geometry.ally_goal.line.center() - enemy_pos.position;
             let distance_to_robot = 
-            (world.geometry.robot_radius + DINANCE_TO_ROBOT) 
-            /enemy.distance(&world.geometry.ally_goal.line.center());
+                (world.geometry.robot_radius + DINANCE_TO_ROBOT) / enemy.distance(&world.geometry.ally_goal.line.center());
 
             target = 
-            enemy_pos.position - Point2::new(enemy_to_goal.x, enemy_to_goal.y)*(-distance_to_robot);
-            
-
-        } else {
-
-            
+                enemy_pos.position - Point2::new(enemy_to_goal.x, enemy_to_goal.y)*(-distance_to_robot);
+        } else {            
             dribble = 1.0;
             let distance_to_robot = (DISTANCE_TO_BALL+ world.geometry.ball_radius + world.geometry.robot_radius)/enemy.distance(ball_pos);
-            target = enemy_pos.position - Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-distance_to_robot);
-        
+            target = enemy_pos.position - Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-distance_to_robot);    
         }
         
-        
-
         let mut angle = 0.;
         if robot.distance(&ball_pos) < 0.3 {
             angle = angle_to_point(robot_pos.position, *ball_pos);
@@ -137,16 +123,8 @@ impl Strategy for BotContesting {
         }
 
         let fast = robot.distance(&enemy.pose.position) > 1.;
-        
 
         action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribble , false , Some(StraightKick { power: 0.0 }), fast ));
-        
-        
-        
         return false;
-
     }
-    
-    
-    
 }
