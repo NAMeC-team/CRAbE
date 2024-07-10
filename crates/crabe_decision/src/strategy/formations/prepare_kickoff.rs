@@ -7,7 +7,7 @@ use crabe_framework::data::world::World;
 use crabe_math::vectors;
 use nalgebra::Point2;
 
-/// The PrepareKickOffstruct represents a strategy that commands the team to set in the PrepareKickOff formation
+/// The PrepareKickOff struct represents a strategy that commands the team to set in the PrepareKickOff formation
 #[derive(Default)]
 pub struct PrepareKickOff{
     ally: bool,
@@ -81,14 +81,15 @@ impl Strategy for PrepareKickOff{
             action_wrapper.push(2, MoveTo::new(Point2::new(-1., -1.), vectors::angle_to_point(Point2::new(-1., -1.), ball_pos), 0.0, false, None, false));
             action_wrapper.push(3, MoveTo::new(Point2::new(-0.25, 2.5), vectors::angle_to_point(Point2::new(-0.25, 2.5), ball_pos), 0.0, false, None, false));
             action_wrapper.push(4, MoveTo::new(Point2::new(-0.25, -2.5), vectors::angle_to_point(Point2::new(-0.25, -2.5), ball_pos), 0.0, false, None, false));
-            action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, 0.0), vectors::angle_to_point(Point2::new(-4.0, 0.0), ball_pos), 0.0, false, None, false));
         } else {
+
+            let enemy_robots = world.enemies_bot.clone();
+
             action_wrapper.push(0, MoveTo::new(Point2::new(-0.5, 1.), vectors::angle_to_point(Point2::new(-3., 0.5), ball_pos), 0.0, false, None, false));
             action_wrapper.push(1, MoveTo::new(Point2::new(-0.6, 0.0), vectors::angle_to_point(Point2::new(-0.0, 0.0), ball_pos), 0.0, false, None, false));
             action_wrapper.push(2, MoveTo::new(Point2::new(-0.5, -1.), vectors::angle_to_point(Point2::new(-3., -0.5), ball_pos), 0.0, false, None, false));
-            action_wrapper.push(3, MoveTo::new(Point2::new(-0.3, 2.5), vectors::angle_to_point(Point2::new(-0.25, 2.5), ball_pos), 0.0, false, None, false));
-            action_wrapper.push(4, MoveTo::new(Point2::new(-0.3, -2.5), vectors::angle_to_point(Point2::new(-0.25, -2.5), ball_pos), 0.0, false, None, false));
-            action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, 0.0), vectors::angle_to_point(Point2::new(-4.0, 0.0), ball_pos), 0.0, false, None, false));
+            action_wrapper.push(3, MoveTo::new(Point2::new(-0.3, 1.5), vectors::angle_to_point(Point2::new(-0.25, 2.5), ball_pos), 0.0, false, None, false));
+            action_wrapper.push(4, MoveTo::new(Point2::new(-0.3, -1.5), vectors::angle_to_point(Point2::new(-0.25, -2.5), ball_pos), 0.0, false, None, false));
         }
         false
     }
