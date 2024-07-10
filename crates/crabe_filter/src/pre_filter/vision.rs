@@ -122,7 +122,7 @@ mod detection {
         let frame_info = FrameInfo {
             camera_id: detection.camera_id,
             frame_number: detection.frame_number,
-            t_capture: create_date_time(Utc::now().timestamp()),
+            t_capture: create_date_time(Utc::now().timestamp_millis()),
         };
 
         let mut robot_detection_info = robot::RobotDetectionInfo {
