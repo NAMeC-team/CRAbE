@@ -3,10 +3,8 @@ use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use crabe_framework::data::geometry::Penalty;
 use crabe_math::shape::Line;
 use crabe_math::vectors;
-use nalgebra::Point2;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
@@ -15,14 +13,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 pub struct DefenseWall {
     /// The id of the robot to move.
     ids: Vec<u8>,
-    current_pos_along_penaly: f64,
     messages: Vec<MessageData>,
 }
 
 impl DefenseWall {
     /// Creates a new DefenseWall instance with the desired robot id.
     pub fn new(ids: Vec<u8>) -> Self {
-        Self { ids, current_pos_along_penaly: 0.5,messages: vec![], }
+        Self { ids, messages: vec![], }
     }
 
     
@@ -51,31 +48,6 @@ impl DefenseWall {
         false
     }
 
-    /// Get the average position ratio of the robots along the penalty line
-    pub fn get_closest_point_on_penalty_line(
-        &mut self,
-        world: &World
-    ) -> Option<f64> {  
-        let enlarged_penalty = world.geometry.ally_penalty.enlarged_penalty(0.3);
-        let goal_center = world.geometry.ally_goal.line.center();
-        let mut total = 0.;
-        let mut total_bot_nb = 0.;//in case some bots don't have intersection line we shouldn't count them in the mean
-        for id in &self.ids{
-            if !world.allies_bot.contains_key(id) {
-                continue;
-            }
-            let bot_pos = world.allies_bot[id].pose.position;
-            let bot_to_goal = Line::new(bot_pos, goal_center);
-            if let Some(bot_ratio_pos) = enlarged_penalty.intersection_line_as_ratio(bot_to_goal) {
-                total += bot_ratio_pos;
-                total_bot_nb += 1.;
-            }
-        }
-        if total_bot_nb <= 0. {
-            return None;
-        }
-        Some(total/total_bot_nb)
-    }
 }
 
 impl Strategy for DefenseWall {
@@ -126,17 +98,10 @@ impl Strategy for DefenseWall {
         let goal_center = world.geometry.ally_goal.line.center();
         let ball_to_goal = Line::new( ball_pos, goal_center);
 
-        if let Some(mut intersection_shooting_dir_ratio) = enlarged_penalty.intersection_segment_as_ratio(ball_to_goal) {//if ball to goal center intersect the penalty line
-            if let Some(current_pos) = self.get_closest_point_on_penalty_line(world){
-                self.current_pos_along_penaly = current_pos;
-            }
-            //clamp new bot position so they have to move along the penalty line instead of just moving through the goal field
-            intersection_shooting_dir_ratio = intersection_shooting_dir_ratio.clamp(self.current_pos_along_penaly-0.1, self.current_pos_along_penaly+0.1);
-
+        if let Some(intersection_shooting_dir_ratio) = enlarged_penalty.intersection_segment_as_ratio(ball_to_goal) {//if ball to goal center intersect the penalty line
             let tot_penalty_line_length = enlarged_penalty.depth * 2. + enlarged_penalty.width;
-
             let bot_diameter = world.geometry.robot_radius * 2.;
-			let bot_diameter_to_ratio = bot_diameter / tot_penalty_line_length; // bot diameter between 0 and 1 relatively to the penalty line length
+			let bot_spacing_ratio = (bot_diameter + world.geometry.ball_radius / 2.) / tot_penalty_line_length; // bot diameter between 0 and 1 relatively to the penalty line length
             
             // Get the robots (so that we know how many of them can be move)
             let mut robots = vec![];
@@ -145,17 +110,21 @@ impl Strategy for DefenseWall {
                     robots.push(robot);
                 } 
             }
-            
             let robot_nb = robots.len() as f64;
-            let wall_starting_pos = intersection_shooting_dir_ratio - (bot_diameter_to_ratio / 2.) * (robot_nb - 1.);
-
+            
+            let mut wall_starting_pos = intersection_shooting_dir_ratio - (bot_spacing_ratio / 2.) * (robot_nb - 1.);
+            
             // Clamp the position of the wall so that he's not going out of the field
-            let wall_starting_pos_not_overflowing = wall_starting_pos.clamp(bot_diameter_to_ratio / 2., 1. - bot_diameter_to_ratio / 2. - (robot_nb-1.)*bot_diameter_to_ratio);
+            wall_starting_pos = wall_starting_pos.clamp(bot_spacing_ratio / 2., 1. - bot_spacing_ratio / 2. - (robot_nb-1.)*bot_spacing_ratio);
             for (i, robot) in robots.iter().enumerate() {
-                let relative_ratio = wall_starting_pos_not_overflowing + (i as f64) * bot_diameter_to_ratio;
-                let pos_on_penalty_line = enlarged_penalty.on_penalty_line(relative_ratio);
-                let orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
-                action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, false));
+                if let Some(current_pos) = enlarged_penalty.intersection_line_as_ratio(Line::new(robot.pose.position, goal_center)){
+                    //clamp new bot position so they have to move along the penalty line instead of just moving through the goal field
+                    let mut robot_wall_destination = wall_starting_pos + (i as f64) * bot_spacing_ratio;
+                    robot_wall_destination = robot_wall_destination.clamp(current_pos-0.1, current_pos+0.1);
+                    let pos_on_penalty_line = enlarged_penalty.on_penalty_line(robot_wall_destination);
+                    let orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
+                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                }
             }
         } else {
             println!("No intersection point found");
