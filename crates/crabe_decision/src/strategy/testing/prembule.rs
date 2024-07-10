@@ -1,5 +1,5 @@
 use crate::{
-    action::{ self, move_to::MoveTo, order_raw::RawOrder, ActionWrapper}, message::MessageData, strategy::Strategy
+    action::{ self, orient_to::OrientTo, order_raw::RawOrder, ActionWrapper}, message::MessageData, strategy::Strategy
 };
 
 use crabe_framework::data::{
@@ -115,11 +115,11 @@ impl Strategy for Prembule {
                 
                 action_wrapper.push(
                     self.id,
-                    MoveTo::new(robot.position, orient+2. , 0.0 , true , None,false )
+                    OrientTo::new( orient+2. , 0.0 , true , None,false )
                 );
                 action_wrapper.push(
                     self.id,
-                    MoveTo::new(robot.position, orient , 0.0 , false , Some(StraightKick { power: 1.0 }),false )
+                    OrientTo::new( orient , 0.0 , false , Some(StraightKick { power: 1.0 }),false )
                 );
                 self.state = States::STOP;
                 
