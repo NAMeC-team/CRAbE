@@ -19,6 +19,7 @@ pub struct Prembule {
     messages: Vec<MessageData>,
     state: States,
     start_time: Instant,
+    orient: Option<f64>,
     
 }
 
@@ -39,7 +40,7 @@ impl Prembule {
             messages: vec![],
             state: States::FIRST,
             start_time: Instant::now(),
-            
+            orient: None,
         }
     }
     
@@ -77,7 +78,10 @@ impl Strategy for Prembule {
                 return false;
             }
         }.pose;
-        let orient = robot.orientation;
+        let orient = match self.orient {
+            Some(orient) => orient,
+            None => robot.orientation
+        };
         let speed:f32 = 3.14;    
         match self.state {
             States::FIRST => {
