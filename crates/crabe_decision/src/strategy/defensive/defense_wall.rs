@@ -2,7 +2,7 @@ use crate::{action::move_to::MoveTo, message::MessageData};
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::World;
+use crabe_framework::data::world::{AllyInfo, Robot, World};
 use crabe_math::shape::Line;
 use crabe_math::vectors;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -104,27 +104,29 @@ impl Strategy for DefenseWall {
 			let bot_spacing_ratio = (bot_diameter + world.geometry.ball_radius / 2.) / tot_penalty_line_length; // bot diameter between 0 and 1 relatively to the penalty line length
             
             // Get the robots (so that we know how many of them can be move)
-            let mut robots = vec![];
+            let mut robots: Vec<(f64, &Robot<AllyInfo>)> = vec![];
             for id in self.ids.clone() {
                 if let Some(robot) = world.allies_bot.get(&id) {
-                    robots.push(robot);
+                    if let Some(current_pos) = enlarged_penalty.intersection_line_as_ratio(Line::new(robot.pose.position, goal_center)){
+                        robots.push((current_pos, robot));
+                    }
                 } 
             }
+            //order them by their position on the penalty line
+            robots.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
             let robot_nb = robots.len() as f64;
             
             let mut wall_starting_pos = intersection_shooting_dir_ratio - (bot_spacing_ratio / 2.) * (robot_nb - 1.);
             
             // Clamp the position of the wall so that he's not going out of the field
             wall_starting_pos = wall_starting_pos.clamp(bot_spacing_ratio / 2., 1. - bot_spacing_ratio / 2. - (robot_nb-1.)*bot_spacing_ratio);
-            for (i, robot) in robots.iter().enumerate() {
-                if let Some(current_pos) = enlarged_penalty.intersection_line_as_ratio(Line::new(robot.pose.position, goal_center)){
-                    //clamp new bot position so they have to move along the penalty line instead of just moving through the goal field
-                    let mut robot_wall_destination = wall_starting_pos + (i as f64) * bot_spacing_ratio;
-                    robot_wall_destination = robot_wall_destination.clamp(current_pos-0.1, current_pos+0.1);
-                    let pos_on_penalty_line = enlarged_penalty.on_penalty_line(robot_wall_destination);
-                    let orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
-                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
-                }
+            for (i, (current_pos, robot)) in robots.iter().enumerate() {
+                //clamp new bot position so they have to move along the penalty line instead of just moving through the goal field
+                let mut robot_wall_destination = wall_starting_pos + (i as f64) * bot_spacing_ratio;
+                robot_wall_destination = robot_wall_destination.clamp(current_pos-0.1, current_pos+0.1);
+                let pos_on_penalty_line = enlarged_penalty.on_penalty_line(robot_wall_destination);
+                let orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
+                action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
             }
         } else {
             println!("No intersection point found");
