@@ -2,6 +2,8 @@ use chrono::{DateTime, Utc};
 use nalgebra::{Point2, Point3, Vector3};
 use serde::Serialize;
 
+use super::TeamColor;
+
 /// The `Ball` struct represents the ball in the SSL game.
 #[derive(Serialize, Default, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -14,6 +16,8 @@ pub struct Ball {
     pub velocity: Vector3<f64>,
     /// The acceleration of the ball in 3D space in meters per second squared.
     pub acceleration: Vector3<f64>,
+    /// The team color of the team that currently possesses the ball.
+    pub possession: Option<TeamColor>,
 }
 
 impl Ball {

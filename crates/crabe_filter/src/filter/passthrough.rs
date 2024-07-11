@@ -30,6 +30,7 @@ fn ball_passthrough(ball: &mut TrackedBall) {
             timestamp: packet.frame_info.t_capture,
             velocity: Default::default(),
             acceleration: Default::default(),
+            possession: None,
         }
     }
 }
