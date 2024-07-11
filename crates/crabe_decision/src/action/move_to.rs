@@ -159,7 +159,7 @@ fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64, sta
     let mut angle = 0.0;
     let mut target = target;
     let mut free = false;
-    while !free && angle < PI{
+    while !free && angle < PI && angle > -PI{
         let dir = rotate_vector((target - start).normalize(), angle);
         target = start + dir.normalize() * 0.5;
         let trajectory = Line::new(start, target);
@@ -231,10 +231,8 @@ impl Action for MoveTo {
                     for i in 0..path.len()-1{
                         _tools.annotations.add_line(vec!["path".to_string(), i.to_string()].join("-"), Line::new(path[i], path[i+1]));
                     }
-                    println!("path {:?}", path);
                     // add path to annotations 
                     let smooth_path = smooth_path(&path, &objects, world.geometry.robot_radius+0.05, _tools);            
-                    println!("smooth_path {:?}", smooth_path);
                     if smooth_path.len() > 1{
                         for i in 0..smooth_path.len()-1{
                             _tools.annotations.add_line(vec!["path".to_string(), i.to_string()].join("-"), Line::new(smooth_path[i], smooth_path[i+1]));
