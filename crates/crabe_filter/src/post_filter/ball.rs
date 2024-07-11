@@ -9,7 +9,6 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
     let ball_world = match &world.ball {
         Some(b) => b,
         None => {
-            println!("Ball not found in world");
             ball.possession = None; return;}
     };
     ball.possession = ball_world.possession;
@@ -19,11 +18,9 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
             RunningState::FreeKick(val)
             | RunningState::KickOff(val)
             | RunningState::Penalty(val) => {
-                println!("?");
                 ball.possession = Some(val);
             }
             _ => {
-                println!("{}" , ball.acceleration.norm());
                 if ball.acceleration.norm() > 1. {
                     let bot_ally = closest_bot_to_point(world.allies_bot.values().collect(), ball.position.xy()).unwrap();
                     let ally_color = world.team_color;
@@ -38,17 +35,7 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
             }
         }
     } else {
-        match state{
-            GameState::Halted(_) => {
-                println!("Halted");
-            }
-            GameState::Stopped(_) => {
-                println!("Stopped");
-            }
-            _ => {
-                println!("wtf");
-            }
-        }
+        
         ball.possession = None;
     }
     
