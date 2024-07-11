@@ -105,7 +105,6 @@ impl Strategy for PrepareGoalKick{
                 
                 action_wrapper.push(0, MoveTo::new(Point2::new(-3., 0.2), vectors::angle_to_point(Point2::new(-3., 0.2), ball_pos), 0.0, false, None, false));
                 action_wrapper.push(2, MoveTo::new(Point2::new(-3., -0.2), vectors::angle_to_point(Point2::new(-3., -0.2), ball_pos), 0.0, false, None, false));
-
             }
 
         }

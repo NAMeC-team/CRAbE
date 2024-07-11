@@ -81,9 +81,6 @@ impl Strategy for PrepareFreeKick{
 
             let attackers = closest_bots_to_point(world.allies_bot.values().collect(), ball_pos);
 
-            // print len of attackers
-            println!("Attackers: {}", attackers.len());
-
             if attackers.len() > 0 {
                 let freekick_taker = attackers[0];
 
@@ -106,11 +103,11 @@ impl Strategy for PrepareFreeKick{
             if closest_bots.len() > 0 {
                 // put a wall in front of the ball with 3 last robots from the list
                 for i in (0..=2).rev() {
-                    // print i
-                    println!("robot id: {}, len {}", closest_bots[i].id, closest_bots.len());
-                    action_wrapper.push(closest_bots[i].id, MoveTo::new(Point2::new(ball_pos.x - 1., (ball_pos.y - 1.0) + (i as f64 - 0.0)), vectors::angle_to_point(Point2::new(ball_pos.x - 1., (ball_pos.y - 1.0) + (i as f64 + 0.0)), ball_pos), 0.0, false, None, false));
+                    if !(ball_pos.y - 1.0 + (i as f64 - 0.0) > 3.0 || ball_pos.y - 1.0 + (i as f64 - 0.0) < - 3.0) {
+                        let y_cord = ball_pos.y - 1.0 + (i as f64 - 0.0);
+                        action_wrapper.push(closest_bots[i].id, MoveTo::new(Point2::new(ball_pos.x - 1., y_cord), vectors::angle_to_point(Point2::new(ball_pos.x - 1., y_cord), ball_pos), 0.0, false, None, false));
+                    }
                 }
-                println!("/////////////////////")
             }
         }
         false
