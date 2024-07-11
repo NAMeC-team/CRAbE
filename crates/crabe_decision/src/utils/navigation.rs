@@ -33,10 +33,7 @@ pub fn obstacle_avoidance(target: &Point2<f64>, robot: &Robot<AllyInfo>, world: 
     let allies_objects = robots_to_circles(world, allies_bot_without_actual_robot);
     let enemies_objects = robots_to_circles(world, world.enemies_bot.values().collect());
     let mut objects = [&allies_objects[..], &enemies_objects[..]].concat();
-    if let Some(ball) = &world.ball{
-        let ball_circle = Circle::new(ball.position_2d(), world.geometry.ball_radius + BALL_AVOIDANCE_MARGIN);
-        objects.push(ball_circle);
-    }
+
     // list of objects to avoid
     let avoidance_width = world.geometry.robot_radius+AVOIDANCE_MARGIN;
 
