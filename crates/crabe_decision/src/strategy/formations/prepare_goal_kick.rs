@@ -87,18 +87,26 @@ impl Strategy for PrepareGoalKick{
             action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, 0.0), vectors::angle_to_point(Point2::new(-4.0, 0.0), ball_pos), 0.0, false, None, false));
         } else {
 
-            let enemy_defender1 = closest_bots_to_point(world.enemies_bot.values().collect(), ball_pos)[1];
-            let enemy_defender2 = closest_bots_to_point(world.enemies_bot.values().collect(), ball_pos)[2];
+            let enemy_goal = closest_bot_to_point(world.enemies_bot.values().collect(), ball_pos);
 
-            let closest_ally_to_defender1 = closest_bot_to_point(world.allies_bot.values().collect(), enemy_defender1.pose.position.xy());
-            let closest_ally_to_defender2 = closest_bot_to_point(world.allies_bot.values().collect(), enemy_defender2.pose.position.xy());
+            if let Some(enemy_goal) = enemy_goal {
+                let enemy_goal_pos = enemy_goal.pose.position;
+                let enemy_goal_angle = vectors::angle_to_point(enemy_goal_pos, ball_pos);
 
-            let vector_defender1_to_ball = Vector2::new(enemy_defender1.pose.position.x, ball_pos.y);
-            let vector_defender2_to_ball = Vector2::new(enemy_defender2.pose.position.x, ball_pos.y);
-            
-            // the robot closest to the defender 1 will go between the defender 1 and the ball
-            action_wrapper.push(closest_ally_to_defender1.unwrap().id, MoveTo::new(Point2::new(vector_defender1_to_ball.x, vector_defender1_to_ball.y), vectors::angle_to_point(Point2::new(vector_defender1_to_ball.x, vector_defender1_to_ball.y), ball_pos), 0.0, false, None, false));
-            action_wrapper.push(closest_ally_to_defender2.unwrap().id, MoveTo::new(Point2::new(vector_defender2_to_ball.x, vector_defender2_to_ball.y), vectors::angle_to_point(Point2::new(vector_defender2_to_ball.x, vector_defender2_to_ball.y), ball_pos), 0.0, false, None, false));
+                let ally_closest = closest_bot_to_point(world.allies_bot.values().collect(), ball_pos).unwrap();
+
+                let goal_facing_vector = Vector2::new(enemy_goal_pos.x - ball_pos.x, enemy_goal_pos.y - ball_pos.y);
+
+                let wall_pos = ball_pos + (-goal_facing_vector.normalize()) * 0.5;
+
+                if ally_closest.id != 0 && ally_closest.id != 2 {
+                    action_wrapper.push(ally_closest.id, MoveTo::new(wall_pos, vectors::angle_to_point(wall_pos, ball_pos), 0.0, false, None, false));
+                }
+                
+                action_wrapper.push(0, MoveTo::new(Point2::new(-3., 0.2), vectors::angle_to_point(Point2::new(-3., 0.2), ball_pos), 0.0, false, None, false));
+                action_wrapper.push(2, MoveTo::new(Point2::new(-3., -0.2), vectors::angle_to_point(Point2::new(-3., -0.2), ball_pos), 0.0, false, None, false));
+
+            }
 
         }
         false
