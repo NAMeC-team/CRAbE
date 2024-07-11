@@ -1,5 +1,5 @@
 use crate::action::move_to::MoveTo;
-use crate::action::{self, ActionWrapper};
+use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
@@ -81,6 +81,7 @@ impl Strategy for PrepareKickOff{
             action_wrapper.push(2, MoveTo::new(Point2::new(-1., -1.), vectors::angle_to_point(Point2::new(-1., -1.), ball_pos), 0.0, false, None, false));
             action_wrapper.push(3, MoveTo::new(Point2::new(-0.25, 2.5), vectors::angle_to_point(Point2::new(-0.25, 2.5), ball_pos), 0.0, false, None, false));
             action_wrapper.push(4, MoveTo::new(Point2::new(-0.25, -2.5), vectors::angle_to_point(Point2::new(-0.25, -2.5), ball_pos), 0.0, false, None, false));
+            return false;
         } else {
 
             let enemy_robots = world.enemies_bot.clone();

@@ -1,14 +1,13 @@
 use crate::action::move_to::MoveTo;
-use crate::action::{self, ActionWrapper};
+use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
 use crate::utils::closest_bots_to_point;
-use crate::utils::closest_bot_to_point;
 
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_math::vectors;
-use nalgebra::{Point2, Vector2};
+use nalgebra::Point2;
 
 /// The PrepareFreeKick struct represents a strategy that commands the team to set in the PrepareFreeKick formation
 #[derive(Default)]
@@ -80,8 +79,39 @@ impl Strategy for PrepareFreeKick{
 
         if self.ally {
 
-        } else {
+            let attackers = closest_bots_to_point(world.allies_bot.values().collect(), ball_pos);
 
+            // print len of attackers
+            println!("Attackers: {}", attackers.len());
+
+            if attackers.len() > 0 {
+                let freekick_taker = attackers[0];
+
+                let pass_receiver = attackers[1];
+                            // put ally behind the ball and try to shoot
+                action_wrapper.push(freekick_taker.id, MoveTo::new(Point2::new(ball_pos.x - 1., ball_pos.y), vectors::angle_to_point(Point2::new(ball_pos.x - 1., ball_pos.y), ball_pos), 0.0, false, None, false));
+
+                // and another ally paralel to him to try a pass depending on wich side of the field the free kick is
+                if ball_pos.y < 0. {
+                    action_wrapper.push(pass_receiver.id, MoveTo::new(Point2::new(ball_pos.x - 1., ball_pos.y + 2.), vectors::angle_to_point(Point2::new(ball_pos.x - 1., ball_pos.y + 2.), ball_pos), 0.0, false, None, false));
+                } else {
+                    action_wrapper.push(pass_receiver.id, MoveTo::new(Point2::new(ball_pos.x - 1., ball_pos.y - 2.), vectors::angle_to_point(Point2::new(ball_pos.x - 1., ball_pos.y - 2.), ball_pos), 0.0, false, None, false));
+                }
+                return false;
+            }
+
+        } else {
+            let closest_bots = closest_bots_to_point(world.enemies_bot.values().collect(), ball_pos);
+
+            if closest_bots.len() > 0 {
+                // put a wall in front of the ball with 3 last robots from the list
+                for i in (0..=2).rev() {
+                    // print i
+                    println!("robot id: {}, len {}", closest_bots[i].id, closest_bots.len());
+                    action_wrapper.push(closest_bots[i].id, MoveTo::new(Point2::new(ball_pos.x - 1., (ball_pos.y - 1.0) + (i as f64 - 0.0)), vectors::angle_to_point(Point2::new(ball_pos.x - 1., (ball_pos.y - 1.0) + (i as f64 + 0.0)), ball_pos), 0.0, false, None, false));
+                }
+                println!("/////////////////////")
+            }
         }
         false
     }

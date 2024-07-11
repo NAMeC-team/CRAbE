@@ -1,8 +1,7 @@
 use crate::action::move_to::MoveTo;
-use crate::action::{self, ActionWrapper};
+use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
-use crate::utils::closest_bots_to_point;
 use crate::utils::closest_bot_to_point;
 
 use crabe_framework::data::tool::ToolData;
@@ -85,6 +84,7 @@ impl Strategy for PrepareGoalKick{
             action_wrapper.push(3, MoveTo::new(Point2::new(-3., 2.5), vectors::angle_to_point(Point2::new(-0.25, 2.5), ball_pos), 0.0, false, None, false));
             action_wrapper.push(4, MoveTo::new(Point2::new(-3., -2.5), vectors::angle_to_point(Point2::new(-0.25, -2.5), ball_pos), 0.0, false, None, false));
             action_wrapper.push(5, MoveTo::new(Point2::new(-4.0, 0.0), vectors::angle_to_point(Point2::new(-4.0, 0.0), ball_pos), 0.0, false, None, false));
+            return false;
         } else {
 
             let enemy_goal = closest_bot_to_point(world.enemies_bot.values().collect(), ball_pos);
