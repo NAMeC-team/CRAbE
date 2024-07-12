@@ -1,8 +1,11 @@
 use crate::action::state::State;
 use crate::action::Action;
+use crate::utils::navigation::obstacle_avoidance;
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
+use crabe_math::shape::{Circle, Line};
+use crabe_math::vectors::{rotate_vector, vector_from_angle};
 use nalgebra::{Isometry2, Point2, Vector2, Vector3};
 use std::f64::consts::{PI, TAU};
 
@@ -99,6 +102,8 @@ const GOTO_ROTATION_FAST: f64 = 3.;
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.1;
 
+
+
 impl Action for MoveTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
@@ -120,9 +125,11 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
+            let target = obstacle_avoidance(&self.target, robot, world, _tools);
+            
             let ti = frame_inv(robot_frame(robot));
-            let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
-
+            let target_in_robot = ti * Point2::new(target.x, target.y);
+            _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
             let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
@@ -145,6 +152,7 @@ impl Action for MoveTo {
                 GOTO_ROTATION * error_orientation,
                 )
             };
+            // Command::default()
 
             Command {
                 forward_velocity: order.x as f32,

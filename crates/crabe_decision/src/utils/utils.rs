@@ -1,4 +1,4 @@
-use crabe_math::shape::Line;
+use crabe_math::shape::{Circle, Line};
 use nalgebra::Point2;
 use crabe_framework::data::world::{Robot, World};
 
@@ -48,7 +48,14 @@ pub fn closest_bots_to_point<T>(bots: Vec<&Robot<T>>, point: Point2<f64>) -> Vec
     robots_with_distances.into_iter().map(|(_, robot)| robot).collect()
 }
 
-/// Check if any bot is in the trajectory (straight line) of a robot to a target point.
+pub fn robots_to_circles<T>(world: &World, robots: Vec<&Robot<T>>) -> Vec<Circle> {
+    robots
+        .into_iter()
+        .map(|robot| Circle::new(robot.pose.position, world.geometry.robot_radius))
+        .collect()
+}
+
+/// Return the closest object (ball or robot) on the trajectory (straight line) of a robot to a target point if there is one.
 /// 
 /// # Arguments
 /// world - The world data.
@@ -56,25 +63,43 @@ pub fn closest_bots_to_point<T>(bots: Vec<&Robot<T>>, point: Point2<f64>) -> Vec
 /// target - The target point.
 /// 
 /// # Returns
-/// True if any robot is in the trajectory, false otherwise.
-pub fn bot_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
+/// The object in the trajectory if there is one, None otherwise.
+pub fn object_in_bot_trajectory(world: &World, id: u8, target: Point2<f64>, ball: bool, ally: bool, enemies: bool) -> Vec<Circle>{
     let robot = match world.allies_bot.get(&id) {
         None => {
-            return false;
+            return vec![];
         }
         Some(robot) => {
             robot
         }
     };
     let trajectory = Line::new(robot.pose.position, target);
-    let closest_dist = world.allies_bot
-        .iter().filter(|(current_id, _)| **current_id != id)
-        .map(|(id, robot)| (id, trajectory.distance_to_point(&robot.pose.position.xy())))
-        .chain(world.enemies_bot.iter().map(|(id, robot)| (id, trajectory.distance_to_point(&robot.pose.position.xy()))))
-        .min_by(|(_, d1), (_, d2)| d1.total_cmp(d2))
-        .map(|(_, d)| d);
-    let delta = 0.005;
-    return closest_dist < Some(world.geometry.robot_radius * 2. + delta)
+    let mut objects = vec![];
+    if ball{
+        if let Some(ball) = &world.ball{
+            objects.push(Circle::new(ball.position_2d(), world.geometry.ball_radius));
+        }
+    }
+    if ally{
+        for (_, robot) in world.allies_bot.iter(){
+            if robot.id == id{
+                continue;
+            }
+            objects.push(Circle::new(robot.pose.position, world.geometry.robot_radius));
+        }
+    }
+    if enemies{
+        for (_, robot) in world.enemies_bot.iter(){
+            objects.push(Circle::new(robot.pose.position, world.geometry.robot_radius));
+        }
+    }
+    let mut objects_in_trajectory = vec![];
+    for object in objects{
+        if trajectory.distance_to_point(&object.center) < world.geometry.robot_radius + object.radius{
+            objects_in_trajectory.push(object);
+        }
+    }
+    objects_in_trajectory
 }
 
 /// Check if the ball is in the trajectory (straight line) of a robot to a target point.
