@@ -40,13 +40,19 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
     ///////////////////////////////////
     if ball.acceleration.norm() > MIN_ACCELERATION_TO_SWITCH_POSSESSION {
 
-
         // DETERMINE THE COLOR OF THE ROBOT THAT IS CLOSER TO THE BALL WHEN ACC IS HIGH
         if ally_distance + MIN_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION < enemy_distance {
             ball.possession = Some(ally_color);
         } else {
             ball.possession = Some(enemy_color);
         }
+    }
+
+    if ally_distance<0.3 && (bot_ally.velocity - ball.velocity.xy()).norm() < 0.1 {
+        ball.possession = Some(ally_color);
+    }
+    if enemy_distance<0.3 && (bot_enemy.velocity - ball.velocity.xy().norm()) < 0.1 {
+        ball.possession = Some(enemy_color);
     }
 
     ///////////////
