@@ -224,7 +224,7 @@ pub fn penalty_zone_prevention(current_position: &Point2<f64>, original_target: 
 
     //first check if the target is in the penalty zone
     let mut target = *original_target;
-    if original_target.x.abs() > penalty_x && original_target.y.abs() < penalty_y {
+    if penalty.is_inside(original_target){
         // change to the closest point on the penalty line
         let mut closest_point = enlarged_penalty.front_line.closest_point_on_segment(original_target);
         let left_closest_point = enlarged_penalty.left_line.closest_point_on_segment(original_target);
