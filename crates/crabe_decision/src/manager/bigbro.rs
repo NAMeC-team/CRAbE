@@ -4,9 +4,9 @@ use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::message::Message;
 use crate::message::MessageData;
-use crate::strategy::testing::Aligned;
-use crate::strategy::testing::GoLeft;
-use crate::strategy::testing::GoRight;
+use crate::strategy;
+use crate::strategy::testing::{Aligned, GoLeft, GoRight};
+use crate::strategy::formations::Stop;
 use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
 use crabe_framework::data::geometry::Goal;
@@ -30,9 +30,9 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![
-                Box::new(GoLeft::new(1)),
-                Box::new(Aligned::new(vec![2, 3, 4])),
+                Box::new(Stop::new(vec![2, 3, 4])),
                 Box::new(GoalKeeper::new(0)),
+                Box::new(GoLeft::new(1)),
             ],
         }
     }
@@ -43,43 +43,59 @@ impl BigBro {
     /// - `bot_id`: The id of the bot to move.
     /// - `strategy_index`: The index of the strategy (in the strategies list) to move the bot to.
     pub fn move_bot_to_existing_strategy(&mut self, bot_id: u8, strategy_index: usize) {
-        let bot_current_strategy_index = self
+        let mut new_strategy_ids = self.strategies[strategy_index].as_ref().get_ids();
+        if new_strategy_ids.contains(&bot_id) {
+            return;
+        };
+        let mut new_strategy_index = strategy_index;
+        if let Some(bot_current_strategy_index) = self
             .strategies
             .iter()
-            .position(|s| s.get_ids().contains(&bot_id))
-            .unwrap();
-        let mut new_strategy_ids = self.strategies[strategy_index].as_ref().get_ids();
+            .position(|s| s.get_ids().contains(&bot_id)){
+                let mut current_strategy_ids = self.strategies[bot_current_strategy_index]
+                    .as_ref()
+                    .get_ids();
+                if current_strategy_ids.len() == 1 {
+                    self.strategies.remove(bot_current_strategy_index);
+                    if strategy_index > bot_current_strategy_index {
+                        new_strategy_index = strategy_index - 1;
+                    }
+                } else {
+                    current_strategy_ids.retain(|&id| id != bot_id);
+                    self.strategies[bot_current_strategy_index].put_ids(current_strategy_ids);
+                }
+        }
         new_strategy_ids.push(bot_id);
         self.strategies[strategy_index].put_ids(new_strategy_ids);
-
-        let mut current_strategy_ids = self.strategies[bot_current_strategy_index]
-            .as_ref()
-            .get_ids();
-        if current_strategy_ids.len() == 1 {
-            self.strategies.remove(bot_current_strategy_index);
-        } else {
-            current_strategy_ids.retain(|&id| id != bot_id);
-            self.strategies[bot_current_strategy_index].put_ids(current_strategy_ids);
-        }
     }
 
+    /// Moves a bot from its current strategy to a new strategy.
+    /// If the bot is the only one in its current strategy, the strategy is replaced with the new one.
+    /// Otherwise, the bot is removed from the current strategy and added to the new one.
+    /// 
+    /// # Arguments
+    /// - `bot_id`: The id of the bot to move.
+    /// - `strategy`: The new strategy to move the bot to.
     pub fn move_bot_to_new_strategy(&mut self, bot_id: u8, strategy: Box<dyn Strategy>) {
-        let current_strategy_index = self
+        if let Some(current_strategy_index) = self
             .strategies
             .iter()
-            .position(|s| s.get_ids().contains(&bot_id))
-            .unwrap();
-        let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
-        let index_of_bot_in_slot_ids = ids.iter().position(|x| x == &bot_id).unwrap();
-        ids.remove(index_of_bot_in_slot_ids);
-        if ids.len() == 0 {
-            //if the bot was the alone in this strategy, we can replace it
-            self.strategies[current_strategy_index] = strategy;
+            .position(|s| s.get_ids().contains(&bot_id)){
+                let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
+                let index_of_bot_in_slot_ids = ids.iter().position(|x| x == &bot_id).unwrap();
+                ids.remove(index_of_bot_in_slot_ids);
+                if ids.len() == 0 {
+                    //if the bot was the alone in this strategy, we can replace it
+                    self.strategies[current_strategy_index] = strategy;
+                } else {
+                    self.strategies[current_strategy_index].put_ids(ids);
+                    self.strategies.push(strategy);
+                }
         } else {
-            self.strategies[current_strategy_index].put_ids(ids);
             self.strategies.push(strategy);
         }
     }
+
 
     /// Processes the messages received from the strategies and updates the strategies accordingly.
     ///
@@ -98,12 +114,12 @@ impl BigBro {
                 }
                 Message::WantToBeAligned => {
                     //find strategy index with name "Aligned"
-                    let strategy_index = self
-                        .strategies
-                        .iter()
-                        .position(|s| s.name() == "Aligned")
-                        .unwrap();
-                    self.move_bot_to_existing_strategy(m.id, strategy_index);
+                    if let Some(strategy_index) = self.get_index_strategy_with_name("Aligned") {
+                        self.move_bot_to_existing_strategy(m.id, strategy_index);
+                    } else {
+                        let strategy = Box::new(Aligned::new(vec![m.id]));
+                        self.move_bot_to_new_strategy(m.id, strategy);
+                    }
                 }
                 _ => {}
             }
@@ -135,15 +151,23 @@ impl BigBro {
         None
     }
     
+    /// Put all bots to the Stop strategy.
     pub fn everyone_stop(&mut self) {
-        if let Some(stop_strategy_index) = self.get_index_strategy_with_name("Stop") {
-            for robot_id in 0..6 {
-                self.move_bot_to_existing_strategy(robot_id, stop_strategy_index);
+        // Ensure there is a stop strategy available, either existing or new.
+        let stop_strategy_index = match self.get_index_strategy_with_name("Stop") {
+            Some(index) => index,
+            None => {
+                let stop_strategy = Box::new(Stop::new(vec![]));
+                self.strategies.push(stop_strategy);
+                self.get_index_strategy_with_name("Stop").expect("Stop strategy should exist after being added")
             }
-            return;
+        };
+        // Move all bots to the stop strategy.
+        for robot_id in 0..6 {
+            if let Some(updated_stop_strategy_index) = self.get_index_strategy_with_name("Stop") {
+                self.move_bot_to_existing_strategy(robot_id, updated_stop_strategy_index);
+            }
         }
-        let stop_strategy = Box::new(Stop::new(vec![0, 1, 2, 3, 4, 5]));
-        self.strategies.push(stop_strategy);
     }
 }
 
@@ -158,7 +182,7 @@ impl Manager for BigBro {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
                 HaltedState::GameNotStarted => println!("game not started"),
-                HaltedState::Halt => everyone_stop(),
+                HaltedState::Halt => self.everyone_stop(),
                 HaltedState::Timeout(team) => println!("timeout by {:?}", team),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
