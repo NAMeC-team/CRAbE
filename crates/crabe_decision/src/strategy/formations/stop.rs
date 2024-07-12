@@ -6,7 +6,7 @@ use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::Point2;
-use std::f64::consts::PI;
+use crabe_framework::data::output::Command;
 
 
 /// Strategy to stop the robots (sending Command with 0 movements)
@@ -48,7 +48,7 @@ impl Strategy for Stop {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         self.messages.clear();
-        self.ids.iter().enumerate().for_each(|(i, id)| {
+        self.ids.iter().enumerate().for_each(|(_, id)| {
             action_wrapper.clear(*id);
             action_wrapper.push(*id, RawOrder::new(
                 Command {
