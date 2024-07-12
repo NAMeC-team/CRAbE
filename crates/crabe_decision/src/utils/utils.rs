@@ -64,7 +64,7 @@ pub fn robots_to_circles<T>(world: &World, robots: Vec<&Robot<T>>) -> Vec<Circle
 /// 
 /// # Returns
 /// The object in the trajectory if there is one, None otherwise.
-pub fn object_in_bot_trajectory(world: &World, id: u8, target: Point2<f64>) -> Vec<Circle>{
+pub fn object_in_bot_trajectory(world: &World, id: u8, target: Point2<f64>, ball: bool, ally: bool, enemies: bool) -> Vec<Circle>{
     let robot = match world.allies_bot.get(&id) {
         None => {
             return vec![];
@@ -75,17 +75,23 @@ pub fn object_in_bot_trajectory(world: &World, id: u8, target: Point2<f64>) -> V
     };
     let trajectory = Line::new(robot.pose.position, target);
     let mut objects = vec![];
-    if let Some(ball) = &world.ball{
-        objects.push(Circle::new(ball.position_2d(), world.geometry.ball_radius));
-    }
-    for (_, robot) in world.allies_bot.iter(){
-        if robot.id == id{
-            continue;
+    if ball{
+        if let Some(ball) = &world.ball{
+            objects.push(Circle::new(ball.position_2d(), world.geometry.ball_radius));
         }
-        objects.push(Circle::new(robot.pose.position, world.geometry.robot_radius));
     }
-    for (_, robot) in world.enemies_bot.iter(){
-        objects.push(Circle::new(robot.pose.position, world.geometry.robot_radius));
+    if ally{
+        for (_, robot) in world.allies_bot.iter(){
+            if robot.id == id{
+                continue;
+            }
+            objects.push(Circle::new(robot.pose.position, world.geometry.robot_radius));
+        }
+    }
+    if enemies{
+        for (_, robot) in world.enemies_bot.iter(){
+            objects.push(Circle::new(robot.pose.position, world.geometry.robot_radius));
+        }
     }
     let mut objects_in_trajectory = vec![];
     for object in objects{
