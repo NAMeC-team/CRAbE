@@ -175,4 +175,10 @@ impl Penalty {
             ),
         }
     }
+
+    pub fn is_inside(&self, point: Point2<f64>) -> bool {   
+        self.front_line.start.x.signum() == point.x.signum()
+        && self.front_line.start.x.abs() <= point.x.abs() 
+        && point.y.abs() <= self.width/2.
+    }
 }
