@@ -118,6 +118,7 @@ impl Manager for BigBro {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
+        
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
         let mut messages: Vec<MessageData> = vec![];
