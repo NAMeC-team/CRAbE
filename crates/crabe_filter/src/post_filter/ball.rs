@@ -14,9 +14,16 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
     ball.possession = ball_world.possession;
     let state = world.data.ref_orders.state;
     if ball.acceleration.norm() > 1. {
-        let bot_ally = closest_bot_to_point(world.allies_bot.values().collect(), ball.position.xy()).unwrap();
+        let bot_ally = match closest_bot_to_point(world.allies_bot.values().collect(), ball.position.xy()) {
+            Some(bot) => bot,
+            None => {ball.possession = None; return;}
+        };
         let ally_color = world.team_color;
-        let bot_enemy = closest_bot_to_point(world.enemies_bot.values().collect(), ball.position.xy()).unwrap();
+        let bot_enemy = match closest_bot_to_point(world.enemies_bot.values().collect(), ball.position.xy()) {
+            Some(bot) => bot,
+            None => {ball.possession = None; return;}
+        
+        };
         let enemy_color = if ally_color == TeamColor::Yellow { TeamColor::Blue } else { TeamColor::Yellow };
         if bot_ally.distance(&ball.position.xy()) < bot_enemy.distance(&ball.position.xy()) {
             ball.possession = Some(ally_color);
