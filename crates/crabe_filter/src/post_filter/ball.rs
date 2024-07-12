@@ -7,6 +7,10 @@ pub struct BallFilter;
 
 const MIN_ACCELERATION_TO_SWITCH_POSSESSION: f64 = 1.;
 const MIN_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.1;
+const MAX_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.3;
+const MAX_DIFFERENCE_VELOCITY_TO_SWITCH_POSSESSION: f64 = 0.1;
+const DOT_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.75;
+
 
 fn calculated_possession(ball: &mut Ball, world: &World) {
     let ball_world = match &world.ball {
@@ -35,25 +39,39 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
     let ally_distance = bot_ally.distance(&ball.position.xy());
     let enemy_distance = bot_enemy.distance(&ball.position.xy());
 
-    ///////////////////////////////////
-    // CALCULATE POSSESSION BY BALL ACCELERATION
-    ///////////////////////////////////
-    if ball.acceleration.norm() > MIN_ACCELERATION_TO_SWITCH_POSSESSION {
+    
 
-        // DETERMINE THE COLOR OF THE ROBOT THAT IS CLOSER TO THE BALL WHEN ACC IS HIGH
-        if ally_distance + MIN_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION < enemy_distance {
-            ball.possession = Some(ally_color);
-        } else {
-            ball.possession = Some(enemy_color);
-        }
-    }
+    ///////////////////////////////////
+    // CALCULATE POSSESSION BY BALL VELOCITY
+    ///////////////////////////////////
+    let ally_possession:bool = ally_distance<MAX_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION 
+                            && (bot_ally.velocity.linear - ball.velocity.xy()).norm() < MAX_DIFFERENCE_VELOCITY_TO_SWITCH_POSSESSION 
+                            && ball.velocity.xy().dot(&bot_ally.velocity.linear) > DOT_DIFFERENCE_TO_SWITCH_POSSESSION;
 
-    if ally_distance<0.3 && (bot_ally.velocity - ball.velocity.xy()).norm() < 0.1 {
+    let enemy_possession:bool = enemy_distance<MAX_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION
+                            && (bot_enemy.velocity.linear - ball.velocity.xy()).norm() < MAX_DIFFERENCE_VELOCITY_TO_SWITCH_POSSESSION 
+                            && ball.velocity.xy().dot(&bot_enemy.velocity.linear) > DOT_DIFFERENCE_TO_SWITCH_POSSESSION;
+    
+    if ally_possession && !enemy_possession{
         ball.possession = Some(ally_color);
     }
-    if enemy_distance<0.3 && (bot_enemy.velocity - ball.velocity.xy().norm()) < 0.1 {
+    else if enemy_possession && !ally_possession{
         ball.possession = Some(enemy_color);
+    } else {
+        ///////////////////////////////////
+        // CALCULATE POSSESSION BY BALL ACCELERATION
+        ///////////////////////////////////
+        if ball.acceleration.norm() > MIN_ACCELERATION_TO_SWITCH_POSSESSION {
+
+            // DETERMINE THE COLOR OF THE ROBOT THAT IS CLOSER TO THE BALL WHEN ACC IS HIGH
+            if ally_distance + MIN_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION < enemy_distance {
+                ball.possession = Some(ally_color);
+            } else {
+                ball.possession = Some(enemy_color);
+            }
+        }
     }
+    
 
     ///////////////
     // RE CALCULATE POSSESSION BY GAME STATE
