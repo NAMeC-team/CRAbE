@@ -98,7 +98,7 @@ impl Action for OrientTo {
 
 
             let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
-            let arrived = error_orientation < ERR_TOLERANCE;
+            let arrived = error_orientation.abs() < ERR_TOLERANCE;
             if arrived {
                 self.state = State::Done;
             }
@@ -109,7 +109,6 @@ impl Action for OrientTo {
             } else {
                 GOTO_ROTATION * error_orientation
             };
-
             Command {
                 angular_velocity: order as f32,
                 charge: self.charge,
