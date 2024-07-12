@@ -109,6 +109,42 @@ impl BigBro {
             }
         });
     }
+
+    /// Get the index of a strategy with a given name.
+    /// 
+    /// # Arguments
+    /// - `name`: The name of the strategy.
+    /// 
+    /// # Returns
+    /// The index of the strategy in the strategies list.
+    pub fn get_index_strategy_with_name(&self, name: &str) -> Option<usize> {
+        self.strategies.iter().position(|s| s.name() == name)
+    }
+
+    /// Get the robot current strategy.
+    /// 
+    /// # Arguments
+    /// - `bot_id`: The id of the robot.
+    ///     
+    /// # Returns
+    /// The strategy of the robot.
+    pub fn get_bot_current_strategy(&self, bot_id: u8) -> Option<&Box<dyn Strategy>> {
+        if let Some(strategy) = self.strategies.iter().find(|s| s.get_ids().contains(&bot_id)){
+            return Some(strategy);
+        }
+        None
+    }
+    
+    pub fn everyone_stop(&mut self) {
+        if let Some(stop_strategy_index) = self.get_index_strategy_with_name("Stop") {
+            for robot_id in 0..6 {
+                self.move_bot_to_existing_strategy(robot_id, stop_strategy_index);
+            }
+            return;
+        }
+        let stop_strategy = Box::new(Stop::new(vec![0, 1, 2, 3, 4, 5]));
+        self.strategies.push(stop_strategy);
+    }
 }
 
 impl Manager for BigBro {
@@ -122,7 +158,7 @@ impl Manager for BigBro {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
                 HaltedState::GameNotStarted => println!("game not started"),
-                HaltedState::Halt => println!("halt"),
+                HaltedState::Halt => everyone_stop(),
                 HaltedState::Timeout(team) => println!("timeout by {:?}", team),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
