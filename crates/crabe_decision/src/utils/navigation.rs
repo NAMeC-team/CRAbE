@@ -15,6 +15,13 @@ const AVOIDANCE_MARGIN : f64 = 0.05;        // margin to avoid obstacles (added 
 const BALL_AVOIDANCE_MARGIN : f64 = 0.03;   // margin to avoid ball (added to the bot radius)
 const OVERSHOOTING_DIST : f64 = 0.5;        // overshooting dist to the new target, use to regulate speed while avoiding obstacles
 
+
+
+const PENALTY_AVOIDANCE_OVERSHOOT_DIST : f64 = 0.6;
+
+
+
+
 /// Return a point avoiding obstacles
 /// 
 /// # Arguments
@@ -192,3 +199,64 @@ fn smooth_path(path: &Vec<Point2<f64>>, objects: &Vec<Circle>, segment_width: f6
     new_path
 }
 
+
+
+
+
+/// Prevent the robot from going into the penalty zone
+/// 
+/// # Arguments
+/// - `current_position`: The current position of the robot.
+/// - `original_target`: The target of the robot.
+/// - `world`: The current state of the world.
+/// 
+/// # Returns
+/// The new target of the robot.
+pub fn penalty_zone_prevention(current_position: &Point2<f64>, original_target: &Point2<f64>, world: &World) -> Point2<f64> {
+    let penalty = if original_target.x < 0.{
+        &world.geometry.ally_penalty
+    } else {
+        &world.geometry.enemy_penalty
+    };
+    let penalty_x = penalty.front_line.start.x.abs();
+    let penalty_y = penalty.front_line.start.y.abs();
+    let enlarged_penalty = penalty.enlarged_penalty(world.geometry.robot_radius);
+
+    //first check if the target is in the penalty zone
+    let mut target = *original_target;
+    if original_target.x.abs() > penalty_x && original_target.y.abs() < penalty_y {
+        // change to the closest point on the penalty line
+        let mut closest_point = enlarged_penalty.front_line.closest_point_on_segment(original_target);
+        let left_closest_point = enlarged_penalty.left_line.closest_point_on_segment(original_target);
+        let right_closest_point = enlarged_penalty.right_line.closest_point_on_segment(original_target);
+        if (closest_point - original_target).norm() > (left_closest_point - original_target).norm() {
+            closest_point = left_closest_point;
+        }
+        if (closest_point - original_target).norm() > (right_closest_point - original_target).norm() {
+            closest_point = right_closest_point;
+        }
+        target = closest_point;
+    }
+    
+    // check if we need to prevent the robot from going into the penalty zone
+    let position_to_target = Line::new(*current_position, target);
+    if let Some(_) = penalty.intersection_segment(position_to_target){
+        // we need to prevent the robot from going into the penalty zone
+        let enlarged_penalty_x = enlarged_penalty.front_line.start.x.abs();
+        let enlarged_penalty_y = enlarged_penalty.front_line.start.y.abs();
+        target.x = current_position.x.signum() * enlarged_penalty_x;
+        if current_position.x.abs() > penalty_x {
+            target.y = current_position.y.signum() * enlarged_penalty_y;
+        }else{
+            target.y = target.y.signum() * enlarged_penalty_y;
+        }
+        // overshoot the target to prevent slowing down 
+        let dir = target - current_position;
+        if dir.norm() > 0.{
+            let dist = (original_target - target).norm() + dir.norm();
+            target = current_position + dir.normalize() * (dist.min(PENALTY_AVOIDANCE_OVERSHOOT_DIST));
+        }
+    }
+
+    target
+}

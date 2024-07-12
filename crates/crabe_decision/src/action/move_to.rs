@@ -1,6 +1,7 @@
 use crate::action::state::State;
 use crate::action::Action;
 use crate::utils::navigation::obstacle_avoidance;
+use crate::utils::{penalty_zone_prevention, KEEPER_ID};
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
@@ -102,8 +103,6 @@ const GOTO_ROTATION_FAST: f64 = 3.;
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.1;
 
-const PENALTY_AVOIDANCE_OVERSHOOT_DIST : f64 = 0.6;
-
 impl Action for MoveTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
@@ -125,8 +124,11 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-            let target = obstacle_avoidance(&self.target, robot, world, _tools);
-            
+            let mut target = self.target;
+            if id != KEEPER_ID{
+                target = penalty_zone_prevention(&robot.pose.position, &self.target, world)
+            }
+            target = obstacle_avoidance(&target, robot, world, _tools);
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(target.x, target.y);
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
@@ -169,61 +171,3 @@ impl Action for MoveTo {
     }
 }
 
-
-/// Prevent the robot from going into the penalty zone
-/// 
-/// # Arguments
-/// - `current_position`: The current position of the robot.
-/// - `original_target`: The target of the robot.
-/// - `world`: The current state of the world.
-/// 
-/// # Returns
-/// The new target of the robot.
-fn penalty_zone_prevention(current_position: &Point2<f64>, original_target: &Point2<f64>, world: &World) -> Point2<f64> {
-    let penalty = if original_target.x < 0.{
-        &world.geometry.ally_penalty
-    } else {
-        &world.geometry.enemy_penalty
-    };
-    let penalty_x = penalty.front_line.start.x.abs();
-    let penalty_y = penalty.front_line.start.y.abs();
-    let enlarged_penalty = penalty.enlarged_penalty(world.geometry.robot_radius);
-
-    //first check if the target is in the penalty zone
-    let mut target = *original_target;
-    if original_target.x.abs() > penalty_x && original_target.y.abs() < penalty_y {
-        // change to the closest point on the penalty line
-        let mut closest_point = enlarged_penalty.front_line.closest_point_on_segment(original_target);
-        let left_closest_point = enlarged_penalty.left_line.closest_point_on_segment(original_target);
-        let right_closest_point = enlarged_penalty.right_line.closest_point_on_segment(original_target);
-        if (closest_point - original_target).norm() > (left_closest_point - original_target).norm() {
-            closest_point = left_closest_point;
-        }
-        if (closest_point - original_target).norm() > (right_closest_point - original_target).norm() {
-            closest_point = right_closest_point;
-        }
-        target = closest_point;
-    }
-    
-    // check if we need to prevent the robot from going into the penalty zone
-    let position_to_target = Line::new(*current_position, target);
-    if let Some(_) = penalty.intersection_segment(position_to_target){
-        // we need to prevent the robot from going into the penalty zone
-        let enlarged_penalty_x = enlarged_penalty.front_line.start.x.abs();
-        let enlarged_penalty_y = enlarged_penalty.front_line.start.y.abs();
-        target.x = current_position.x.signum() * enlarged_penalty_x;
-        if current_position.x.abs() > penalty_x {
-            target.y = current_position.y.signum() * enlarged_penalty_y;
-        }else{
-            target.y = target.y.signum() * enlarged_penalty_y;
-        }
-        // overshoot the target to prevent slowing down 
-        let dir = target - current_position;
-        if dir.norm() > 0.{
-            let dist = (original_target - target).norm() + dir.norm();
-            target = current_position + dir.normalize() * (dist.min(PENALTY_AVOIDANCE_OVERSHOOT_DIST));
-        }
-    }
-
-    target
-}
