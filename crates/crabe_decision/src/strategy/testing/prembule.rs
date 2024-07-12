@@ -19,7 +19,7 @@ pub struct Prembule {
     messages: Vec<MessageData>,
     state: States,
     start_time: Instant,
-    orient: Option<f64>,
+    start_orientation: Option<f64>,
     
 }
 
@@ -40,7 +40,7 @@ impl Prembule {
             messages: vec![],
             state: States::FIRST,
             start_time: Instant::now(),
-            orient: None,
+            start_orientation: None,
         }
     }
     
@@ -78,10 +78,14 @@ impl Strategy for Prembule {
                 return false;
             }
         }.pose;
-        let orient = match self.orient {
-            Some(orient) => orient,
-            None => robot.orientation
-        };
+        let mut orient = robot.orientation;
+        if self.start_orientation.is_none(){
+            self.start_orientation = Some(robot.orientation);
+            orient = robot.orientation;
+        }else {
+            orient = self.start_orientation.unwrap(); // i can unwrap because i have already check if none above
+        }
+        
         let speed:f32 = 3.14;    
         match self.state {
             States::FIRST => {
