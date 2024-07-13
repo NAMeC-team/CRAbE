@@ -7,7 +7,7 @@ use super::Circle;
 ///
 /// Note that the `start` and `end` fields should have the same units of
 /// measurement.
-#[derive(Clone, Serialize, Debug)]
+#[derive(Clone, Serialize, Debug, Copy)]
 pub struct Line {
     /// The starting point of the line segment.
     pub start: Point2<f64>,
@@ -318,6 +318,38 @@ impl Line {
         return Point2::new(p_x, p_y);
     }
 
+    /// Returns the fraction of the position of the closest point on the segment as a ratio
+    /// - for example with the start point it will return 0.
+    /// - and with the closest point being the center of the segment, it will return 0.5
+    ///
+    /// # Arguments
+    /// point : the point to calculate the ratio from the segment
+    /// 
+    /// # Returns
+    /// The fraction of the position of the closest point on the segment as a ratio
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::Line;
+    /// let line = Line::new(Point2::new(1., 0.2), Point2::new(1., 1.));
+    /// let point = Point2::new(1., 0.6);
+    /// let ratio = line.closest_point_as_ratio(&point);
+    /// assert!((0.5 - ratio).abs() < 0.000001);
+    /// let point2 = Point2::new(1., 2.);
+    /// let ratio2 = line.closest_point_as_ratio(&point2);
+    /// assert!((1. - ratio2).abs() < 0.000001);
+    /// ```
+    pub fn closest_point_as_ratio(&self, point: &Point2<f64>) -> f64 {
+        let closest_point = self.closest_point_on_segment(point);
+        let delta = closest_point - self.start;
+        let line = self.end - self.start;
+        if line.norm() == 0.{
+            return 0.;
+        }
+        (delta.norm() / line.norm()).min(1.)
+    }
+
 
 
     /// Return the circles touching the segment
@@ -387,4 +419,97 @@ impl Line {
         let vec = self.end - self.start;
         vec.norm()
     }
+
+    /// Split the segment in two segments at a given ratio
+    /// 
+    /// # Arguments
+    /// ratio : the ratio to split the segment
+    /// 
+    /// # Returns
+    /// The two segments created by the split
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::Line;
+    /// let line = Line::new(Point2::new(1., 0.2), Point2::new(1., 1.));
+    /// let (line1, line2) = line.split_segment_from_ratio(&0.5);
+    /// assert!((line1.start - Point2::new(1., 0.2)).norm() < 0.000001);
+    /// assert!((line1.end - Point2::new(1., 0.6)).norm() < 0.000001);
+    /// assert!((line2.start - Point2::new(1., 0.6)).norm() < 0.000001);
+    /// assert!((line2.end - Point2::new(1., 1.)).norm() < 0.000001);
+    /// ```
+    pub fn split_segment_from_ratio(&self, ratio: &f64) -> (Line, Line){
+        let p = self.point_allong_line(*ratio);
+        let line1 = Line::new(self.start, p);
+        let line2 = Line::new(p, self.end);
+        (line1, line2)
+    }
+
+    /// Split the segment in two segments at a given point (takes the closest point on the segment from the given point)
+    /// 
+    /// # Arguments
+    /// point : the point to split the segment
+    /// 
+    /// # Returns
+    /// The two segments created by the split (the first segment will always be the one with the start point)
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::Line;
+    /// let line = Line::new(Point2::new(1., 0.2), Point2::new(1., 1.));
+    /// let (line1, line2) = line.split_segment(&Point2::new(1., 0.6));
+    /// assert!((line1.start - Point2::new(1., 0.2)).norm() < 0.000001);
+    /// assert!((line1.end - Point2::new(1., 0.6)).norm() < 0.000001);
+    /// assert!((line2.start - Point2::new(1., 0.6)).norm() < 0.000001);
+    /// assert!((line2.end - Point2::new(1., 1.)).norm() < 0.000001);
+    /// ```
+    pub fn split_segment(&self, point: &Point2<f64>) -> (Line, Line){
+        let closest_point = self.closest_point_on_segment(point);
+        let line1 = Line::new(self.start, closest_point);
+        let line2 = Line::new(closest_point, self.end);
+        (line1, line2)
+    }
+
+    /// Cut off the segment with a line (based on the closest points on the segment)
+    /// takes
+    /// 
+    /// # Arguments
+    /// line : the line to cut off the segment
+    /// 
+    /// # Returns
+    /// A list of the segments created by the cut off (the list will be empty if the line cut the segment completely)
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::Line;
+    /// let line = Line::new(Point2::new(0., 0.), Point2::new(0., 1.));
+    /// let line2 = Line::new(Point2::new(0., 1.2), Point2::new(1., 0.5));
+    /// let cut_off = line.cut_off_segment(&line2);
+    /// assert_eq!(cut_off.len(), 1);
+    /// assert!((cut_off[0].start - Point2::new(0., 0.)).norm() < 0.000001);
+    /// assert!((cut_off[0].end - Point2::new(0., 0.5)).norm() < 0.000001);
+    /// ```
+    pub fn cut_off_segment(&self, line: &Line) -> Vec<Line>{
+        let ratio_start = self.closest_point_as_ratio(&line.start);
+        let ratio_end = self.closest_point_as_ratio(&line.end);
+        let lower_ratio = ratio_start.min(ratio_end);
+        let upper_ratio = ratio_start.max(ratio_end);
+
+        let (split_left, _) = self.split_segment_from_ratio(&lower_ratio);
+        let (_, split_right) = self.split_segment_from_ratio(&upper_ratio);
+
+        let mut res_lines = Vec::new();
+        if split_left.norm() != 0.{
+            res_lines.push(split_left);
+        }
+        if split_right.norm() != 0.{
+            res_lines.push(split_right);
+        }
+        res_lines
+    }
+
+
 }
