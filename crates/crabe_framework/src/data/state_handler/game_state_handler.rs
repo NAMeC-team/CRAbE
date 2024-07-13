@@ -154,9 +154,25 @@ impl GameStateBranch for StopStateBranch {
 
         // determine the reason of this Stop command
 
+        // probably because of a kickoff incoming ? or the game hasn't started yet
+        match referee.next_command {
+            Some(next) => {
+                match next {
+                    // normally, we should be able to fetch which team will perform the next
+                    // kickoff, so we can consider that the Stop state right after a goal
+                    // is the same as preparing for a kickoff
+                    RefereeCommand::PrepareKickoff(for_team) => {
+                        return GameState::Stopped(StoppedState::PrepareKickoff(for_team))
+                    }
+                    _ => return GameState::Stopped(StoppedState::PrepareForGameStart)
+                }
+            }
+            None => return GameState::Stopped(StoppedState::Stop)
+        }
+
         // otherwise, it might be because of an event that occurred
         // (ball out of field, double touch foul etc...)
-        if let Some(game_event) = referee.game_events.last() {
+        return if let Some(game_event) = referee.game_events.last() {
             let stopped_state: StoppedState = match &game_event.event {
                 // Common occurrences in a match
                 Event::BallLeftFieldTouchLine(data) => StoppedState::BallLeftFieldTouchLine(data.by_team),
@@ -243,22 +259,8 @@ impl GameStateBranch for StopStateBranch {
                 _ => StoppedState::Stop
             };
             return GameState::Stopped(stopped_state);
-        }
-
-
-        return match referee.next_command {
-            Some(next) => {
-                match next {
-                    // normally, we should be able to fetch which team will perform the next
-                    // kickoff, so we can consider that the Stop state right after a goal
-                    // is the same as preparing for a kickoff
-                    RefereeCommand::PrepareKickoff(for_team) => {
-                        GameState::Stopped(StoppedState::PrepareKickoff(for_team))
-                    }
-                    _ => GameState::Stopped(StoppedState::PrepareForGameStart)
-                }
-            }
-            None => GameState::Stopped(StoppedState::Stop),
+        } else {
+            GameState::Stopped(StoppedState::Stop)
         }
     }
 }
