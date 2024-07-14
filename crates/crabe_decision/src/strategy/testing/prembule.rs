@@ -78,14 +78,15 @@ impl Strategy for Prembule {
                 return false;
             }
         }.pose;
-        let mut orient = robot.orientation;
-        if self.start_orientation.is_none(){
-            self.start_orientation = Some(robot.orientation);
-            orient = robot.orientation;
-        }else {
-            orient = self.start_orientation.unwrap(); // i can unwrap because i have already check if none above
-        }
-        
+
+        let orient = match self.start_orientation {
+            None => {
+                self.start_orientation = Some(robot.orientation);
+                robot.orientation
+            }
+            Some(start_orientation) => start_orientation
+        };
+
         let speed:f32 = 3.14;    
         match self.state {
             States::FIRST => {
