@@ -1,4 +1,4 @@
-use crate::constant::{MAX_ANGULAR, MAX_LINEAR};
+use crate::constant::{MAX_ANGULAR, MAX_DRIBBLER, MAX_LINEAR};
 use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
@@ -9,13 +9,15 @@ use log::warn;
 pub struct SpeedGuard {
     max_linear: f32,
     max_angular: f32,
+    max_dribbler: f32,
 }
 
 impl SpeedGuard {
-    pub fn new(max_linear: f32, max_angular: f32) -> Self {
+    pub fn new(max_linear: f32, max_angular: f32,max_dribbler: f32) -> Self {
         Self {
             max_linear,
             max_angular,
+            max_dribbler
         }
     }
 }
@@ -25,6 +27,7 @@ impl Default for SpeedGuard {
         Self {
             max_linear: MAX_LINEAR,
             max_angular: MAX_ANGULAR,
+            max_dribbler: MAX_DRIBBLER,
         }
     }
 }
@@ -56,12 +59,26 @@ impl Guard for SpeedGuard {
             }
 
 
+            
+
             if command.angular_velocity.is_nan() {
                 warn!("An attempt was made to send NaN instead of a valid value in angular_velocity. It has been adjusted to 0.");
                 command.angular_velocity = command
                     .angular_velocity
                     .clamp(-self.max_angular, self.max_angular);
             }
+
+
+            if command.dribbler.is_nan() {
+                warn!("An attempt was made to send NaN instead of a valid value in dribbler. It has been adjusted to 0.");
+                command.dribbler = 0.;
+            }
+
+            if command.dribbler > self.max_dribbler {
+                warn!("An attempt was made to send a dribbler speed higher than the maximum allowed. It has been adjusted to the maximum allowed value. Wich is {}", self.max_dribbler);
+                command.dribbler = self.max_dribbler;
+            }
+
 
         });
     }
