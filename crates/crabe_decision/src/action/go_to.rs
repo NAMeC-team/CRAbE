@@ -136,7 +136,6 @@ impl Action for GoTo {
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
-                fast: self.fast,
                 ..Default::default()
             }
         } else {
