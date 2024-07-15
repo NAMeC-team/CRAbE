@@ -1,7 +1,7 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::testing::Prembule;
-use crate::strategy::testing::Square;
+use crate::strategy::testing::TestVisionMoveTo;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -22,7 +22,7 @@ impl TestManager {
     /// Creates a new `TestManager` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Prembule::new(ROBOT_ID)),Box::new(Square::new(ROBOT_ID))],
+            strategies: vec![Box::new(Prembule::new(ROBOT_ID)),Box::new(TestVisionMoveTo::new(vec![ROBOT_ID]))],
         }
     }
 }
