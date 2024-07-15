@@ -5,7 +5,7 @@ use crate::manager::Manager;
 use crate::message::Message;
 use crate::message::MessageData;
 use crate::strategy;
-use crate::strategy::testing::{Aligned, GoLeft, GoRight};
+use crate::strategy::testing::{Aligned, GoLeft, GoRight,MoveBall};
 use crate::strategy::formations::Stop;
 use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
@@ -30,9 +30,9 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![
-                Box::new(Stop::new(vec![2, 3, 4])),
-                Box::new(GoalKeeper::new(0)),
-                Box::new(GoLeft::new(1)),
+                //Box::new(Stop::new(vec![2, 3, 4])),
+                //Box::new(GoalKeeper::new(0)),
+                Box::new(MoveBall::new(1)),
             ],
         }
     }

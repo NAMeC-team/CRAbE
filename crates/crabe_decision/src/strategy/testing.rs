@@ -12,3 +12,6 @@ mod aligned;
 pub use self::aligned::Aligned;
 mod prembule;
 pub use self::prembule::Prembule;
+
+mod move_ball;
+pub use self::move_ball::MoveBall;
