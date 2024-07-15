@@ -80,9 +80,14 @@ impl BigBro {
         if let Some(current_strategy_index) = self
             .strategies
             .iter()
-            .position(|s| s.get_ids().contains(&bot_id)){
-                let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
-                let index_of_bot_in_slot_ids = ids.iter().position(|x| x == &bot_id).unwrap();
+            .position(|s| s.get_ids().contains(&bot_id))
+        {
+            let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
+
+            // we should always branch in this if
+            // there was an `unwrap()` before and it was safe,
+            // but it was transformed into a safer syntax just in case
+            if let Some(index_of_bot_in_slot_ids) = ids.iter().position(|x| x == &bot_id) {
                 ids.remove(index_of_bot_in_slot_ids);
                 if ids.len() == 0 {
                     //if the bot was the alone in this strategy, we can replace it
@@ -91,6 +96,8 @@ impl BigBro {
                     self.strategies[current_strategy_index].put_ids(ids);
                     self.strategies.push(strategy);
                 }
+            }
+
         } else {
             self.strategies.push(strategy);
         }

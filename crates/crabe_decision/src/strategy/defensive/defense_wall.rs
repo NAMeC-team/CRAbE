@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use crate::{action::move_to::MoveTo, message::MessageData};
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
@@ -113,7 +114,8 @@ impl Strategy for DefenseWall {
                 } 
             }
             //order them by their position on the penalty line
-            robots.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+            // note: partial_cmp only fails if a value is NaN, the value in the unwrap_or_else() is just a safety band-aid
+            robots.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or_else(|| Ordering::Less));
             let robot_nb = robots.len() as f64;
             
             let mut wall_starting_pos = intersection_shooting_dir_ratio - (bot_spacing_ratio / 2.) * (robot_nb - 1.);

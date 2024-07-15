@@ -60,19 +60,21 @@ impl Penalty {
         }
         let intersection_left_line = if segment_intersection {line.intersection_segments(&self.left_line)} else {self.left_line.intersection_segment_line(&line)};
         let intersection_right_line = if segment_intersection {line.intersection_segments(&self.right_line)} else {self.right_line.intersection_segment_line(&line)};
-        if intersection_left_line.is_ok() && intersection_right_line.is_ok() {
-            //check closest point between the two intersections
-            let left = intersection_left_line.unwrap();
-            let right = intersection_right_line.unwrap();
-            let left_dist = (left - line.start).norm();
-            let right_dist = (right - line.start).norm();
-            if left_dist < right_dist {
-                let left_line_point_as_ratio = (left.x - self.left_line.start.x).abs()/penalty_line_length;
-                return (Some(left), Some(left_line_point_as_ratio));
+
+        if let Ok(left) = intersection_left_line {
+            if let Ok(right) = intersection_right_line {
+                //check closest point between the two intersections
+                let left_dist = (left - line.start).norm();
+                let right_dist = (right - line.start).norm();
+                if left_dist < right_dist {
+                    let left_line_point_as_ratio = (left.x - self.left_line.start.x).abs()/penalty_line_length;
+                    return (Some(left), Some(left_line_point_as_ratio));
+                }
+                let right_line_point_as_ratio = ((right.x - self.right_line.start.x).abs() + self.depth + self.width)/penalty_line_length;
+                return (Some(right), Some(right_line_point_as_ratio));
             }
-            let right_line_point_as_ratio = ((right.x - self.right_line.start.x).abs() + self.depth + self.width)/penalty_line_length;
-            return (Some(right), Some(right_line_point_as_ratio));
         }
+
         if let Ok(intersection) = intersection_left_line {
             let left_line_point_as_ratio = (intersection.x - self.left_line.start.x).abs()/penalty_line_length;
             return (Some(intersection), Some(left_line_point_as_ratio));
