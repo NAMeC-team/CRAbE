@@ -133,7 +133,6 @@ pub struct System {
 }
 
 impl System {
-    // TODO: Use refresh rate
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback: FeedbackMap = Default::default();
 
@@ -149,8 +148,8 @@ impl System {
             feedback = self.output_component.step(command_map, ToolCommands);
             // info!("Execution time : {} μs", &timer.elapsed().as_micros());
             let elapsed = timer.elapsed();
-            if elapsed <= _refresh_rate {
-                let sleep_time = Duration::from(_refresh_rate - timer.elapsed());
+            if elapsed < _refresh_rate {
+                let sleep_time = Duration::from(_refresh_rate - elapsed);
                 thread::sleep(sleep_time);
             }
             // info!("Actual refresh time : {} μs", &timer.elapsed().as_micros());
