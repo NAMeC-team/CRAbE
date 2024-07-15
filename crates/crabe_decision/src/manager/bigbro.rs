@@ -22,7 +22,7 @@ use crabe_framework::data::world::World;
 /// `strategies` field in the `new()` method of the `BigBro` struct.
 #[derive(Default)]
 pub struct BigBro {
-    strategies: Vec<Box<dyn Strategy>>,
+    pub strategies: Vec<Box<dyn Strategy>>,
 }
 
 impl BigBro {
@@ -43,30 +43,69 @@ impl BigBro {
     /// - `bot_id`: The id of the bot to move.
     /// - `strategy_index`: The index of the strategy (in the strategies list) to move the bot to.
     pub fn move_bot_to_existing_strategy(&mut self, bot_id: u8, strategy_index: usize) {
-        let mut new_strategy_ids = self.strategies[strategy_index].as_ref().get_ids();
-        if new_strategy_ids.contains(&bot_id) {
+        self.move_bots_to_existing_strategy(vec![bot_id], strategy_index);
+    }
+
+    /// Moves a list of bots from their current strategy to an existing strategy.
+    /// 
+    /// # Arguments
+    /// - `bot_ids`: The list of bot ids to move.
+    /// - `strategy_index`: The index of the strategy (in the strategies list) to move the bots to.
+    /// 
+    /// # Example
+    /// ```
+    /// use crabe_decision::manager::bigbro::BigBro;
+    /// let mut bigbro = BigBro::new();
+    /// bigbro.strategies.clear();
+    /// bigbro.move_bots_to_existing_strategy(vec![1, 2, 3], 0);
+    /// assert_eq!(bigbro.strategies.len(), 0);
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::formations::Stop::new(vec![])));
+    /// bigbro.move_bots_to_existing_strategy(vec![1, 2, 3], 0);
+    /// assert_eq!(bigbro.strategies.len(), 1);
+    /// assert_eq!(bigbro.strategies[0].as_ref().get_ids(), vec![1, 2, 3]);
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::testing::Aligned::new(vec![4])));
+    /// bigbro.move_bots_to_existing_strategy(vec![1, 2, 3], 1);
+    /// assert_eq!(bigbro.strategies.len(), 1);
+    /// assert_eq!(bigbro.strategies[0].as_ref().get_ids(), vec![4, 1, 2, 3]);
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::testing::GoLeft::new(5)));
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::testing::GoRight::new(0)));
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::formations::Stop::new(vec![2])));
+    /// assert_eq!(bigbro.strategies.len(), 4);
+    /// bigbro.move_bots_to_existing_strategy(vec![5, 0], 3);
+    /// assert_eq!(bigbro.strategies.len(), 2);
+    /// assert_eq!(bigbro.strategies[1].as_ref().get_ids(), vec![2, 5, 0]);
+    /// ```
+    pub fn move_bots_to_existing_strategy(&mut self, bot_ids: Vec<u8>, strategy_index: usize) {
+        if strategy_index >= self.strategies.len(){
             return;
-        };
-        let mut new_strategy_index = strategy_index;
-        if let Some(bot_current_strategy_index) = self
-            .strategies
-            .iter()
-            .position(|s| s.get_ids().contains(&bot_id)){
-                let mut current_strategy_ids = self.strategies[bot_current_strategy_index]
-                    .as_ref()
-                    .get_ids();
-                if current_strategy_ids.len() == 1 {
-                    self.strategies.remove(bot_current_strategy_index);
-                    if strategy_index > bot_current_strategy_index {
-                        new_strategy_index = strategy_index - 1;
-                    }
-                } else {
-                    current_strategy_ids.retain(|&id| id != bot_id);
-                    self.strategies[bot_current_strategy_index].put_ids(current_strategy_ids);
-                }
         }
-        new_strategy_ids.push(bot_id);
-        self.strategies[strategy_index].put_ids(new_strategy_ids);
+        let mut new_strategy_index = strategy_index;
+        for bot_id in bot_ids {
+            let mut new_strategy_ids = self.strategies[new_strategy_index].as_ref().get_ids();
+            if new_strategy_ids.contains(&bot_id) { // if already in the strategy, don't do anything
+                continue;
+            };
+            // if the bot is already in a strategy, remove it from there
+            if let Some(bot_current_strategy_index) = self
+                .strategies
+                .iter()
+                .position(|s| s.get_ids().contains(&bot_id)){
+                    let mut current_strategy_ids = self.strategies[bot_current_strategy_index]
+                        .as_ref()
+                        .get_ids();
+                    if current_strategy_ids.len() == 1 {
+                        self.strategies.remove(bot_current_strategy_index);
+                        if new_strategy_index > bot_current_strategy_index {
+                            new_strategy_index = new_strategy_index - 1;
+                        }
+                    } else {
+                        current_strategy_ids.retain(|&id| id != bot_id);
+                        self.strategies[bot_current_strategy_index].put_ids(current_strategy_ids);
+                    }
+            }
+            new_strategy_ids.push(bot_id);
+            self.strategies[new_strategy_index].put_ids(new_strategy_ids);
+        }
     }
 
     /// Moves a bot from its current strategy to a new strategy.
@@ -104,6 +143,7 @@ impl BigBro {
     }
 
 
+    
     /// Processes the messages received from the strategies and updates the strategies accordingly.
     ///
     /// # Arguments
