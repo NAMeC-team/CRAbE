@@ -20,7 +20,7 @@ impl Manual {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(TestVisionMoveTo::new(vec![0], true))],
+            strategies: vec![Box::new(TestVisionMoveTo::new(vec![0]))],
         }
     }
 }
