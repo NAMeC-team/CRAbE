@@ -1,5 +1,6 @@
 use crate::action::state::State;
 use crate::action::Action;
+use crate::utils::{obstacle_avoidance, penalty_zone_prevention, KEEPER_ID};
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
@@ -102,9 +103,13 @@ impl Action for GoTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
+            if id != KEEPER_ID{
+                self.target = penalty_zone_prevention(&robot.pose.position, &self.target, world)
+            }
+            self.target = obstacle_avoidance(&self.target, robot, world, _tools);
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(self.target.x, self.target.y);
-
+            
             let error_x = target_in_robot[0];
             let error_y = target_in_robot[1];
             let arrived = Vector2::new(error_x, error_y).norm() < ERR_TOLERANCE;
