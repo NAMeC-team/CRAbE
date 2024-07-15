@@ -10,6 +10,7 @@ pub mod testing;
 pub mod defensive;
 pub mod offensive;
 pub mod formations;
+pub mod basics;
 
 pub struct StrategyData {
     pub ids: Vec<u8>,

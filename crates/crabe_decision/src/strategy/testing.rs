@@ -12,4 +12,6 @@ mod aligned;
 pub use self::aligned::Aligned;
 mod prembule;
 pub use self::prembule::Prembule;
+mod test_vision_moveto;
+pub use self::test_vision_moveto::TestVisionMoveTo;
 
