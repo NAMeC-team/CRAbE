@@ -1,6 +1,7 @@
 use crate::action::state::State;
 use crate::action::Action;
 use crate::utils::navigation::obstacle_avoidance;
+use crate::utils::{penalty_zone_prevention, KEEPER_ID};
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
@@ -102,8 +103,6 @@ const GOTO_ROTATION_FAST: f64 = 3.;
 /// The error tolerance for arriving at the target position.
 const ERR_TOLERANCE: f64 = 0.1;
 
-
-
 impl Action for MoveTo {
     /// Returns the name of the action.
     fn name(&self) -> String {
@@ -125,8 +124,11 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-            let target = obstacle_avoidance(&self.target, robot, world, _tools);
-            
+            let mut target = self.target;
+            if id != KEEPER_ID{
+                target = penalty_zone_prevention(&robot.pose.position, &self.target, world)
+            }
+            target = obstacle_avoidance(&target, robot, world, _tools);
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(target.x, target.y);
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
@@ -168,3 +170,4 @@ impl Action for MoveTo {
         }
     }
 }
+
