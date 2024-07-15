@@ -22,7 +22,6 @@ pub struct TestVisionMoveTo {
     ids: Vec<u8>,
     messages: Vec<MessageData>,
     status: TestVisionMoveToStatus,
-    positive_half: bool,
 }
 
 impl TestVisionMoveTo {
@@ -31,7 +30,6 @@ impl TestVisionMoveTo {
             ids,
             messages: vec![],
             status: TestVisionMoveToStatus::Placement,
-            positive_half,
         }
     }
 
@@ -59,8 +57,7 @@ impl Strategy for TestVisionMoveTo {
     fn step(&mut self, world: &World, _: &mut ToolData, action_wrapper: &mut ActionWrapper) -> bool {
         // WARNING : Not clearing the action_wrapper leads to stuttering
         action_wrapper.clear_all();
-        let sign = if self.positive_half { 1. } else { -1. };
-        let mut y_target;
+        let y_target;
         let mut next_status = TestVisionMoveToStatus::Placement;
         match self.status {
             TestVisionMoveToStatus::Placement => {
@@ -93,7 +90,7 @@ impl Strategy for TestVisionMoveTo {
         world.allies_bot.iter()
             .filter(|(ally_id, _)| self.ids.contains(ally_id))
             .for_each(|(ally_id, ally_info)| {
-                let target = Point2::new((*ally_id as f64).div(2.) * sign, y_target);
+                let target = Point2::new(-(*ally_id as f64).div(2.), y_target);
                 action_wrapper.push(*ally_id, MoveTo::new(target, FRAC_PI_6 * (*ally_id as f64), 0.,false , None, false ));
                 change_status = change_status && distance(&target, &ally_info.pose.position) <= DIST_TARGET_REACHED
             });
