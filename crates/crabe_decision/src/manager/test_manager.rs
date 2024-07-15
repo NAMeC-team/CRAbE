@@ -22,7 +22,7 @@ impl TestManager {
     /// Creates a new `TestManager` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Prembule::new(ROBOT_ID)),Box::new(TestVisionMoveTo::new(vec![ROBOT_ID],true))],
+            strategies: vec![Box::new(Prembule::new(ROBOT_ID)),Box::new(TestVisionMoveTo::new(vec![ROBOT_ID]))],
         }
     }
 }
