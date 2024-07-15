@@ -58,7 +58,6 @@ impl Strategy for Stop {
                     charge: false,
                     kick: None,
                     dribbler: 0.0,
-                    fast: false,
                 }
             ));
         });

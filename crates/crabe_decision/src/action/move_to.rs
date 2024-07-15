@@ -163,7 +163,6 @@ impl Action for MoveTo {
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
-                fast: self.fast,
             }
         } else {
             Command::default()

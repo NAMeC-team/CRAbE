@@ -114,7 +114,6 @@ impl Action for OrientTo {
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
-                fast: self.fast,
                 ..Default::default()
             }
         } else {
