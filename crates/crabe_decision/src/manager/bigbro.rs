@@ -76,14 +76,19 @@ impl BigBro {
     /// # Arguments
     /// - `bot_id`: The id of the bot to move.
     /// - `strategy`: The new strategy to move the bot to.
-    pub fn move_bot_to_new_strategy(&mut self, bot_id: u8, strategy: Box<dyn Strategy>) {
+    pub fn move_bot_to_new_strategy(&mut self, bot_id: u8, mut strategy: Box<dyn Strategy>) {
+        let mut new_strategy_bots_id = strategy.get_ids();
+        if !new_strategy_bots_id.contains(&bot_id){
+            new_strategy_bots_id.push(bot_id);
+            strategy.put_ids(new_strategy_bots_id);
+        }
         if let Some(current_strategy_index) = self
             .strategies
             .iter()
             .position(|s| s.get_ids().contains(&bot_id))
         {
             let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
-
+            
             // we should always branch in this if
             // there was an `unwrap()` before and it was safe,
             // but it was transformed into a safer syntax just in case
