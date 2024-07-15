@@ -75,7 +75,7 @@ impl Guard for SpeedGuard {
             }
 
             if command.dribbler > self.max_dribbler {
-                warn!("An attempt was made to send a dribbler speed higher than the maximum allowed. It has been adjusted to the maximum allowed value.");
+                warn!("An attempt was made to send a dribbler speed higher than the maximum allowed. It has been adjusted to the maximum allowed value. Wich is {}", self.max_dribbler);
                 command.dribbler = self.max_dribbler;
             }
 
