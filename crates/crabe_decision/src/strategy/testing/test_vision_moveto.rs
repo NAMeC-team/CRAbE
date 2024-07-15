@@ -25,7 +25,7 @@ pub struct TestVisionMoveTo {
 }
 
 impl TestVisionMoveTo {
-    pub fn new(ids: Vec<u8>, positive_half: bool) -> Self {
+    pub fn new(ids: Vec<u8>) -> Self {
         Self {
             ids,
             messages: vec![],
