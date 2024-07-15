@@ -37,6 +37,47 @@ impl BigBro {
         }
     }
 
+    /// Removes a bot from all strategies.
+    ///     
+    /// # Arguments
+    /// - `bot_id`: The id of the bot to remove.
+    /// 
+    /// # Example
+    /// ```
+    /// use crabe_decision::manager::bigbro::BigBro;
+    /// let mut bigbro = BigBro::new();
+    /// bigbro.strategies.clear();
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::formations::Stop::new(vec![1, 2, 3])));
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::testing::Aligned::new(vec![4])));
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::testing::GoLeft::new(5)));
+    /// bigbro.strategies.push(Box::new(crabe_decision::strategy::testing::GoRight::new(0)));
+    /// assert_eq!(bigbro.strategies.len(), 4);
+    /// bigbro.remove_bot_from_strategies(0);
+    /// assert_eq!(bigbro.strategies.len(), 3);
+    /// assert_eq!(bigbro.strategies[0].as_ref().get_ids(), vec![1, 2, 3]);
+    /// assert_eq!(bigbro.strategies[1].as_ref().get_ids(), vec![4]);
+    /// assert_eq!(bigbro.strategies[2].as_ref().get_ids(), vec![5]);
+    /// bigbro.remove_bot_from_strategies(5);
+    /// assert_eq!(bigbro.strategies.len(), 2);
+    /// assert_eq!(bigbro.strategies[0].as_ref().get_ids(), vec![1, 2, 3]);
+    /// assert_eq!(bigbro.strategies[1].as_ref().get_ids(), vec![4]);
+    /// bigbro.remove_bot_from_strategies(2);
+    /// assert_eq!(bigbro.strategies.len(), 2);
+    /// assert_eq!(bigbro.strategies[0].as_ref().get_ids(), vec![1, 3]);
+    /// assert_eq!(bigbro.strategies[1].as_ref().get_ids(), vec![4]);
+    /// ```
+    pub fn remove_bot_from_strategies(&mut self, bot_id: u8) {
+        for strategy in self.strategies.iter_mut() {
+            let mut ids = strategy.get_ids();
+            ids.retain(|&id| id != bot_id);
+            strategy.put_ids(ids);
+        }
+        self.strategies.retain(|s| {
+            let ids = s.get_ids();
+            !(ids.len() == 1 && ids[0] == bot_id) && !ids.is_empty()
+        });
+    }
+
     /// Moves a bot from its current strategy to an existing strategy.
     ///
     /// # Arguments
@@ -116,32 +157,15 @@ impl BigBro {
     /// - `bot_id`: The id of the bot to move.
     /// - `strategy`: The new strategy to move the bot to.
     pub fn move_bot_to_new_strategy(&mut self, bot_id: u8, strategy: Box<dyn Strategy>) {
-        if let Some(current_strategy_index) = self
-            .strategies
-            .iter()
-            .position(|s| s.get_ids().contains(&bot_id))
-        {
-            let mut ids = self.strategies[current_strategy_index].as_ref().get_ids();
 
-            // we should always branch in this if
-            // there was an `unwrap()` before and it was safe,
-            // but it was transformed into a safer syntax just in case
-            if let Some(index_of_bot_in_slot_ids) = ids.iter().position(|x| x == &bot_id) {
-                ids.remove(index_of_bot_in_slot_ids);
-                if ids.len() == 0 {
-                    //if the bot was the alone in this strategy, we can replace it
-                    self.strategies[current_strategy_index] = strategy;
-                } else {
-                    self.strategies[current_strategy_index].put_ids(ids);
-                    self.strategies.push(strategy);
-                }
-            }
-
-        } else {
-            self.strategies.push(strategy);
-        }
+        self.strategies.push(strategy);
     }
 
+    // pub fn move_bots_to_new_strategy(&mut self, bot_ids: Vec<u8>, strategy: Box<dyn Strategy>) {
+    //     for bot_id in bot_ids {
+    //         self.move_bot_to_new_strategy(bot_id, strategy.clone());
+    //     }
+    // }
 
     
     /// Processes the messages received from the strategies and updates the strategies accordingly.
