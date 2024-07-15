@@ -90,10 +90,10 @@ impl GameControllerPostFilter {
         // change state only if a new referee command has been issued,
         // or if the state is time-dependent
         if self.state_data.last_ref_cmd != referee.command || self.time_based_refresh {
-            dbg!(&referee.command);
-            dbg!(referee.next_command);
-            dbg!(&referee.designated_position);
-            dbg!(&referee.current_action_time_remaining);
+            // dbg!(&referee.command);
+            // dbg!(referee.next_command);
+            // dbg!(&referee.designated_position);
+            // dbg!(&referee.current_action_time_remaining);
 
             self.update_latest_state_data(referee);
 
