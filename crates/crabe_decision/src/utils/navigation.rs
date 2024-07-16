@@ -150,7 +150,7 @@ fn r_star(objects:&Vec<Circle>, segment_width: f64, start: Point2<f64>, target: 
 /// 
 /// # Returns
 /// The angle and the new target point on the available direction
-fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool) -> (f64, Point2<f64>){
+pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool) -> (f64, Point2<f64>){
     let mut angle = 0.;
     let mut new_target = target.clone();
     let mut free = false;
