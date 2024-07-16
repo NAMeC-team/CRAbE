@@ -1,11 +1,21 @@
 use std::f64::consts::PI;
+use crate::action::move_to::MoveTo;
+use crate::message::AttackerMessage;
+use crate::message::Message;
+use crate::strategy::basics::pass;
 use crate::strategy::basics::shoot;
 use crate::strategy::basics::intercept;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
+use crate::utils::object_in_bot_trajectory;
+use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
+use crabe_framework::data::world::AllyInfo;
+use crabe_framework::data::world::Ball;
+use crabe_framework::data::world::Robot;
 use crabe_framework::data::world::World;
+use crabe_math::vectors::vector_from_angle;
 use crabe_math::{shape::Line, vectors::rotate_vector};
 use nalgebra::Point2;
 
@@ -34,8 +44,8 @@ fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_p
     let ray_right_side = (enemy_position - perp) - shoot_start_position;
     let line_ray_left_side = Line::new(*shoot_start_position, shoot_start_position + ray_left_side * 1000.);
     let line_ray_right_side = Line::new(*shoot_start_position, shoot_start_position + ray_right_side * 1000.);
-    let intersection_left = world.geometry.enemy_goal.line.intersection_segments(&line_ray_left_side);
-    let intersection_right = world.geometry.enemy_goal.line.intersection_segments(&line_ray_right_side);
+    let intersection_left = line_ray_left_side.intersection_segment_line(&world.geometry.enemy_goal.line);
+    let intersection_right = line_ray_right_side.intersection_segment_line(&world.geometry.enemy_goal.line);
     match (intersection_left, intersection_right) {
         (Ok(left), Ok(right)) => Some(Line::new(left, right)),
         (Ok(left), _) => Some(Line::new(left, world.geometry.enemy_goal.line.end)),
@@ -66,10 +76,52 @@ pub fn get_open_shoot_window(shoot_start_position: &Point2<f64>, world: &World) 
     }
     return available_targets;
 }
+
 impl Attacker {
     /// Creates a new Attacker instance with the desired robot id.
     pub fn new(id: u8) -> Self {
         Self { id, messages: vec![]}
+    }
+    
+    /// Find the best ally to pass the ball to
+    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo{
+        // grab allies in the enemy side 
+        let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
+        if allies_in_positive_x.len() == 0{
+            return shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
+        }
+        let robot_position = robot.pose.position;
+        let mut closest_ally: Option<&Robot<AllyInfo>> = None;
+        let mut max_window_length = 0.;
+        for ally in allies_in_positive_x {
+            if object_in_bot_trajectory(world, robot.id, ally.pose.position, false, false, true).len() > 0 {
+                continue;
+            }
+            let shoot_windows = get_open_shoot_window(&ally.pose.position, world);
+            let total_length = shoot_windows.iter().fold(0., |acc, line| acc + line.norm());
+            if total_length <= max_window_length {
+                continue;
+            }
+            max_window_length = total_length;
+            closest_ally = Some(ally);
+        }
+        
+        match closest_ally {
+            Some(ally) => {
+                let robot_to_ally = (ally.pose.position - robot_position).normalize();
+                let passing_trajectory = Line::new(robot_position + robot_to_ally, robot_position + robot_to_ally * 10.);
+                let move_to_command = pass(&robot, &ally, &ball, world);
+                if move_to_command.kicker.is_some(){
+                    self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::BallPassed(ally.id)), self.id));
+                }else{
+                    self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::WantToPassBallTo(ally.id, passing_trajectory)), self.id));
+                }
+                move_to_command
+            },
+            None => {
+                shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world)
+            }
+        }
     }
 }
 
@@ -121,7 +173,8 @@ impl Strategy for Attacker {
         };
         
         // If the ball is moving in the direction of our goal, intercept it
-        if ball.velocity.norm() > 1. && ball.velocity.x < 0. {
+        let ball_trajectory_intersect_with_goal = world.geometry.enemy_goal.line.intersection_segments(&Line::new(ball.position_2d(), ball.position_2d() + ball.velocity.xy() * 1000.));
+        if ball.velocity.norm() > 1. && !ball_trajectory_intersect_with_goal.is_ok(){
             action_wrapper.push(self.id, intercept(
                 &robot,
                 &ball,
@@ -135,12 +188,14 @@ impl Strategy for Attacker {
         }
 
         let biggest_shoot_window = shoot_windows.iter().reduce(|curr, x: &Line| if curr.norm() > x.norm() {curr} else {x});
-        let target_shooting_position = match biggest_shoot_window{
-            Some(shoot_window) => shoot_window.center(),
-            None => world.geometry.enemy_goal.line.center(), // If there is no shoot window, shoot in the middle of the goal
-        };
-        tools_data.annotations.add_point("Target".to_string(), target_shooting_position);
-        action_wrapper.push(self.id, shoot(robot, &ball, &target_shooting_position, world));
+        if let Some(shoot_window) = biggest_shoot_window{
+            let target = shoot_window.center();
+            tools_data.annotations.add_point("Target".to_string(), target);
+            action_wrapper.push(self.id, shoot(robot, &ball, &target, world));
+            self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
+        }else{
+            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data));
+        }
         false
     }
 
