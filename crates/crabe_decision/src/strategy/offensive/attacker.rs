@@ -174,7 +174,7 @@ impl Strategy for Attacker {
         
         // If the ball is moving in the direction of our goal, intercept it
         let ball_trajectory_intersect_with_goal = world.geometry.enemy_goal.line.intersection_segments(&Line::new(ball.position_2d(), ball.position_2d() + ball.velocity.xy() * 1000.));
-        if ball.velocity.norm() > 1. && !ball_trajectory_intersect_with_goal.is_ok(){
+        if ball.velocity.norm() > 0.5 && !ball_trajectory_intersect_with_goal.is_ok(){
             action_wrapper.push(self.id, intercept(
                 &robot,
                 &ball,
