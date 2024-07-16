@@ -127,3 +127,32 @@ pub fn ball_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
     }
     false
 }
+
+
+// fn team_possessing_ball(ball: &Ball, allies: &Robot<AllyInfo>, enemies: &Robot<EnemyInfo>) -> Team {
+//     let ball_pos = if 
+// }
+
+/// Filter robots by ids.
+/// 
+/// # Arguments
+/// - `robots`: The list of robots to filter.
+/// - `ids`: The list of ids to keep.
+/// 
+/// # Returns
+/// A list of robots that are in the ids list.
+pub fn filter_robots_in_ids<'a, T>(robots: Vec<&'a Robot<T>>, ids: &Vec<u8>) -> Vec<&'a Robot<T>> {
+    robots.into_iter().filter(|r| ids.contains(&r.id)).collect()
+}
+
+/// Remove robots with id in the ids list.
+/// 
+/// # Arguments
+/// - `robots`: The list of robots to filter.
+/// - `ids`: The list of ids to keep.
+/// 
+/// # Returns
+/// A list of robots that are not in the ids list.
+pub fn filter_robots_not_in_ids<'a, T>(robots: Vec<&'a Robot<T>>, ids: &Vec<u8>) -> Vec<&'a Robot<T>> {
+    robots.into_iter().filter(|r| !ids.contains(&r.id)).collect()
+}

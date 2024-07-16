@@ -1,5 +1,4 @@
 use std::vec;
-
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::message::AttackerMessage;
@@ -9,11 +8,13 @@ use crate::strategy::offensive::Attacker;
 use crate::strategy::offensive::Receiver;
 use crate::strategy::testing::{Aligned, GoLeft, GoRight};
 use crate::strategy::formations::Stop;
-use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
+use crate::strategy::defensive::GoalKeeper;
 use crate::strategy::Strategy;
+use crate::utils::everyone_stop;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
+use crate::utils::bigbro_decisions::run_state;
 
 /// The `BigBro` struct represents a decision manager that executes strategies BigBroly
 /// added to its list.
@@ -73,7 +74,7 @@ impl BigBro {
             ids.retain(|&id| id != bot_id);
             strategy.put_ids(ids);
         }
-        self.strategies.retain(|s| {
+        self.strategies.retain(|mut s| {
             let ids = s.get_ids();
             !(ids.len() == 1 && ids[0] == bot_id) && !ids.is_empty()
         });
@@ -304,18 +305,7 @@ impl BigBro {
         None
     }
     
-    /// Put all bots to the Stop strategy.
-    pub fn everyone_stop(&mut self) {
-        if let Some(strategy_index) = self.get_index_strategy_with_name("Stop") {
-            for bot_id in 0..6 {
-                self.move_bot_to_existing_strategy(bot_id, strategy_index);
-            }
-        }else{
-            let strategy = Box::new(Stop::new(vec![]));
-            self.move_bots_to_new_strategy(vec![0, 1, 2, 3, 4, 5], strategy);
-            println!("{:?}",self.strategies[0].as_ref().get_ids());
-        }
-    }
+
 }
 
 impl Manager for BigBro {
@@ -329,7 +319,7 @@ impl Manager for BigBro {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
                 HaltedState::GameNotStarted => println!("game not started"),
-                HaltedState::Halt => self.everyone_stop(),
+                HaltedState::Halt => everyone_stop(self),
                 HaltedState::Timeout(team) => println!("timeout by {:?}", team),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
@@ -350,10 +340,15 @@ impl Manager for BigBro {
                 RunningState::KickOff(team) => println!("kickoff for {:#?}", team),
                 RunningState::Penalty(team) => println!("penalty for {:#?}", team),
                 RunningState::FreeKick(team) => println!("free kick for {:#?}", team),
-                RunningState::Run => println!("run"),
+                RunningState::Run => run_state(self, world, tools_data),
             }
         }
+        run_state(self, world, tools_data);
+        
 
+        for strat in self.strategies.iter(){
+            println!("{:?}", strat.get_ids());
+        }
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
         let mut messages: Vec<MessageData> = vec![];
