@@ -113,7 +113,6 @@ impl Strategy for Attacker {
             Some(robot) => robot,
             None => return false,
         };
-        let robot_position = robot.pose.position;
         
         // Get the ball position, otherwise exit the function
         let ball = match &world.ball {
