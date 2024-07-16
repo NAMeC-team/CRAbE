@@ -13,7 +13,7 @@ pub fn intercept(
         return MoveTo::new(ball_position, orientation, 0., false, None, true);
     }
     let trajectory = Line::new(ball_position, ball_position + ball.velocity.xy().normalize() * 100.);
-    let target = trajectory.closest_point_on_line(&robot.pose.position);
+    let target = trajectory.closest_point_on_segment(&robot.pose.position);
     let mut dribbler = 0.;
     if robot.distance(&ball_position) < 0.2 {
         dribbler = 1.;
