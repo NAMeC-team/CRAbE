@@ -130,7 +130,7 @@ impl Strategy for Attacker {
             return false;
         }
 
-        let shoot_windows = get_open_shoot_window(&robot_position, world);
+        let shoot_windows = get_open_shoot_window(&ball.position_2d(), world);
         for line in &shoot_windows{
             tools_data.annotations.add_line(line.start.to_string(), *line);
         }
@@ -140,6 +140,7 @@ impl Strategy for Attacker {
             Some(shoot_window) => shoot_window.center(),
             None => world.geometry.enemy_goal.line.center(), // If there is no shoot window, shoot in the middle of the goal
         };
+        tools_data.annotations.add_point("Target".to_string(), target_shooting_position);
         action_wrapper.push(self.id, shoot(robot, &ball, &target_shooting_position, world));
         false
     }
