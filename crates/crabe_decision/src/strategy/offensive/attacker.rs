@@ -18,6 +18,15 @@ pub struct Attacker {
     messages: Vec<MessageData>,
 }
 
+/// Get the obstruct goal zone from an enemy
+/// 
+/// # Arguments
+/// - `shoot_start_position`: The position of the object that want to go into the goal
+/// - `enemy_position`: The position of the enemy
+/// - `world`: The current state of the game world
+/// 
+/// # Returns
+/// A `Line` representing the obstruct goal zone
 fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_position: &Point2<f64>, world: &World) -> Option<Line> {
     let start_pos_to_enemy = enemy_position - shoot_start_position;
     let perp = rotate_vector(start_pos_to_enemy.normalize(), PI/2.) * (world.geometry.robot_radius + world.geometry.ball_radius + MARGIN_SHOOTING_WINDOW);
@@ -35,6 +44,14 @@ fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_p
     }
 }
 
+/// Get the open shoot window for the attacker
+/// 
+/// # Arguments
+/// - `shoot_start_position`: The position of the object that want to go into the goal
+/// - `world`: The current state of the game world
+/// 
+/// # Returns
+/// A vector of `Line` representing the open shoot windows
 pub fn get_open_shoot_window(shoot_start_position: &Point2<f64>, world: &World) -> Vec<Line> {
     let mut available_targets: Vec<Line> = vec![world.geometry.enemy_goal.line];
     for enemy in world.enemies_bot.values() {
@@ -117,11 +134,11 @@ impl Strategy for Attacker {
         for line in &shoot_windows{
             tools_data.annotations.add_line(line.start.to_string(), *line);
         }
-        // grab biggest shoot window with reduce
+
         let biggest_shoot_window = shoot_windows.iter().reduce(|curr, x: &Line| if curr.norm() > x.norm() {curr} else {x});
         let target_shooting_position = match biggest_shoot_window{
             Some(shoot_window) => shoot_window.center(),
-            None => world.geometry.enemy_goal.line.center(),
+            None => world.geometry.enemy_goal.line.center(), // If there is no shoot window, shoot in the middle of the goal
         };
         action_wrapper.push(self.id, shoot(robot, &ball, &target_shooting_position, world));
         false
