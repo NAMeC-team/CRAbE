@@ -6,11 +6,12 @@ use crate::message::Message;
 use crate::message::MessageData;
 use crate::strategy;
 use crate::strategy::testing::{Aligned, GoLeft, GoRight};
-use crate::strategy::formations::Stop;
+use crate::strategy::formations::{Stop, PrepareKickOff};
 use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
 use crabe_framework::data::geometry::Goal;
 use crabe_framework::data::tool::ToolData;
+use crabe_framework::data::world;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
 
@@ -32,7 +33,6 @@ impl BigBro {
             strategies: vec![
                 Box::new(Stop::new(vec![2, 3, 4])),
                 Box::new(GoalKeeper::new(0)),
-                Box::new(GoLeft::new(1)),
             ],
         }
     }
@@ -288,6 +288,21 @@ impl BigBro {
             println!("{:?}",self.strategies[0].as_ref().get_ids());
         }
     }
+
+    /// prepare for kickoff
+    pub fn prepare_kick_off(&mut self, world: &World) {
+        if let Some(strategy_index) = self.get_index_strategy_with_name("PrepareKickOff") {
+            let robots_on_the_enemy_side: Vec<u8> = world.allies_bot.iter().filter(|(_, bot)| bot.pose.position.x > 0.0).map(|(id, _)| *id).collect();
+            println!("yes previous");
+            self.move_bots_to_existing_strategy(robots_on_the_enemy_side, strategy_index);
+        } else {
+            println!("no previous");
+            let strategy = Box::new(PrepareKickOff::new(vec![]));
+            let robots_on_the_enemy_side: Vec<u8> = world.allies_bot.iter().filter(|(_, bot)| bot.pose.position.x > 0.0).map(|(id, _)| *id).collect();
+            self.move_bots_to_new_strategy(robots_on_the_enemy_side, strategy);
+        }
+    }
+    
 }
 
 impl Manager for BigBro {
@@ -306,7 +321,7 @@ impl Manager for BigBro {
             }
             GameState::Stopped(stopped_state) => match stopped_state {
                 StoppedState::Stop => println!("stop"),
-                StoppedState::PrepareKickoff(team) => println!("prepare kick off {:?}",team),
+                StoppedState::PrepareKickoff(team) => self.prepare_kick_off(world),
                 StoppedState::PreparePenalty(team) => println!("prepare penalty {:?}",team),
                 StoppedState::BallPlacement(team) => println!("ball placement {:?}",team),
                 StoppedState::PrepareForGameStart => println!("prepare for game start"),
