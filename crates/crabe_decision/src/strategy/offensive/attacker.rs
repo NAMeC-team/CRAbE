@@ -1,31 +1,59 @@
-use crate::action::move_to::MoveTo;
+use std::f64::consts::PI;
+use crate::strategy::basics::shoot;
+use crate::strategy::basics::intercept;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
-use crate::utils::ball_in_trajectory;
-use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use crabe_math::{shape::Line, vectors};
+use crabe_math::{shape::Line, vectors::rotate_vector};
 use nalgebra::Point2;
+
+const MARGIN_SHOOTING_WINDOW: f64 = 0.01;
 
 /// The Attacker strategy is responsible for moving the robot to the ball and then try scoring a goal
 pub struct Attacker {
     /// The id of the robot to move.
     id: u8,
     messages: Vec<MessageData>,
-    state: ShooterState,
 }
 
+fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_position: &Point2<f64>, world: &World) -> Option<Line> {
+    let start_pos_to_enemy = enemy_position - shoot_start_position;
+    let perp = rotate_vector(start_pos_to_enemy.normalize(), PI/2.) * (world.geometry.robot_radius + world.geometry.ball_radius + MARGIN_SHOOTING_WINDOW);
+    let ray_left_side = (enemy_position + perp) - shoot_start_position;
+    let ray_right_side = (enemy_position - perp) - shoot_start_position;
+    let line_ray_left_side = Line::new(*shoot_start_position, shoot_start_position + ray_left_side * 1000.);
+    let line_ray_right_side = Line::new(*shoot_start_position, shoot_start_position + ray_right_side * 1000.);
+    let intersection_left = world.geometry.enemy_goal.line.intersection_segments(&line_ray_left_side);
+    let intersection_right = world.geometry.enemy_goal.line.intersection_segments(&line_ray_right_side);
+    match (intersection_left, intersection_right) {
+        (Ok(left), Ok(right)) => Some(Line::new(left, right)),
+        (Ok(left), _) => Some(Line::new(left, world.geometry.enemy_goal.line.end)),
+        (_, Ok(right)) => Some(Line::new(world.geometry.enemy_goal.line.start, right)),
+        _ => None,
+    }
+}
+
+pub fn get_open_shoot_window(shoot_start_position: &Point2<f64>, world: &World) -> Vec<Line> {
+    let mut available_targets: Vec<Line> = vec![world.geometry.enemy_goal.line];
+    for enemy in world.enemies_bot.values() {
+        if let Some(line) = get_obstruct_goal_zone_from_enemy(shoot_start_position, &enemy.pose.position.xy(), world){
+            let mut new_targets: Vec<Line> = vec![];
+            for target_line in available_targets {
+                let targets = target_line.cut_off_segment(&line);
+                new_targets.extend(targets);
+            }
+            available_targets = new_targets;
+        }
+    }
+    return available_targets;
+}
 impl Attacker {
     /// Creates a new Attacker instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id, messages: vec![], state:ShooterState::PlaceForShoot}
+        Self { id, messages: vec![]}
     }
-}
-enum ShooterState{
-    PlaceForShoot,
-    Shoot
 }
 
 impl Strategy for Attacker {
@@ -55,7 +83,6 @@ impl Strategy for Attacker {
     /// # Returns
     ///
     /// A boolean value indicating whether the strategy is finished or not.
-    #[allow(unused_variables)]
     fn step(
         &mut self,
         world: &World,
@@ -64,64 +91,39 @@ impl Strategy for Attacker {
     ) -> bool {
         // Clean the action wrapper otherwise the previous commands will still have to be runned before the one he will calculate now
         action_wrapper.clear(self.id);
-
         // Get the Attacker robot, otherwise exit the function
         let robot = match world.allies_bot.get(&self.id) {
             Some(robot) => robot,
             None => return false,
         };
         let robot_position = robot.pose.position;
-        let robot_direction = vectors::vector_from_angle(robot.pose.orientation);
         
         // Get the ball position, otherwise exit the function
-        let ball_position = match world.ball.clone() {
-            Some(ball) => ball.position.xy(),
+        let ball = match &world.ball {
+            Some(ball) => ball,
             None => return false,
         };
-        let robot_to_ball = ball_position - robot_position;
-        let dot_with_ball = robot_direction.normalize().dot(&robot_to_ball.normalize());
-        let dist_to_ball = robot_to_ball.norm();
         
-        // Set the target shoot position to the center of the goal
-        let target_shooting_position: Point2<f64> = world.geometry.enemy_goal.line.center();
+        // If the ball is moving in the direction of our goal, intercept it
+        if ball.velocity.norm() > 1. && ball.velocity.x < 0. {
+            action_wrapper.push(self.id, intercept(
+                &robot,
+                &ball,
+            ));
+            return false;
+        }
 
-        // Placement distance behind the ball
-        let distance_to_go_behind_ball = 0.8;
-
-        // Calculate the position behind the ball to prepare the shoot
-        let behind_ball_position = ball_position + (ball_position - target_shooting_position).normalize() * distance_to_go_behind_ball; 
-                
-        // Check if the shooting trajectory will score
-        let robot_shooting_trajectory = Line::new(robot_position, robot_position + robot_to_ball * 10.);
-        let shooting_trajectory_will_score = match robot_shooting_trajectory.intersection_segments(&world.geometry.enemy_goal.line) {
-            Ok(_) => true,
-            Err(_) => false,
+        let shoot_windows = get_open_shoot_window(&robot_position, world);
+        for line in &shoot_windows{
+            tools_data.annotations.add_line(line.start.to_string(), *line);
+        }
+        // grab biggest shoot window with reduce
+        let biggest_shoot_window = shoot_windows.iter().reduce(|curr, x: &Line| if curr.norm() > x.norm() {curr} else {x});
+        let target_shooting_position = match biggest_shoot_window{
+            Some(shoot_window) => shoot_window.center(),
+            None => world.geometry.enemy_goal.line.center(),
         };
-
-        // Check if the ball is in the way of the robot placement, in this case we need to dodge the ball (TODO) 
-        let ball_in_the_way = ball_in_trajectory(&world, self.id, behind_ball_position);
-        match self.state {
-            ShooterState::PlaceForShoot => {
-                action_wrapper.push(self.id, MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, target_shooting_position), 0., false, None, false));
-                if shooting_trajectory_will_score 
-                    && dot_with_ball > 0.95 // The robot is correctly facing the ball
-                {
-                    self.state = ShooterState::Shoot;
-                }
-            },
-            ShooterState::Shoot => {
-                // If the robot is close enough to the ball, shoot
-                let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.002) { 
-                    Some(Kick::StraightKick {  power: 4. }) 
-                }else {None};
-                action_wrapper.push(self.id, MoveTo::new(ball_position, vectors::angle_to_point(robot_position,target_shooting_position), 1.,  true, kick, false));
-
-                // If the ball is in the way or the robot is too far from the ball, go back to the placement state
-                if ball_in_the_way || dist_to_ball > distance_to_go_behind_ball+0.1 {
-                    self.state = ShooterState::PlaceForShoot;
-                }
-            }
-        };
+        action_wrapper.push(self.id, shoot(robot, &ball, &target_shooting_position, world));
         false
     }
 
