@@ -1,6 +1,6 @@
 use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Ball, Robot, TeamColor, World}};
 
-use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::Stop}};
+use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::Stop, offensive::Attacker}};
 
 use super::{closest_bot_to_point, closest_bots_to_point, filter_robots_in_ids, filter_robots_not_in_ids, KEEPER_ID};
 
@@ -44,12 +44,10 @@ fn put_defense_wall(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyIn
     ids
 }
 
-fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, tools_data: &mut ToolData) {
-    let defense_wall_ids = put_defense_wall(bigbro, world, &allies, 2);
-    let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
-    let closest_bot = match closest_bot_to_point(offensive_line.clone(), ball.position_2d()) {
+fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>, ball: &Ball) -> u8 {
+    let closest_bot = match closest_bot_to_point(bots.clone(), ball.position_2d()) {
         Some(bot) => bot,
-        None => return,
+        None => return 7,
     };
     if let Some(attacker_strategy_index) = bigbro.get_index_strategy_with_name("Attacker") {
         bigbro.strategies[attacker_strategy_index].put_ids(vec![]);
@@ -58,7 +56,15 @@ fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ba
         let strategy = Box::new(strategy::offensive::Attacker::new(closest_bot.id));
         bigbro.move_bot_to_new_strategy(closest_bot.id, strategy);
     }
-    let other_bots: Vec<&Robot<AllyInfo>> = offensive_line.iter().filter(|bot| bot.id != closest_bot.id).map(|bot| *bot).collect();
+    return closest_bot.id;
+}   
+
+fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, tools_data: &mut ToolData) {
+    let defense_wall_ids = put_defense_wall(bigbro, world, &allies, 2);
+    let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
+
+    let attacker_id = put_attacker(bigbro, world, &offensive_line, ball);
+    let other_bots: Vec<&Robot<AllyInfo>> = offensive_line.iter().filter(|bot| bot.id != attacker_id).map(|bot| *bot).collect();
     match ball.possession {
         Some(team_possessing) => {
             if team_possessing == world.team_color{
@@ -71,10 +77,28 @@ fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ba
                     let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, bot.id));
                     bigbro.move_bot_to_new_strategy(bot.id, strategy);
                 }
+            }else{
+                for bot in other_bots {
+                    if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
+                        if current_strategy.name() == "BotMarquing" {
+                            continue;
+                        }
+                    }
+                    let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, bot.id));
+                    bigbro.move_bot_to_new_strategy(bot.id, strategy);
+                }
             }
         },
         None => {
-
+            for bot in other_bots {
+                if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
+                    if current_strategy.name() == "BotMarquing" {
+                        continue;
+                    }
+                }
+                let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, bot.id));
+                bigbro.move_bot_to_new_strategy(bot.id, strategy);
+            }
         }
     }
 }
