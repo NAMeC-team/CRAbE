@@ -1,16 +1,18 @@
 use std::backtrace;
 
-use crate::action::move_to::MoveTo;
+use crate::action::move_to::{self, MoveTo};
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::basics::pass;
 use crate::strategy::Strategy;
 use crate::utils::{closest_bot_to_point, closest_bots_to_point, object_in_bot_trajectory};
 use crabe_framework::data::geometry::Penalty;
+use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{Ball, EnemyInfo, Robot, World};
 use crabe_math::{shape::Line, vectors};
 use crabe_math::vectors::vector_from_angle;
+use crabe_protocol::protobuf::simulation_packet::MoveGlobalVelocity;
 use nalgebra::Point2;
 
 /// The GoalKeeper strategy is responsible for keeping the goal safe by moving the robot to the best position to block the ball.
@@ -132,6 +134,9 @@ impl Strategy for GoalKeeper {
                     if object_in_bot_trajectory(world, self.id, receiver.pose.position, false, false, true).len() == 0{
                         let pass_action = pass(robot, receiver, ball, world);
                         action_wrapper.push(self.id, pass_action);
+                        return false;
+                    } else {
+                        action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false));
                         return false;
                     }
                 }
