@@ -31,6 +31,7 @@ fn ball_passthrough(ball: &mut TrackedBall) {
             velocity: Default::default(),
             acceleration: Default::default(),
             possession: None,
+            last_touch: None,
         }
     }
 }
