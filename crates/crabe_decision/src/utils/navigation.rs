@@ -9,7 +9,7 @@ use crate::utils::robots_to_circles;
 const NO_AVOIDANCE_DIST : f64 = 0.4;                // distance to the target to start avoiding obstacles
 const EXPLORATION_STOP_DIST : f64 = 0.4;            // distance to the target to stop the exploration
 const DEFAULT_EXPLORATION_STEP_LEHGTH : f64 = 0.5;  // default length of the exploration step
-const EXPLORATION_ANGLE : f64 = 0.1;                // angle between two exploration steps
+const DEFLAULT_EXPLORATION_ANGLE : f64 = 0.1;                // angle between two exploration steps
 const EXPLORATION_ITTERATION : usize = 8;           // number of iterations for the exploration (O(n*2) so be careful)
 const AVOIDANCE_MARGIN : f64 = 0.05;                // margin to avoid obstacles (added to the bot radius)
 const BALL_AVOIDANCE_MARGIN : f64 = 0.03;           // margin to avoid ball (added to the bot radius)
@@ -110,8 +110,8 @@ fn r_star(objects:&Vec<Circle>, segment_width: f64, start: Point2<f64>, target: 
     if itt_nb == 0{
         return (0.0, vec![start]);
     }
-    let (_, left_target) = get_first_angle_free_trajectory(objects, segment_width, &start, target, false,DEFAULT_EXPLORATION_STEP_LEHGTH);
-    let (_, right_target) = get_first_angle_free_trajectory(objects, segment_width, &start, target, true,DEFAULT_EXPLORATION_STEP_LEHGTH);
+    let (_, left_target) = get_first_angle_free_trajectory(objects, segment_width, &start, target, false,DEFAULT_EXPLORATION_STEP_LEHGTH,DEFLAULT_EXPLORATION_ANGLE);
+    let (_, right_target) = get_first_angle_free_trajectory(objects, segment_width, &start, target, true,DEFAULT_EXPLORATION_STEP_LEHGTH,DEFLAULT_EXPLORATION_ANGLE);
     if (left_target - target).norm() < EXPLORATION_STOP_DIST || (right_target - target).norm() < EXPLORATION_STOP_DIST{ // if the target is close enough we stop the exploration
         return ((target - start).norm(), vec![*target]);
     } else {
@@ -150,7 +150,7 @@ fn r_star(objects:&Vec<Circle>, segment_width: f64, start: Point2<f64>, target: 
 /// 
 /// # Returns
 /// The angle and the new target point on the available direction
-pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool,exploration_step_length:f64) -> (f64, Point2<f64>){
+pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool,exploration_step_length:f64,angle_between_two_exploration:f64) -> (f64, Point2<f64>){
     let mut angle = 0.;
     let mut new_target = target.clone();
     let mut free = false;
@@ -163,9 +163,9 @@ pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64,
             free = true;
         } else {
             if positive_rotation{
-                angle += EXPLORATION_ANGLE;
+                angle += angle_between_two_exploration;
             } else {
-                angle -= EXPLORATION_ANGLE;
+                angle -= angle_between_two_exploration;
             }
         }
     }
