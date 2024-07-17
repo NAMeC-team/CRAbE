@@ -1,5 +1,6 @@
-use crate::action::move_to::MoveTo;
+use crate::action::{move_to::MoveTo, orient_to::OrientTo};
 use crate::action::ActionWrapper;
+use crate::strategy::basics::intercept;
 use crate::strategy::Strategy;
 use crate::message::MessageData;
 use crabe_framework::data::tool::ToolData;
@@ -94,6 +95,11 @@ impl Strategy for Demark {
             cercles.push(c);    
         });
 
+        if robot.distance(ball_pos) < 1. {
+            action_wrapper.push(self.id, intercept(robot, ball));
+            return false
+        }
+
         let target_handler_positive = get_first_angle_free_trajectory(
             &cercles, 
             world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY, 
@@ -104,6 +110,9 @@ impl Strategy for Demark {
         );
 
         if target_handler_positive.0 == 0.0 {
+            let orientation = vectors::angle_to_point(robot_pos, ball_handler_pos.position);
+            action_wrapper.push(self.id, OrientTo::new(orientation, 0.0, false, None, true));
+
             return false;
         }
 
