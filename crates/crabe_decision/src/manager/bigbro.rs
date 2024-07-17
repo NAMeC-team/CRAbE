@@ -33,6 +33,7 @@ impl BigBro {
             strategies: vec![
                 Box::new(Stop::new(vec![2, 3, 4])),
                 Box::new(GoalKeeper::new(0)),
+                Box::new(GoLeft::new(1)),
             ],
         }
     }
@@ -293,10 +294,8 @@ impl BigBro {
     pub fn prepare_kick_off(&mut self, world: &World) {
         if let Some(strategy_index) = self.get_index_strategy_with_name("PrepareKickOff") {
             let robots_on_the_enemy_side: Vec<u8> = world.allies_bot.iter().filter(|(_, bot)| bot.pose.position.x > 0.0).map(|(id, _)| *id).collect();
-            println!("yes previous");
             self.move_bots_to_existing_strategy(robots_on_the_enemy_side, strategy_index);
         } else {
-            println!("no previous");
             let strategy = Box::new(PrepareKickOff::new(vec![]));
             let robots_on_the_enemy_side: Vec<u8> = world.allies_bot.iter().filter(|(_, bot)| bot.pose.position.x > 0.0).map(|(id, _)| *id).collect();
             self.move_bots_to_new_strategy(robots_on_the_enemy_side, strategy);

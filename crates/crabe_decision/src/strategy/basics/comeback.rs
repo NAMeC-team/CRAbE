@@ -17,8 +17,7 @@ pub fn comeback(
     world: &world::World,
 ) -> MoveTo {
     let orientation = vectors::angle_to_point(robot.pose.position, Point2::new(0.0, 0.0));
-    let target = Point2::new(-0.6, robot.pose.position.y);
-    println!("Comeback target: {:?}", target);
+    let target: nalgebra::OPoint<f64, nalgebra::Const<2>> = Point2::new(-0.6, robot.pose.position.y);
     
     // Determine if there is a nearby ally bot at the target position
     if let Some(closest_bot) = closest_bot_to_point(world.allies_bot.values().collect(), target) {
