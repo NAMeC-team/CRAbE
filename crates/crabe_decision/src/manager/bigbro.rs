@@ -74,7 +74,7 @@ impl BigBro {
             ids.retain(|&id| id != bot_id);
             strategy.put_ids(ids);
         }
-        self.strategies.retain(|mut s| {
+        self.strategies.retain(|s| {
             let ids = s.get_ids();
             !(ids.len() == 1 && ids[0] == bot_id) && !ids.is_empty()
         });
