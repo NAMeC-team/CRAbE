@@ -51,7 +51,9 @@ impl Filter for VelocityAccelerationFilter {
         update_robot_vel_accel(&mut filter_data.allies, &world.allies_bot);
         update_robot_vel_accel(&mut filter_data.enemies, &world.enemies_bot);
         if let Some(ball) = world.ball.as_ref() {
-            update_ball_vel_accel(&mut filter_data.ball, ball);
+            if let Some(ball_tracked) = filter_data.ball.as_mut() {
+                update_ball_vel_accel(ball_tracked, ball);
+            }
         }
     }
 }

@@ -1,5 +1,5 @@
 use crate::constant;
-use crate::data::{FilterData, TrackedRobotMap};
+use crate::data::{FilterData, TrackedBall, TrackedRobotMap};
 use crate::filter::Filter;
 use chrono::{DateTime, Utc};
 use crabe_framework::data::world::World;
@@ -22,6 +22,17 @@ impl InactiveFilter {
                 .map_or(false, |d| d < self.timeout)
         });
     }
+
+    fn purge_inactive_ball(&self, ball_tracked: &mut Option<TrackedBall>, now: DateTime<Utc>) {
+        if let Some(ball) = ball_tracked {
+            if (now - ball.last_update)
+                .to_std()
+                .map_or(false, |d| d < self.timeout)
+            {
+                *ball_tracked = None;
+            }
+        }
+    }
 }
 
 impl Default for InactiveFilter {
@@ -37,5 +48,6 @@ impl Filter for InactiveFilter {
         let now = Utc::now();
         self.purge_inactive(&mut filter_data.allies, now);
         self.purge_inactive(&mut filter_data.enemies, now);
+        self.purge_inactive_ball(&mut filter_data.ball, now);
     }
 }

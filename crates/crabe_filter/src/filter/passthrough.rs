@@ -42,6 +42,8 @@ impl Filter for PassthroughFilter {
     fn step(&mut self, filter_data: &mut FilterData, _world: &World) {
         robot_passthrough(filter_data.allies.iter_mut());
         robot_passthrough(filter_data.enemies.iter_mut());
-        ball_passthrough(&mut filter_data.ball);
+        if let Some(ball) = &mut filter_data.ball {
+            ball_passthrough(ball);
+        }
     }
 }

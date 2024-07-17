@@ -53,7 +53,9 @@ impl Filter for TeamSideFilter {
         change_robots_side(&mut filter_data.allies, &world.allies_bot);
         change_robots_side(&mut filter_data.enemies, &world.enemies_bot);
         if let Some(ball) = world.ball.as_ref() {
-            change_ball_side(&mut filter_data.ball, ball);
+            if let Some(ball_tracked) = filter_data.ball.as_mut() {
+                change_ball_side(ball_tracked, ball);
+            }
         }
     }
 }
