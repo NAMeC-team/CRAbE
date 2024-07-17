@@ -20,13 +20,14 @@ use nalgebra::Point2;
 pub struct GoalKeeper {
     /// The id of the robot to move.
     id: u8,
+    ids_to_not_pass: Vec<u8>,
     messages: Vec<MessageData>,
 }
 
 impl GoalKeeper {
     /// Creates a new GoalKeeper instance with the desired robot id.
-    pub fn new(id: u8) -> Self {
-        Self { id, messages: vec![]}
+    pub fn new(id: u8, ids_to_not_pass: Vec<u8>) -> Self {
+        Self { id, ids_to_not_pass, messages: vec![]}
     }
 
     /// Calculates the trajectory of the ball based on its velocity.
@@ -129,7 +130,7 @@ impl Strategy for GoalKeeper {
             } else if ball.velocity.norm() < 0.1 && penalty.is_inside(&ball_position) {
                 position_target = ball_position;
                 let mut closests_receivers = closest_bots_to_point(world.allies_bot.values().collect(), ball_position);
-                closests_receivers.retain(|receiver| receiver.id != self.id);
+                closests_receivers.retain(|receiver| receiver.id != self.id && !self.ids_to_not_pass.contains(&receiver.id));
                 for receiver in closests_receivers.iter(){
                     if object_in_bot_trajectory(world, self.id, receiver.pose.position, false, false, true).len() == 0{
                         let pass_action = pass(robot, receiver, ball, world);
