@@ -343,12 +343,7 @@ impl Manager for BigBro {
                 RunningState::Run => run_state(self, world, tools_data),
             }
         }
-        run_state(self, world, tools_data);
         
-
-        for strat in self.strategies.iter(){
-            println!("{:?}", strat.get_ids());
-        }
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
         let mut messages: Vec<MessageData> = vec![];

@@ -45,11 +45,23 @@ fn put_defense_wall(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyIn
 }
 
 fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>, ball: &Ball) -> u8 {
-    let closest_bot = match closest_bot_to_point(bots.clone(), ball.position_2d()) {
+    let closest_bot = match closest_bot_to_point(bots.iter().map(|bot| *bot).collect(), ball.position_2d()) {
         Some(bot) => bot,
         None => return 7,
     };
     if let Some(attacker_strategy_index) = bigbro.get_index_strategy_with_name("Attacker") {
+        let current_attackers = bigbro.strategies[attacker_strategy_index].get_ids();
+        if let Some(current_attacker_id) = current_attackers.last() {
+            if *current_attacker_id == closest_bot.id  { // already the closest bot who's attacker
+                return closest_bot.id;
+            }
+            if let Some(current_attacker) = world.allies_bot.get(current_attacker_id) {
+                let current_attacker_dist_to_ball = current_attacker.distance(&ball.position_2d());
+                if current_attacker_dist_to_ball < 0.5 {
+                    return *current_attacker_id;
+                }
+            }
+        }
         bigbro.strategies[attacker_strategy_index].put_ids(vec![]);
         bigbro.move_bot_to_existing_strategy(closest_bot.id, attacker_strategy_index);
     } else{
@@ -59,7 +71,26 @@ fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>
     return closest_bot.id;
 }   
 
-fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, tools_data: &mut ToolData) {
+fn put_marking(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>, ball: &Ball) {
+    let mut marked_enemies = vec![];
+    for bot in bots{
+        if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
+            if current_strategy.name() == "BotMarking" || current_strategy.name() == "Receiver" {
+                continue;
+            }
+        }
+        let availables_enemies = filter_robots_not_in_ids(world.enemies_bot.values().collect(), &marked_enemies);
+        let closest_enemy = match closest_bot_to_point(availables_enemies, ball.position_2d()) {
+            Some(bot) => bot,
+            None => return,
+        };
+        marked_enemies.push(closest_enemy.id);
+        let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, closest_enemy.id));
+        bigbro.move_bot_to_new_strategy(bot.id, strategy);
+    }
+}
+
+fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, _tools_data: &mut ToolData) {
     let defense_wall_ids = put_defense_wall(bigbro, world, &allies, 2);
     let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
 
@@ -68,37 +99,13 @@ fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ba
     match ball.possession {
         Some(team_possessing) => {
             if team_possessing == world.team_color{
-                for bot in other_bots {
-                    if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
-                        if current_strategy.name() == "BotMarquing" {
-                            continue;
-                        }
-                    }
-                    let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, bot.id));
-                    bigbro.move_bot_to_new_strategy(bot.id, strategy);
-                }
+                put_marking(bigbro, world, &other_bots, ball);
             }else{
-                for bot in other_bots {
-                    if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
-                        if current_strategy.name() == "BotMarquing" {
-                            continue;
-                        }
-                    }
-                    let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, bot.id));
-                    bigbro.move_bot_to_new_strategy(bot.id, strategy);
-                }
+                put_marking(bigbro, world, &other_bots, ball);
             }
         },
         None => {
-            for bot in other_bots {
-                if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
-                    if current_strategy.name() == "BotMarquing" {
-                        continue;
-                    }
-                }
-                let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, bot.id));
-                bigbro.move_bot_to_new_strategy(bot.id, strategy);
-            }
+            put_marking(bigbro, world, &other_bots, ball);
         }
     }
 }
@@ -106,7 +113,6 @@ fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ba
 /// Run the strategy for the running state.
 pub fn run_state(bigbro: &mut BigBro, world: &World, tools_data: &mut ToolData) {
     put_goal(bigbro);
-
     let ball = match &world.ball {
         Some(ball) => ball,
         None => return,
