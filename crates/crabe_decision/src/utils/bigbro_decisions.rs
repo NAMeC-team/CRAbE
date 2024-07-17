@@ -2,7 +2,7 @@ use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Ball, Robot, World
 
 use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::Stop}};
 
-use super::{closest_bot_to_point, closest_bots_to_point, filter_robots_not_in_ids, KEEPER_ID};
+use super::{closest_bot_to_point, closest_bots_to_point, filter_robots_not_in_ids, get_enemy_keeper_id, KEEPER_ID};
 
 /// Put all bots to the Stop strategy.
 pub fn everyone_stop(bigbro: &mut BigBro) {
@@ -76,7 +76,7 @@ fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>
 
 /// Put the robots to the BotMarking strategy. (mark the closests enemies to the ball)
 fn put_marking(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>, ball: &Ball) {
-    let mut marked_enemies = vec![];
+    let mut marked_enemies = vec![get_enemy_keeper_id(world)];
     for bot in bots{
         if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
             if current_strategy.name() == "BotMarking" || current_strategy.name() == "Receiver" {
