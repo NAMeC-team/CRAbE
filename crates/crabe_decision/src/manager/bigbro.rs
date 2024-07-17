@@ -2,14 +2,15 @@ use std::vec;
 
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
+use crate::message::AttackerMessage;
 use crate::message::Message;
 use crate::message::MessageData;
-use crate::strategy;
+use crate::strategy::offensive::Attacker;
+use crate::strategy::offensive::Receiver;
 use crate::strategy::testing::{Aligned, GoLeft, GoRight};
 use crate::strategy::formations::{Stop, PrepareKickOff};
 use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
-use crabe_framework::data::geometry::Goal;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world;
 use crabe_framework::data::world::game_state::*;
@@ -33,7 +34,7 @@ impl BigBro {
             strategies: vec![
                 Box::new(Stop::new(vec![2, 3, 4])),
                 Box::new(GoalKeeper::new(0)),
-                Box::new(GoLeft::new(1)),
+                Box::new(Attacker::new(1)),
             ],
         }
     }
@@ -229,7 +230,7 @@ impl BigBro {
     /// - `messages`: A list of `MessageData` instances containing the messages received from the strategies.
     pub fn process_messages(&mut self, messages: Vec<MessageData>) {
         messages.iter().for_each(|m| {
-            match m.message {
+            match &m.message {
                 Message::WantToGoRight => {
                     let strategy = Box::new(GoRight::new(m.id));
                     self.move_bot_to_new_strategy(m.id, strategy);
@@ -247,7 +248,34 @@ impl BigBro {
                         self.move_bot_to_new_strategy(m.id, strategy);
                     }
                 }
-                _ => {}
+                Message::AttackerMessage(attacker_message) => {
+                    match &attacker_message {
+                        AttackerMessage::WantToPassBallTo(receiver_id, passing_trajectory) => {
+                            if let Some(receiver_current_strategy) = self.get_bot_current_strategy(*receiver_id) {
+                                if receiver_current_strategy.name() == "Receiver" {
+                                    return;
+                                }
+                            } 
+                            let receiver_strategy = Box::new(Receiver::new(*receiver_id, m.id, *passing_trajectory));
+                            self.move_bot_to_new_strategy(*receiver_id, receiver_strategy);
+                        }
+                        AttackerMessage::NoNeedReceiver => {
+                            if let Some(receiver_current_strategy_index) = self.get_index_strategy_with_name("Receiver"){
+                                self.strategies.remove(receiver_current_strategy_index);
+                            }
+                        }
+                        AttackerMessage::BallPassed(receiver_id) => {
+                            if let Some(receiver_current_strategy_index) = self.get_index_strategy_with_name("Receiver"){
+                                self.strategies.remove(receiver_current_strategy_index);
+                            }
+                            if let Some(attacker_current_strategy_index) = self.get_index_strategy_with_name("Attacker"){
+                                self.strategies.remove(attacker_current_strategy_index);
+                            }
+                            let strategy = Box::new(Attacker::new(*receiver_id));
+                            self.move_bot_to_new_strategy(*receiver_id, strategy);
+                        }
+                    }
+                }
             }
         });
     }
@@ -339,7 +367,7 @@ impl Manager for BigBro {
                 RunningState::Run => println!("run"),
             }
         }
-        
+
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
         let mut messages: Vec<MessageData> = vec![];

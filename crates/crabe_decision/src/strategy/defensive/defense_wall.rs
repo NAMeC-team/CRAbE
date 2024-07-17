@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::f64::consts::PI;
 use crate::{action::move_to::MoveTo, message::MessageData};
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
@@ -127,7 +128,7 @@ impl Strategy for DefenseWall {
                 let mut robot_wall_destination = wall_starting_pos + (i as f64) * bot_spacing_ratio;
                 robot_wall_destination = robot_wall_destination.clamp(current_pos-0.1, current_pos+0.1);
                 let pos_on_penalty_line = enlarged_penalty.on_penalty_line(robot_wall_destination);
-                let orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
+                let orientation = vectors::angle_to_point(robot.pose.position,  world.geometry.ally_goal.line.center()) + PI;
                 action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
             }
         } else {

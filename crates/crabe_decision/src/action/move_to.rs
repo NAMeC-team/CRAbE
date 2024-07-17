@@ -14,15 +14,15 @@ use std::f64::consts::{PI, TAU};
 #[derive(Clone)]
 pub struct MoveTo {
     /// The current state of the action.
-    state: State,
+    pub state: State,
     /// The target position to move to.
-    target: Point2<f64>,
+    pub target: Point2<f64>,
     /// The target orientation of the robot.
-    orientation: f64,
-    charge: bool,
-    dribbler: f32,
-    kicker: Option<Kick>,
-    fast: bool,
+    pub orientation: f64,
+    pub charge: bool,
+    pub dribbler: f32,
+    pub kicker: Option<Kick>,
+    pub fast: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
