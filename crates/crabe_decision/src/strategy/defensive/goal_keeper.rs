@@ -1,8 +1,12 @@
+use std::backtrace;
+
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
+use crate::strategy::basics::pass;
 use crate::strategy::Strategy;
-use crate::utils::closest_bot_to_point;
+use crate::utils::{closest_bot_to_point, closest_bots_to_point, object_in_bot_trajectory};
+use crabe_framework::data::geometry::Penalty;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{Ball, EnemyInfo, Robot, World};
 use crabe_math::{shape::Line, vectors};
@@ -116,11 +120,22 @@ impl Strategy for GoalKeeper {
         if let Some(ball) = &world.ball{
             let ball_position = ball.position_2d();
             let follow_ball_y_position = Point2::new(world.geometry.ally_goal.line.start.x, ball_position.y);
+            let follow_ball = Point2::new(ball_position.x, ball_position.y);
+            let penalty = &world.geometry.ally_penalty;
             orientation_target = ball_position;
             if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
                 position_target = intersection;
-            } else if ball.velocity.norm() < 0.1 {
-                position_target = follow_ball_y_position;
+            } else if ball.velocity.norm() < 0.1 && penalty.is_inside(&ball_position) {
+                position_target = follow_ball;
+                let mut closests_receivers = closest_bots_to_point(world.allies_bot.values().collect(), ball_position);
+                closests_receivers.retain(|receiver| receiver.id != self.id);
+                for receiver in closests_receivers.iter(){
+                    if object_in_bot_trajectory(world, self.id, receiver.pose.position, false, false, true).len() == 0{
+                        let pass_action = pass(robot, receiver, ball, world);
+                        action_wrapper.push(self.id, pass_action);
+                        return false;
+                    }
+                }
             } else if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_position){
                 if let Some(intersection) = self.follow_enemy_to_ball_trajectory(ball, world, closest_enemy){
                     position_target = intersection;
@@ -142,7 +157,7 @@ impl Strategy for GoalKeeper {
         if goal_half_width > world.geometry.robot_radius {
             position_target.y = position_target.y.clamp(-goal_half_width + world.geometry.robot_radius, goal_half_width - world.geometry.robot_radius);
         }
-        
+
         // Move the robot to the calculated position and orientation
         action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false));
         false
