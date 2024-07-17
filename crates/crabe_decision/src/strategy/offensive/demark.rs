@@ -108,7 +108,7 @@ impl Strategy for Demark {
         }
 
         let line_handler_positive = Line::new(ball_handler_pos.position, target_handler_positive.1);
-        tools_data.annotations.add_line(    "1".to_string(), line_handler_positive);
+        
 
         let target_goal_positive = get_first_angle_free_trajectory(
             &cercles, 
@@ -121,8 +121,7 @@ impl Strategy for Demark {
 
 
         let line_goal_negative = Line::new(world.geometry.enemy_goal.line.center(), target_goal_positive.1);
-        tools_data.annotations.add_line(    "2".to_string(), line_goal_negative);
-
+        
         let target1 = match line_handler_positive.intersection_lines(&line_goal_negative){
             Ok(point) => point,
             Err(e) => ball_handler_pos.position
@@ -138,7 +137,7 @@ impl Strategy for Demark {
         );
 
         let line_handler_negative = Line::new(ball_handler_pos.position, target_handler_negative.1);
-        tools_data.annotations.add_line(    "3".to_string(), line_handler_negative);
+        
 
 
         let target_goal_positive = get_first_angle_free_trajectory(
@@ -151,7 +150,7 @@ impl Strategy for Demark {
         );
         
         let line_goal_positive = Line::new(world.geometry.enemy_goal.line.center(), target_goal_positive.1);
-        tools_data.annotations.add_line(    "4".to_string(), line_goal_positive);
+        
 
         let target2 = match line_handler_negative.intersection_lines(&line_goal_positive){
             Ok(point) => point,
@@ -167,9 +166,6 @@ impl Strategy for Demark {
             action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
         }
 
-        for c in cercles{
-            tools_data.annotations.add_circle(c.center.to_string(), c);
-        }
 
         false
     }
