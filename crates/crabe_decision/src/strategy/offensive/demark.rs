@@ -4,7 +4,7 @@ use crate::strategy::basics::intercept;
 use crate::strategy::Strategy;
 use crate::message::MessageData;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::World;
+use crabe_framework::data::world::{AllyInfo, Robot, World};
 use crabe_math::vectors;
 use nalgebra::Point2;
 use std::f64::consts::PI;
@@ -22,14 +22,60 @@ pub struct Demark {
     /// The id of the robot to move.
     id: u8,
     messages: Vec<MessageData>,
+    positive_side: Option<bool>, // NONE IF you don't care , false négative , true positive side
 }
 
 impl Demark {
     /// Creates a new Demark instance with the desired robot id.
-    pub fn new(id: u8) -> Self {
-        Self { id, messages: vec![]}
+    pub fn new(id: u8,positive_side:Option<bool>) -> Self {
+        Self { id, messages: vec![],positive_side}
+    }
+
+    fn get_target_to_demark(&self,action_wrapper: &mut ActionWrapper,side:&bool,ball_handler:&&Robot<AllyInfo>,cercles: &Vec<Circle>,world:&World,robot:&Robot<AllyInfo>) -> Option<Point2<f64>>{
+
+        let ball_handler_pos = &ball_handler.pose;
+        let robot_pos= &robot.pose;
+
+        let target_handler_positive = get_first_angle_free_trajectory(
+            cercles,
+            world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY,
+            &ball_handler_pos.position,
+            &robot_pos.position,
+            *side,
+            robot.distance(&ball_handler_pos.position)
+        );
+
+        if target_handler_positive.0 == 0.0 {
+            let orientation = vectors::angle_to_point(robot_pos.position, ball_handler_pos.position);
+            action_wrapper.push(self.id, OrientTo::new(orientation, 0.0, false, None, true));
+            return None;
+        }
+
+        let line_handler_positive = Line::new(ball_handler_pos.position, target_handler_positive.1);
+
+
+        let target_goal_positive = get_first_angle_free_trajectory(
+            &cercles,
+            world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY,
+            &world.geometry.enemy_goal.line.center(),
+            &ball_handler_pos.position,
+            !side,
+            robot.distance(&ball_handler_pos.position)
+        );
+
+
+        let line_goal_negative = Line::new(world.geometry.enemy_goal.line.center(), target_goal_positive.1);
+
+        let target1 = match line_handler_positive.intersection_lines(&line_goal_negative){
+            Ok(point) => point,
+            Err(e) => ball_handler_pos.position
+        };
+        return Some(target1);
+
     }
 }
+
+
 
 impl Strategy for Demark {
     fn name(&self) -> &'static str {
@@ -47,6 +93,8 @@ impl Strategy for Demark {
             self.id = ids[0];
         }
     }
+
+
 
     #[allow(unused_variables)]
     fn step(
@@ -67,7 +115,7 @@ impl Strategy for Demark {
             Some(robot) => robot,
             None => return false,
         };
-        let robot_pos = &robot.pose;
+        
 
         // We take the closest enemy to the ball and we calculate the direction of the shot by just looking at his orientation
         let ball_handler =  &match closest_bot_to_point(world.allies_bot.values().collect(), *ball_pos){
@@ -76,7 +124,7 @@ impl Strategy for Demark {
                 return false;
             }
         };
-        let ball_handler_pos = &ball_handler.pose;
+        
 
         let mut cercles: Vec<Circle> = vec![];
 
@@ -100,80 +148,36 @@ impl Strategy for Demark {
             return false
         }
 
-        let target_handler_positive = get_first_angle_free_trajectory(
-            &cercles, 
-            world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY, 
-            &ball_handler_pos.position, 
-            &robot_pos.position,
-            true,
-            robot.distance(&ball_handler_pos.position)
-        );
+        match self.positive_side {
+            Some(side) => {
 
-        if target_handler_positive.0 == 0.0 {
-            let orientation = vectors::angle_to_point(robot_pos, ball_handler_pos.position);
-            action_wrapper.push(self.id, OrientTo::new(orientation, 0.0, false, None, true));
-
-            return false;
+                let target1 = match self.get_target_to_demark(action_wrapper,&side, ball_handler, &cercles, world, robot){
+                    Some(p) => p,
+                    None => return false
+                };
+                let orientation = vectors::angle_to_point(target1, ball_handler.pose.position);
+                action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+            },
+            None => {
+                let target1 = match self.get_target_to_demark(action_wrapper,&true, ball_handler, &cercles, world, robot){
+                    Some(p) => p,
+                    None => return false
+                };
+                let target2 = match self.get_target_to_demark(action_wrapper,&false, ball_handler, &cercles, world, robot){
+                    Some(p) => p,
+                    None => return false
+                };
+        
+                if robot.distance(&target1) < robot.distance(&target2){
+                    let orientation = vectors::angle_to_point(target1, ball_handler.pose.position);
+                    action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+                } else {
+                    let orientation = vectors::angle_to_point(target2, ball_handler.pose.position);
+                    action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
+                }
+            }
         }
-
-        let line_handler_positive = Line::new(ball_handler_pos.position, target_handler_positive.1);
         
-
-        let target_goal_positive = get_first_angle_free_trajectory(
-            &cercles, 
-            world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY, 
-            &world.geometry.enemy_goal.line.center(),
-            &ball_handler_pos.position, 
-            false,
-            robot.distance(&ball_handler_pos.position)
-        );
-
-
-        let line_goal_negative = Line::new(world.geometry.enemy_goal.line.center(), target_goal_positive.1);
-        
-        let target1 = match line_handler_positive.intersection_lines(&line_goal_negative){
-            Ok(point) => point,
-            Err(e) => ball_handler_pos.position
-        };
-
-        let target_handler_negative = get_first_angle_free_trajectory(
-            &cercles, 
-            world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY, 
-            &ball_handler_pos.position,
-            &robot_pos.position, 
-            false,
-            robot.distance(&ball_handler_pos.position)
-        );
-
-        let line_handler_negative = Line::new(ball_handler_pos.position, target_handler_negative.1);
-        
-
-
-        let target_goal_positive = get_first_angle_free_trajectory(
-            &cercles, 
-            world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY, 
-            &world.geometry.enemy_goal.line.center(),
-            &ball_handler_pos.position, 
-            true,
-            robot.distance(&ball_handler_pos.position)
-        );
-        
-        let line_goal_positive = Line::new(world.geometry.enemy_goal.line.center(), target_goal_positive.1);
-        
-
-        let target2 = match line_handler_negative.intersection_lines(&line_goal_positive){
-            Ok(point) => point,
-            Err(e) => ball_handler_pos.position
-        };
-
-        
-        if robot.distance(&target1) < robot.distance(&target2){
-            let orientation = vectors::angle_to_point(target1, ball_handler_pos.position);
-            action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
-        } else {
-            let orientation = vectors::angle_to_point(target2, ball_handler_pos.position);
-            action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
-        }
 
 
         false
