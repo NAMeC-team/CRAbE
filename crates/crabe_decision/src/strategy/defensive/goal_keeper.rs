@@ -115,20 +115,22 @@ impl Strategy for GoalKeeper {
         // If the ball is present, the position and orientation have to be updated
         if let Some(ball) = &world.ball{
             let ball_position = ball.position_2d();
-            let follow_ball_x_position = Point2::new(world.geometry.ally_goal.line.start.x, ball_position.y);
+            let follow_ball_y_position = Point2::new(world.geometry.ally_goal.line.start.x, ball_position.y);
             orientation_target = ball_position;
             if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
                 position_target = intersection;
+            } else if ball.velocity.norm() < 0.1 {
+                position_target = follow_ball_y_position;
             } else if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_position){
                 if let Some(intersection) = self.follow_enemy_to_ball_trajectory(ball, world, closest_enemy){
                     position_target = intersection;
-                }else if let Some(intersection) = self.follow_enemy_direction( world, closest_enemy){
+                } else if let Some(intersection) = self.follow_enemy_direction( world, closest_enemy){
                     position_target = intersection;
-                }else{
-                    position_target = follow_ball_x_position;
+                } else{
+                    position_target = follow_ball_y_position;
                 }
             }else{
-                position_target = follow_ball_x_position;
+                position_target = follow_ball_y_position;
             }
         }
 
