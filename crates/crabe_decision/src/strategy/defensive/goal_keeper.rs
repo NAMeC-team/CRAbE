@@ -120,13 +120,12 @@ impl Strategy for GoalKeeper {
         if let Some(ball) = &world.ball{
             let ball_position = ball.position_2d();
             let follow_ball_y_position = Point2::new(world.geometry.ally_goal.line.start.x, ball_position.y);
-            let follow_ball = Point2::new(ball_position.x, ball_position.y);
             let penalty = &world.geometry.ally_penalty;
             orientation_target = ball_position;
             if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
                 position_target = intersection;
             } else if ball.velocity.norm() < 0.1 && penalty.is_inside(&ball_position) {
-                position_target = follow_ball;
+                position_target = ball_position;
                 let mut closests_receivers = closest_bots_to_point(world.allies_bot.values().collect(), ball_position);
                 closests_receivers.retain(|receiver| receiver.id != self.id);
                 for receiver in closests_receivers.iter(){
