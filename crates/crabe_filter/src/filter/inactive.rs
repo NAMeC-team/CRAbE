@@ -27,7 +27,7 @@ impl InactiveFilter {
         if let Some(ball) = ball_tracked {
             if (now - ball.last_update)
                 .to_std()
-                .map_or(false, |d| d < self.timeout)
+                .map_or(false, |d| d >= self.timeout)
             {
                 *ball_tracked = None;
             }
