@@ -1,4 +1,6 @@
-use crabe_math::shape::{Circle, Line};
+use std::f64::consts::PI;
+
+use crabe_math::{shape::{Circle, Line}, vectors::rotate_vector};
 use nalgebra::Point2;
 use crabe_framework::data::world::{Robot, World};
 
@@ -126,4 +128,83 @@ pub fn ball_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
         return trajectory.distance_to_point(&ball.position_2d()) < world.geometry.robot_radius + world.geometry.ball_radius + delta;
     }
     false
+}
+
+
+const MARGIN_SHOOTING_WINDOW: f64 = 0.01;
+
+/// Get the obstruct goal zone from an enemy
+/// 
+/// # Arguments
+/// - `shoot_start_position`: The position of the object that want to go into the goal
+/// - `enemy_position`: The position of the enemy
+/// - `world`: The current state of the game world
+/// 
+/// # Returns
+/// A `Line` representing the obstruct goal zone
+fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_position: &Point2<f64>, world: &World) -> Option<Line> {
+    let start_pos_to_enemy = enemy_position - shoot_start_position;
+    let perp = rotate_vector(start_pos_to_enemy.normalize(), PI/2.) * (world.geometry.robot_radius + world.geometry.ball_radius + MARGIN_SHOOTING_WINDOW);
+    let ray_left_side = (enemy_position + perp) - shoot_start_position;
+    let ray_right_side = (enemy_position - perp) - shoot_start_position;
+    let line_ray_left_side = Line::new(*shoot_start_position, shoot_start_position + ray_left_side * 1000.);
+    let line_ray_right_side = Line::new(*shoot_start_position, shoot_start_position + ray_right_side * 1000.);
+    let intersection_left = line_ray_left_side.intersection_segment_line(&world.geometry.enemy_goal.line);
+    let intersection_right = line_ray_right_side.intersection_segment_line(&world.geometry.enemy_goal.line);
+    match (intersection_left, intersection_right) {
+        (Ok(left), Ok(right)) => Some(Line::new(left, right)),
+        (Ok(left), _) => Some(Line::new(left, world.geometry.enemy_goal.line.end)),
+        (_, Ok(right)) => Some(Line::new(world.geometry.enemy_goal.line.start, right)),
+        _ => None,
+    }
+}
+
+/// Get the open shoot window for the attacker
+/// 
+/// # Arguments
+/// - `shoot_start_position`: The position of the object that want to go into the goal
+/// - `world`: The current state of the game world
+/// 
+/// # Returns
+/// A vector of `Line` representing the open shoot windows
+pub fn get_open_shoot_window(shoot_start_position: &Point2<f64>, world: &World) -> Vec<Line> {
+    let mut available_targets: Vec<Line> = vec![world.geometry.enemy_goal.line];
+    for enemy in world.enemies_bot.values() {
+        if let Some(line) = get_obstruct_goal_zone_from_enemy(shoot_start_position, &enemy.pose.position.xy(), world){
+            let mut new_targets: Vec<Line> = vec![];
+            for target_line in available_targets {
+                let targets = target_line.cut_off_segment(&line);
+                new_targets.extend(targets);
+            }
+            available_targets = new_targets;
+        }
+    }
+    return available_targets;
+}
+
+/// Get the robot with the best shooting window (space where the ball can go into the goal)
+/// 
+/// # Arguments
+/// - `robots`: The list of robots to check
+/// - `world`: The current state of the game world
+/// 
+/// # Returns
+/// The robot with the best shooting window
+pub fn get_best_shooting_window_bot<'a, T>(robots: &'a Vec<&Robot<T>>, world: &World) -> Option<&'a Robot<T>> {
+    // grab allies in the enemy side 
+    let mut best_robot: Option<&Robot<T>> = None;
+    let mut max_window_length = 0.;
+    for robot in robots {
+        if object_in_bot_trajectory(world, robot.id, robot.pose.position, false, false, true).len() > 0 {
+            continue;
+        }
+        let shoot_windows = get_open_shoot_window(&robot.pose.position, world);
+        let total_length = shoot_windows.iter().fold(0., |acc, line| acc + line.norm());
+        if total_length <= max_window_length {
+            continue;
+        }
+        max_window_length = total_length;
+        best_robot = Some(robot);
+    }
+    best_robot
 }
