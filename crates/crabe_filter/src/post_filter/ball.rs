@@ -88,7 +88,7 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
     }
 }
 
-fn calculate_last_touch(filter_data: &FilterData, ball: &mut Ball, world: &World) {
+fn calculate_last_touch(ball: &mut Ball, world: &World) {
     let ball_world = match &world.ball {
         Some(b) => b,
         None => {
@@ -107,7 +107,7 @@ fn calculate_last_touch(filter_data: &FilterData, ball: &mut Ball, world: &World
                     ball.last_touch = Some(BallTouchInfo {
                         robot_id: ally.id,
                         team_color: world.team_color,
-                        timestamp: filter_data.ball.data.timestamp,
+                        timestamp: ball.timestamp,
                         position: ball.position,
                     });
                 }
@@ -115,7 +115,7 @@ fn calculate_last_touch(filter_data: &FilterData, ball: &mut Ball, world: &World
                 ball.last_touch = Some(BallTouchInfo {
                     robot_id: enemy.id,
                     team_color: world.team_color.opposite(),
-                    timestamp: filter_data.ball.data.timestamp,
+                    timestamp: ball.timestamp,
                     position: ball.position,
                 });
             }
@@ -125,7 +125,7 @@ fn calculate_last_touch(filter_data: &FilterData, ball: &mut Ball, world: &World
                 ball.last_touch = Some(BallTouchInfo {
                     robot_id: ally.id,
                     team_color: world.team_color,
-                    timestamp: filter_data.ball.data.timestamp,
+                    timestamp: ball.timestamp,
                     position: ball.position,
                 });
             }
@@ -135,7 +135,7 @@ fn calculate_last_touch(filter_data: &FilterData, ball: &mut Ball, world: &World
                 ball.last_touch = Some(BallTouchInfo {
                     robot_id: enemy.id,
                     team_color: world.team_color.opposite(),
-                    timestamp: filter_data.ball.data.timestamp,
+                    timestamp: ball.timestamp,
                     position: ball.position,
                 });
             }
@@ -146,9 +146,11 @@ fn calculate_last_touch(filter_data: &FilterData, ball: &mut Ball, world: &World
 
 impl PostFilter for BallFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
-        let mut ball = filter_data.ball.data.clone();
-        calculated_possession(&mut ball, &world);
-        calculate_last_touch(&filter_data, &mut ball, &world);
-        world.ball = Some(ball);
+        if let Some(tracked_ball) = &filter_data.ball {
+            let mut ball = tracked_ball.data.clone();
+            calculated_possession(&mut ball, &world);
+            calculate_last_touch(&mut ball, &world);
+            world.ball = Some(ball);
+        }
     }
 }
