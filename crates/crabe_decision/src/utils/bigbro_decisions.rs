@@ -29,6 +29,9 @@ fn put_goal(bigbro: &mut BigBro) {
 
 /// Put the num_robots closest bots to the goal to the DefenseWall strategy.
 fn put_defense_wall(bigbro: &mut BigBro, world: &World, robots: &Vec<&Robot<AllyInfo>>, num_robots: usize) -> Vec<u8> {
+    if num_robots == 0 {
+        return vec![];
+    }
     // let allies_no_keeper = filter_robots_not_in_ids(bots, &vec![KEEPER_ID]);
     let allies_no_keeper = robots.iter().filter(|bot| bot.id != KEEPER_ID).map(|bot| *bot).collect();
     let allies_closest = closest_bots_to_point(allies_no_keeper, world.geometry.ally_goal.line.center());
@@ -76,6 +79,7 @@ fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>
 
 /// Run the strategy for the running state with 5 line robots.
 fn run_state_line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, _tools_data: &mut ToolData) {
+    if allies.len() == 0{return;}
     let defense_wall_ids = put_defense_wall(bigbro, world, &allies, allies.len() -1);
     let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
     put_attacker(bigbro, world, &offensive_line, ball);
@@ -89,9 +93,5 @@ pub fn run_state(bigbro: &mut BigBro, world: &World, tools_data: &mut ToolData) 
         None => return,
     };
     let allies = filter_robots_not_in_ids(world.allies_bot.values().collect(), &vec![KEEPER_ID]);
-    if allies.len() == 1{
-
-    } else {
-        run_state_line_robots(bigbro, allies, ball, world, tools_data);
-    }
+    run_state_line_robots(bigbro, allies, ball, world, tools_data);
 }
