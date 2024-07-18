@@ -25,7 +25,7 @@ fn put_goal(bigbro: &mut BigBro) {
             return;
         }
     }
-    let strategy = Box::new(GoalKeeper::new(KEEPER_ID));
+    let strategy = Box::new(GoalKeeper::new(KEEPER_ID,vec![]));
     bigbro.move_bot_to_new_strategy(KEEPER_ID, strategy);
 }
 
