@@ -59,7 +59,7 @@ impl Strategy for MoveAwayFromBall {
             .for_each(|(ally_id, ally_info)| {
                 action_wrapper.clear(*ally_id);
                 let robot_pos = ally_info.pose.position;
-                let move_to = match move_away(robot_pos, ball.position_2d(),DISTANCE_TO_BALL){
+                match move_away(robot_pos, ball.position_2d(), world, DISTANCE_TO_BALL){
                     Some(m) => {
                         action_wrapper.push(
                             *ally_id,

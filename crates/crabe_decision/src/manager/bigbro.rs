@@ -318,7 +318,7 @@ impl Manager for BigBro {
     ) {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
-                HaltedState::GameNotStarted => prepare_start(self, world),
+                HaltedState::GameNotStarted => everyone_halt(self, world),
                 HaltedState::Halt => everyone_halt(self, world),
                 HaltedState::Timeout(_team) => everyone_halt(self, world),
             }
@@ -328,7 +328,7 @@ impl Manager for BigBro {
                 StoppedState::PreparePenalty(_team) =>  everyone_stop_except_keeper(self, world),
                 StoppedState::BallPlacement(_team) =>  everyone_halt(self, world),
                 StoppedState::PrepareForGameStart => prepare_start(self, world),
-                StoppedState::BallLeftFieldTouchLine(_) =>   everyone_halt(self, world),
+                StoppedState::BallLeftFieldTouchLine(_) => everyone_halt(self, world),
                 StoppedState::CornerKick(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{
