@@ -1,20 +1,65 @@
 use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Ball, Robot, World}};
 
-use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::Stop}};
+use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::{Halt, MoveAwayFromBall, PrepareKickOff}}};
 
 use super::{closest_bot_to_point, closest_bots_to_point, filter_robots_not_in_ids, get_enemy_keeper_id, KEEPER_ID};
 
-/// Put all bots to the Stop strategy.
+/// Put all bots to the Halt strategy.
+pub fn everyone_halt(bigbro: &mut BigBro, world: &World) {
+    let mut ids = vec![];
+    for bot in world.allies_bot.values() {
+        ids.push(bot.id);
+    }
+    if let Some(strategy_index) = bigbro.get_index_strategy_with_name("Halt") {
+        bigbro.move_bots_to_existing_strategy(ids, strategy_index);
+    }else{
+        let strategy = Box::new(Halt::new(vec![]));
+        bigbro.move_bots_to_new_strategy(ids, strategy);
+    }
+}
+
+/// Put all bots to the Halt strategy.
 pub fn everyone_stop(bigbro: &mut BigBro, world: &World) {
     let mut ids = vec![];
     for bot in world.allies_bot.values() {
         ids.push(bot.id);
     }
-    if let Some(strategy_index) = bigbro.get_index_strategy_with_name("Stop") {
+    if let Some(strategy_index) = bigbro.get_index_strategy_with_name("MoveAwayFromBall") {
         bigbro.move_bots_to_existing_strategy(ids, strategy_index);
     }else{
-        let strategy = Box::new(Stop::new(vec![]));
-        bigbro.move_bots_to_new_strategy(vec![0, 1, 2, 3, 4, 5], strategy);
+        let strategy = Box::new(MoveAwayFromBall::new(vec![]));
+        bigbro.move_bots_to_new_strategy(ids, strategy);
+    }
+}
+
+
+/// Put all bots to the Halt strategy.
+pub fn everyone_stop_except_keeper(bigbro: &mut BigBro, world: &World) {
+    let mut ids = vec![];
+    for bot in world.allies_bot.values() {
+        if bot.id == KEEPER_ID {
+            continue;
+        }
+        ids.push(bot.id);
+    }
+    if let Some(strategy_index) = bigbro.get_index_strategy_with_name("MoveAwayFromBall") {
+        bigbro.move_bots_to_existing_strategy(ids, strategy_index);
+    }else{
+        let strategy = Box::new(MoveAwayFromBall::new(vec![]));
+        bigbro.move_bots_to_new_strategy(ids, strategy);
+    }
+}
+
+pub fn prepare_kick_off(bigbro: &mut BigBro, world: &World) {
+    let mut ids = vec![];
+    for bot in world.allies_bot.values() {
+        ids.push(bot.id);
+    }
+    if let Some(strategy_index) = bigbro.get_index_strategy_with_name("PrepareKickOff") {
+        bigbro.move_bots_to_existing_strategy(ids, strategy_index);
+    }else{
+        let strategy = Box::new(PrepareKickOff::new(vec![]));
+        bigbro.move_bots_to_new_strategy(ids, strategy);
     }
 }
 
