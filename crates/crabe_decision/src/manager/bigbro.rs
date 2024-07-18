@@ -7,9 +7,11 @@ use crate::message::MessageData;
 use crate::strategy::offensive::Attacker;
 use crate::strategy::offensive::Receiver;
 use crate::strategy::testing::{Aligned, GoLeft, GoRight};
-use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
 use crate::utils::everyone_halt;
+use crate::utils::everyone_stop;
+use crate::utils::everyone_stop_except_keeper;
+use crate::utils::prepare_kick_off;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
@@ -320,23 +322,39 @@ impl Manager for BigBro {
                 HaltedState::Timeout(_team) => everyone_halt(self, world),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
-                StoppedState::Stop => println!("stop"),
-                StoppedState::PrepareKickoff(team) => println!("prepare kick off {:?}",team),
-                StoppedState::PreparePenalty(team) => println!("prepare penalty {:?}",team),
-                StoppedState::BallPlacement(team) => println!("ball placement {:?}",team),
-                StoppedState::PrepareForGameStart => println!("prepare for game start"),
-                StoppedState::BallLeftFieldTouchLine(_) => println!("ball left field touch line"),
-                StoppedState::CornerKick(_) => println!("corner kick"),
-                StoppedState::GoalKick(_) => println!("goal kick"),
-                StoppedState::AimlessKick(_) => println!("aimless kick"),
-                StoppedState::NoProgressInGame => println!("no progress in game"),
-                StoppedState::PrepareFreekick(_) => println!("prepare freekick"),
-                StoppedState::FoulStop => println!("foul stop"),
+                StoppedState::Stop => everyone_stop(self, world),
+                StoppedState::PrepareKickoff(_team) => prepare_kick_off(self, world),
+                StoppedState::PreparePenalty(_team) =>  everyone_stop_except_keeper(self, world),
+                StoppedState::BallPlacement(_team) =>  everyone_halt(self, world),
+                StoppedState::PrepareForGameStart =>  everyone_stop_except_keeper(self, world),
+                StoppedState::BallLeftFieldTouchLine(_) =>   everyone_halt(self, world),
+                StoppedState::CornerKick(team) => if team == world.team_color{
+                    run_state(self, world, tools_data);
+                }else{
+                    everyone_stop_except_keeper(self, world);
+                },
+                StoppedState::GoalKick(_team) => run_state(self, world, tools_data),
+                StoppedState::AimlessKick(_) => everyone_halt(self, world),
+                StoppedState::NoProgressInGame => run_state(self, world, tools_data),
+                StoppedState::PrepareFreekick(_) => everyone_stop_except_keeper(self, world),
+                StoppedState::FoulStop => run_state(self, world, tools_data),
             },
             GameState::Running(running_state) => match running_state {
-                RunningState::KickOff(team) => println!("kickoff for {:#?}", team),
-                RunningState::Penalty(team) => println!("penalty for {:#?}", team),
-                RunningState::FreeKick(team) => println!("free kick for {:#?}", team),
+                RunningState::KickOff(team) => if team == world.team_color{
+                    run_state(self, world, tools_data);
+                }else{
+                    everyone_stop_except_keeper(self, world);
+                },
+                RunningState::Penalty(team) => if team == world.team_color{
+                    run_state(self, world, tools_data);
+                }else{
+                    everyone_stop_except_keeper(self, world);
+                },
+                RunningState::FreeKick(team) => if team == world.team_color{
+                    run_state(self, world, tools_data);
+                }else{
+                    everyone_stop_except_keeper(self, world);
+                },
                 RunningState::Run => run_state(self, world, tools_data),
             }
         }
