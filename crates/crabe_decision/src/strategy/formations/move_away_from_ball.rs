@@ -35,10 +35,11 @@ impl Strategy for MoveAwayFromBall {
         &self.messages
     }
     fn get_ids(&self) -> Vec<u8> {
-        vec![]
-        
+        self.ids.clone()
     }
-    fn put_ids(&mut self, ids: Vec<u8>) { }
+    fn put_ids(&mut self, ids: Vec<u8>) {
+        self.ids = ids;
+    }
 
     fn step(
         &mut self,
