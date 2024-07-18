@@ -23,14 +23,14 @@ use crabe_framework::component::{Component, FilterComponent};
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
-use filter::field_mask::FieldMaskFilter;
 use filter::team_side::TeamSideFilter;
+use post_filter::field_mask::FieldMaskFilter;
 
 
 #[derive(Args)]
 pub struct FilterConfig {
     #[arg(long)]
-    field_side: Option<FieldMask>
+    field_mask: Option<FieldMask>
 }
 
 #[derive(Debug, ValueEnum, Clone)]
@@ -66,8 +66,8 @@ impl FilterPipeline {
             post_filters.push(Box::new(GameControllerPostFilter::default()));
         }
 
-        if let Some(field_side) = config.field_side {
-            filters.push(Box::new(FieldMaskFilter::new(field_side)))
+        if let Some(field_mask) = config.field_mask {
+            post_filters.push(Box::new(FieldMaskFilter::new(field_mask)))
         }
 
         Self {

@@ -2,7 +2,6 @@ pub mod inactive;
 pub mod passthrough;
 pub mod velocity_acceleration;
 pub mod team_side;
-pub mod field_mask;
 
 use crate::data::FilterData;
 use crabe_framework::data::world::World;
