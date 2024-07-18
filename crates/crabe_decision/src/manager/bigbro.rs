@@ -1,5 +1,4 @@
 use std::vec;
-
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::message::AttackerMessage;
@@ -11,10 +10,12 @@ use crate::strategy::testing::{Aligned, GoLeft, GoRight};
 use crate::strategy::formations::{Stop, PrepareKickOff};
 use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
+use crate::utils::everyone_stop;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
+use crate::utils::bigbro_decisions::run_state;
 
 /// The `BigBro` struct represents a decision manager that executes strategies BigBroly
 /// added to its list.
@@ -305,30 +306,8 @@ impl BigBro {
         None
     }
     
-    /// Put all bots to the Stop strategy.
-    pub fn everyone_stop(&mut self) {
-        if let Some(strategy_index) = self.get_index_strategy_with_name("Stop") {
-            for bot_id in 0..6 {
-                self.move_bot_to_existing_strategy(bot_id, strategy_index);
-            }
-        }else{
-            let strategy = Box::new(Stop::new(vec![]));
-            self.move_bots_to_new_strategy(vec![0, 1, 2, 3, 4, 5], strategy);
-            println!("{:?}",self.strategies[0].as_ref().get_ids());
-        }
-    }
 
-    /// prepare for kickoff
-    pub fn prepare_kick_off(&mut self, world: &World) {
-        if let Some(strategy_index) = self.get_index_strategy_with_name("PrepareKickOff") {
-            let robots_on_the_enemy_side: Vec<u8> = world.allies_bot.iter().filter(|(_, bot)| bot.pose.position.x > 0.0).map(|(id, _)| *id).collect();
-            self.move_bots_to_existing_strategy(robots_on_the_enemy_side, strategy_index);
-        } else {
-            let strategy = Box::new(PrepareKickOff::new(vec![]));
-            let robots_on_the_enemy_side: Vec<u8> = world.allies_bot.iter().filter(|(_, bot)| bot.pose.position.x > 0.0).map(|(id, _)| *id).collect();
-            self.move_bots_to_new_strategy(robots_on_the_enemy_side, strategy);
-        }
-    }
+
     
 }
 
@@ -343,12 +322,12 @@ impl Manager for BigBro {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
                 HaltedState::GameNotStarted => println!("game not started"),
-                HaltedState::Halt => self.everyone_stop(),
+                HaltedState::Halt => everyone_stop(self, world),
                 HaltedState::Timeout(team) => println!("timeout by {:?}", team),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
                 StoppedState::Stop => println!("stop"),
-                StoppedState::PrepareKickoff(team) => self.prepare_kick_off(world),
+                StoppedState::PrepareKickoff(team) => println!("prepare kick off {:?}",team),
                 StoppedState::PreparePenalty(team) => println!("prepare penalty {:?}",team),
                 StoppedState::BallPlacement(team) => println!("ball placement {:?}",team),
                 StoppedState::PrepareForGameStart => println!("prepare for game start"),
@@ -364,10 +343,10 @@ impl Manager for BigBro {
                 RunningState::KickOff(team) => println!("kickoff for {:#?}", team),
                 RunningState::Penalty(team) => println!("penalty for {:#?}", team),
                 RunningState::FreeKick(team) => println!("free kick for {:#?}", team),
-                RunningState::Run => println!("run"),
+                RunningState::Run => run_state(self, world, tools_data),
             }
         }
-
+        
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
         let mut messages: Vec<MessageData> = vec![];
