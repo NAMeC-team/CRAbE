@@ -32,7 +32,7 @@ impl BigBro {
         Self {
             strategies: vec![
                 Box::new(Stop::new(vec![2, 3, 4])),
-                Box::new(GoalKeeper::new(0)),
+                Box::new(GoalKeeper::new(0, vec![])),
                 Box::new(Attacker::new(1)),
             ],
         }
