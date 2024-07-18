@@ -74,45 +74,11 @@ fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>
     return closest_bot.id;
 }   
 
-/// Put the robots to the BotMarking strategy. (mark the closests enemies to the ball)
-fn put_marking(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>, ball: &Ball) {
-    let mut marked_enemies = vec![get_enemy_keeper_id(world)];
-    for bot in bots{
-        if let Some(current_strategy) = bigbro.get_bot_current_strategy(bot.id) {
-            if current_strategy.name() == "BotMarking" || current_strategy.name() == "Receiver" {
-                continue;
-            }
-        }
-        let availables_enemies = filter_robots_not_in_ids(world.enemies_bot.values().collect(), &marked_enemies);
-        let closest_enemy = match closest_bot_to_point(availables_enemies, ball.position_2d()) {
-            Some(bot) => bot,
-            None => return,
-        };
-        marked_enemies.push(closest_enemy.id);
-        let strategy = Box::new(strategy::defensive::BotMarking::new(bot.id, closest_enemy.id));
-        bigbro.move_bot_to_new_strategy(bot.id, strategy);
-    }
-}
-
 /// Run the strategy for the running state with 5 line robots.
-fn run_state_5line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, _tools_data: &mut ToolData) {
-    let defense_wall_ids = put_defense_wall(bigbro, world, &allies, 2);
+fn run_state_line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, _tools_data: &mut ToolData) {
+    let defense_wall_ids = put_defense_wall(bigbro, world, &allies, allies.len() -1);
     let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
-
-    let attacker_id = put_attacker(bigbro, world, &offensive_line, ball);
-    let other_bots: Vec<&Robot<AllyInfo>> = offensive_line.iter().filter(|bot| bot.id != attacker_id).map(|bot| *bot).collect();
-    match ball.possession {
-        Some(team_possessing) => {
-            if team_possessing == world.team_color{
-                put_marking(bigbro, world, &other_bots, ball);
-            }else{
-                put_marking(bigbro, world, &other_bots, ball);
-            }
-        },
-        None => {
-            put_marking(bigbro, world, &other_bots, ball);
-        }
-    }
+    put_attacker(bigbro, world, &offensive_line, ball);
 }
 
 /// Run the strategy for the running state.
@@ -123,5 +89,9 @@ pub fn run_state(bigbro: &mut BigBro, world: &World, tools_data: &mut ToolData) 
         None => return,
     };
     let allies = filter_robots_not_in_ids(world.allies_bot.values().collect(), &vec![KEEPER_ID]);
-    run_state_5line_robots(bigbro, allies, ball, world, tools_data);
+    if allies.len() == 1{
+
+    } else {
+        run_state_line_robots(bigbro, allies, ball, world, tools_data);
+    }
 }
