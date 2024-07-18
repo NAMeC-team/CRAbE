@@ -207,6 +207,7 @@ pub fn get_best_shooting_window_bot<'a, T>(robots: &'a Vec<&Robot<T>>, world: &W
         best_robot = Some(robot);
     }
     best_robot
+}
   
 // fn team_possessing_ball(ball: &Ball, allies: &Robot<AllyInfo>, enemies: &Robot<EnemyInfo>) -> Team {
 //     let ball_pos = if 
