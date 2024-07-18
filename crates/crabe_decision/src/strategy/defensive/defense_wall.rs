@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 use std::f64::consts::PI;
+use crate::utils::closest_bot_to_point;
 use crate::{action::move_to::MoveTo, message::MessageData};
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
@@ -123,6 +124,7 @@ impl Strategy for DefenseWall {
             let mut wall_starting_pos = intersection_shooting_dir_ratio - (bot_spacing_ratio / 2.) * (robot_nb - 1.);
             
             // Clamp the position of the wall so that he's not going out of the field
+            let closest = closest_bot_to_point(robots.iter().map(|(_, r)| *r).collect(), ball_pos);
             wall_starting_pos = wall_starting_pos.clamp(bot_spacing_ratio / 2., 1. - bot_spacing_ratio / 2. - (robot_nb-1.)*bot_spacing_ratio);
             for (i, (current_pos, robot)) in robots.iter().enumerate() {
                 //clamp new bot position so they have to move along the penalty line instead of just moving through the goal field
@@ -131,10 +133,18 @@ impl Strategy for DefenseWall {
                 let orientation = vectors::angle_to_point(robot.pose.position,  world.geometry.ally_goal.line.center()) + PI;
                 let distance_to_ball = (ball_pos - robot.pose.position.xy()).norm();
                 if distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
-                    let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
-                    action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false));
+                    if let Some(closest_bot_to_ball) = closest{
+                        if closest_bot_to_ball.id == robot.id {
+                            let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
+                            action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false));
+                        }else {
+                            action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                        }
+                    }else {
+                        action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                    }
                 } else {
-                action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
                 }
             }
         }
