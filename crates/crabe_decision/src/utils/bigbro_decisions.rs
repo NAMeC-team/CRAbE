@@ -5,11 +5,13 @@ use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, G
 use super::{closest_bot_to_point, closest_bots_to_point, filter_robots_not_in_ids, get_enemy_keeper_id, KEEPER_ID};
 
 /// Put all bots to the Stop strategy.
-pub fn everyone_stop(bigbro: &mut BigBro) {
+pub fn everyone_stop(bigbro: &mut BigBro, world: &World) {
+    let mut ids = vec![];
+    for bot in world.allies_bot.values() {
+        ids.push(bot.id);
+    }
     if let Some(strategy_index) = bigbro.get_index_strategy_with_name("Stop") {
-        for bot_id in 0..6 {
-            bigbro.move_bot_to_existing_strategy(bot_id, strategy_index);
-        }
+        bigbro.move_bots_to_existing_strategy(ids, strategy_index);
     }else{
         let strategy = Box::new(Stop::new(vec![]));
         bigbro.move_bots_to_new_strategy(vec![0, 1, 2, 3, 4, 5], strategy);

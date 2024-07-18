@@ -319,7 +319,7 @@ impl Manager for BigBro {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
                 HaltedState::GameNotStarted => println!("game not started"),
-                HaltedState::Halt => everyone_stop(self),
+                HaltedState::Halt => everyone_stop(self, world),
                 HaltedState::Timeout(team) => println!("timeout by {:?}", team),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
