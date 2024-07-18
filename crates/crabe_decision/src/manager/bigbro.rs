@@ -12,6 +12,7 @@ use crate::utils::everyone_halt;
 use crate::utils::everyone_stop;
 use crate::utils::everyone_stop_except_keeper;
 use crate::utils::prepare_kick_off;
+use crate::utils::prepare_start;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
@@ -317,7 +318,7 @@ impl Manager for BigBro {
     ) {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
-                HaltedState::GameNotStarted => everyone_halt(self, world),
+                HaltedState::GameNotStarted => prepare_start(self, world),
                 HaltedState::Halt => everyone_halt(self, world),
                 HaltedState::Timeout(_team) => everyone_halt(self, world),
             }
@@ -326,7 +327,7 @@ impl Manager for BigBro {
                 StoppedState::PrepareKickoff(_team) => prepare_kick_off(self, world),
                 StoppedState::PreparePenalty(_team) =>  everyone_stop_except_keeper(self, world),
                 StoppedState::BallPlacement(_team) =>  everyone_halt(self, world),
-                StoppedState::PrepareForGameStart =>  everyone_stop_except_keeper(self, world),
+                StoppedState::PrepareForGameStart => prepare_start(self, world),
                 StoppedState::BallLeftFieldTouchLine(_) =>   everyone_halt(self, world),
                 StoppedState::CornerKick(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
@@ -343,7 +344,7 @@ impl Manager for BigBro {
                 RunningState::KickOff(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{
-                    everyone_stop_except_keeper(self, world);
+                    prepare_start(self, world);
                 },
                 RunningState::Penalty(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
