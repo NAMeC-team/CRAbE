@@ -117,10 +117,10 @@ fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>
         }
         bigbro.strategies[attacker_strategy_index].put_ids(vec![]);
         bigbro.move_bot_to_existing_strategy(closest_bot.id, attacker_strategy_index);
-    } else{
-        let strategy = Box::new(strategy::offensive::Attacker::new(closest_bot.id));
-        bigbro.move_bot_to_new_strategy(closest_bot.id, strategy);
-    }
+        return closest_bot.id;
+    } 
+    let strategy = Box::new(strategy::offensive::Attacker::new(closest_bot.id));
+    bigbro.move_bot_to_new_strategy(closest_bot.id, strategy);
     return closest_bot.id;
 }   
 
