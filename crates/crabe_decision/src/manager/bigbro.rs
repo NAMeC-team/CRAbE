@@ -7,12 +7,10 @@ use crate::message::MessageData;
 use crate::strategy::offensive::Attacker;
 use crate::strategy::offensive::Receiver;
 use crate::strategy::testing::{Aligned, GoLeft, GoRight};
-use crate::strategy::formations::{Stop, PrepareKickOff};
 use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
-use crate::utils::everyone_stop;
+use crate::utils::everyone_halt;
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
 use crate::utils::bigbro_decisions::run_state;
@@ -32,11 +30,7 @@ impl BigBro {
     /// Creates a new `BigBro` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![
-                Box::new(Stop::new(vec![2, 3, 4])),
-                Box::new(GoalKeeper::new(0, vec![])),
-                Box::new(Attacker::new(1)),
-            ],
+            strategies: vec![],
         }
     }
 
@@ -321,9 +315,9 @@ impl Manager for BigBro {
     ) {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
-                HaltedState::GameNotStarted => println!("game not started"),
-                HaltedState::Halt => everyone_stop(self, world),
-                HaltedState::Timeout(team) => println!("timeout by {:?}", team),
+                HaltedState::GameNotStarted => everyone_halt(self, world),
+                HaltedState::Halt => everyone_halt(self, world),
+                HaltedState::Timeout(_team) => everyone_halt(self, world),
             }
             GameState::Stopped(stopped_state) => match stopped_state {
                 StoppedState::Stop => println!("stop"),

@@ -11,13 +11,13 @@ use crabe_framework::data::output::Command;
 
 /// Strategy to stop the robots (sending Command with 0 movements)
 #[derive(Default)]
-pub struct Stop {
+pub struct Halt {
     ids: Vec<u8>,
     messages: Vec<MessageData>,
 }
 
-impl Stop {
-    /// Creates a new Stop instance with the desired robot id.
+impl Halt {
+    /// Creates a new Halt instance with the desired robot id.
     pub fn new(ids: Vec<u8>) -> Self {
         Self {
             ids,
@@ -26,9 +26,9 @@ impl Stop {
     }
 }
 
-impl Strategy for Stop {
+impl Strategy for Halt {
     fn name(&self) -> &'static str {
-        "Stop"
+        "Halt"
     }
 
     fn get_messages(&self) -> &Vec<MessageData> {
