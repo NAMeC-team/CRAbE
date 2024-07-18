@@ -45,15 +45,19 @@ impl Strategy for PrepareKickOff {
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         self.messages.clear();
-        self.ids.iter().enumerate().for_each(|(_, id)| {
+        for id in &self.ids {
             action_wrapper.clear(*id);
-            if world.allies_bot.len()>0{
-                action_wrapper.push(*id, comeback(
-                    &world.allies_bot[id],
-                    world,
-                ));
+            if world.allies_bot.len() >= self.ids.len(){
+                let robot = &world.allies_bot[id];
+                if robot.pose.position.x > -0.6{
+                    action_wrapper.push(*id, comeback(
+                        &world.allies_bot[id],
+                        world,
+                    ));
+                }
             }
-        });
+        }
+
         false
     }
 }
