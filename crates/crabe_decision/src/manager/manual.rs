@@ -22,7 +22,7 @@ impl Manual {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Square::new(0))],
+            strategies: vec![Box::new(Demark::new(0,None))],
         }
     }
 }

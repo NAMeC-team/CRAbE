@@ -3,7 +3,8 @@ use std::f64::consts::PI;
 use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Robot, World}};
 use crabe_math::{shape::{Circle, Line}, vectors::rotate_vector};
 use nalgebra::Point2;
-
+use crabe_math::shape::Rectangle;
+use crate::strategy::basics::intercept;
 use crate::utils::robots_to_circles;
 
 const NO_AVOIDANCE_DIST : f64 = 0.4;                // distance to the target to start avoiding obstacles
@@ -168,6 +169,52 @@ pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64,
                 angle -= angle_between_two_exploration;
             }
         }
+    }
+    (angle, new_target)
+}
+
+/// Get the first angle that is free to move to the target (Either on the right side or on the left side)
+///
+/// # Arguments
+/// - objects: The objects on the field
+/// - segment_width: The width of the segment to consider collision with objects
+/// - start: The start point
+/// - target: The target point
+/// - positive_rotation: The direction of the rotation
+///
+/// # Returns
+/// The angle and the new target point on the available direction
+pub fn get_first_angle_free_trajectory_from_side(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool,exploration_step_length:f64,angle_between_two_exploration:f64, world: &World, tools_data: &mut ToolData) -> (f64, Point2<f64>){
+    let mut angle = if positive_rotation {7.*PI/4.} else {-7.*PI/4.};
+    let mut new_target = target.clone();
+    let mut free = false;
+    while !free && angle <= -0.1 || angle >= 0.1{
+        let dir = rotate_vector((target - start).normalize(), angle);
+        new_target = start + dir.normalize() * exploration_step_length;
+        let trajectory_1 = Line::new(*start, new_target);
+        let trajectory_2 = Line::new(*target, new_target);
+        let objects_on_trajectory_1 = front_objects_in_trajectory(&trajectory_1, &objects, segment_width);
+        let objects_on_trajectory_2= front_objects_in_trajectory(&trajectory_2, &objects, segment_width);
+        let intersect = match trajectory_1.intersection_segments(&trajectory_2){
+            Ok(r) => r,
+            Err(e) => Point2::new(100.,100.)
+        };
+        let field = Rectangle::new(world.geometry.field.length,world.geometry.field.width,Point2::new(-world.geometry.field.length/2.,-world.geometry.field.width/2.));
+
+        if objects_on_trajectory_1.len() == 0 && objects_on_trajectory_2.len() == 0 && field.is_inside(intersect) {
+            free = true;
+            new_target = intersect
+        } else {
+            if positive_rotation{
+                angle -= angle_between_two_exploration;
+            } else {
+                angle += angle_between_two_exploration;
+            }
+        }
+        tools_data.annotations.add_line(positive_rotation.to_string() + trajectory_1.start.to_string().as_str(),trajectory_1);
+        tools_data.annotations.add_line(positive_rotation.to_string() + trajectory_2.start.to_string().as_str(),trajectory_2);
+        tools_data.annotations.add_point("jnfk".to_string(),Point2::new(0.,0.));
+
     }
     (angle, new_target)
 }

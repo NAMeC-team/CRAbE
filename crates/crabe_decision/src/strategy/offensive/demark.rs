@@ -10,7 +10,7 @@ use crabe_math::vectors;
 use nalgebra::Point2;
 use std::f64::consts::PI;
 use std::fmt::format;
-use crate::utils::closest_bot_to_point;
+use crate::utils::{closest_bot_to_point, get_first_angle_free_trajectory_from_side};
 use crate::utils::navigation::get_first_angle_free_trajectory;
 
 use crabe_math::shape::{Circle, Line};
@@ -34,49 +34,30 @@ impl Demark {
         Self { id, messages: vec![],positive_side}
     }
 
-    fn get_target_to_demark(&self,action_wrapper: &mut ActionWrapper,side:&bool,ball_handler:&&Robot<AllyInfo>,cercles: &Vec<Circle>,world:&World,robot:&Robot<AllyInfo>) -> Option<Point2<f64>>{
+    fn get_target_to_demark(&self,action_wrapper: &mut ActionWrapper,side:&bool,ball_handler:&&Robot<AllyInfo>,cercles: &Vec<Circle>,world:&World,robot:&Robot<AllyInfo>,tools_data: &mut ToolData) -> Option<Point2<f64>>{
 
         let ball_handler_pos = &ball_handler.pose;
         let robot_pos= &robot.pose;
 
-        let target_handler_positive = get_first_angle_free_trajectory(
+        let target = get_first_angle_free_trajectory_from_side(
             cercles,
             world.geometry.ball_radius+MIN_DISTANCE_TO_ROBOT_ENEMY,
             &ball_handler_pos.position,
-            &robot_pos.position,
+            &world.geometry.enemy_goal.line.center(),
             *side,
             robot.distance(&ball_handler_pos.position),
-            EXPLORATION_ANGLE
+            EXPLORATION_ANGLE,
+            &world,
+            tools_data
         );
 
-        if target_handler_positive.0 == 0.0 {
+        if target.0 == 0.0 && robot.distance(&target.1) < 0.5{
             let orientation = vectors::angle_to_point(robot_pos.position, ball_handler_pos.position);
             action_wrapper.push(self.id, OrientTo::new(orientation, 0.0, false, None, true));
             return None;
         }
 
-        let line_handler_positive = Line::new(ball_handler_pos.position, target_handler_positive.1);
-
-
-        let target_goal_positive = get_first_angle_free_trajectory(
-            &cercles,
-            world.geometry.ball_radius+MIN_DISTANCE_TO_ROBOT_ENEMY,
-            &world.geometry.enemy_goal.line.center(),
-            &ball_handler_pos.position,
-            !side,
-            robot.distance(&world.geometry.enemy_goal.line.center()),
-            EXPLORATION_ANGLE
-        );
-
-
-        let line_goal_negative = Line::new(world.geometry.enemy_goal.line.center(), target_goal_positive.1);
-
-
-        let target1 = match line_handler_positive.intersection_lines(&line_goal_negative){
-            Ok(point) => point,
-            Err(e) => ball_handler_pos.position
-        };
-        return Some(target1);
+        return Some(target.1);
 
     }
 }
@@ -172,7 +153,7 @@ impl Strategy for Demark {
         match self.positive_side {
             Some(side) => {
 
-                let target1 = match self.get_target_to_demark(action_wrapper,&side, ball_handler, &cercles, world, robot){
+                let target1 = match self.get_target_to_demark(action_wrapper,&side, ball_handler, &cercles, world, robot,tools_data){
                     Some(p) => p,
                     None => return false
                 };
@@ -180,11 +161,11 @@ impl Strategy for Demark {
                 action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
             },
             None => {
-                let target1 = match self.get_target_to_demark(action_wrapper,&true, ball_handler, &cercles, world, robot,){
+                let target1 = match self.get_target_to_demark(action_wrapper,&true, ball_handler, &cercles, world, robot,tools_data){
                     Some(p) => p,
                     None => return false
                 };
-                let target2 = match self.get_target_to_demark(action_wrapper,&false, ball_handler, &cercles, world, robot,){
+                let target2 = match self.get_target_to_demark(action_wrapper,&false, ball_handler, &cercles, world, robot,tools_data){
                     Some(p) => p,
                     None => return false
                 };
