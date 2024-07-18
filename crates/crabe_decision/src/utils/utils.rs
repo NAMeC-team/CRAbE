@@ -127,3 +127,54 @@ pub fn ball_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
     }
     false
 }
+
+
+// fn team_possessing_ball(ball: &Ball, allies: &Robot<AllyInfo>, enemies: &Robot<EnemyInfo>) -> Team {
+//     let ball_pos = if 
+// }
+
+/// Filter robots by ids.
+/// 
+/// # Arguments
+/// - `robots`: The list of robots to filter.
+/// - `ids`: The list of ids to keep.
+/// 
+/// # Returns
+/// A list of robots that are in the ids list.
+pub fn filter_robots_in_ids<'a, T>(robots: Vec<&'a Robot<T>>, ids: &Vec<u8>) -> Vec<&'a Robot<T>> {
+    robots.into_iter().filter(|r| ids.contains(&r.id)).collect()
+}
+
+/// Remove robots with id in the ids list.
+/// 
+/// # Arguments
+/// - `robots`: The list of robots to filter.
+/// - `ids`: The list of ids to keep.
+/// 
+/// # Returns
+/// A list of robots that are not in the ids list.
+pub fn filter_robots_not_in_ids<'a, T>(robots: Vec<&'a Robot<T>>, ids: &Vec<u8>) -> Vec<&'a Robot<T>> {
+    robots.into_iter().filter(|r| !ids.contains(&r.id)).collect()
+}
+
+/// Get the id of the enemy goalkeeper.
+/// 
+/// # Arguments
+/// world - The world data.
+/// 
+/// # Returns
+/// The id of the enemy goalkeeper.
+/// If there's no enemy on the field, return 7
+pub fn get_enemy_keeper_id(world: &World) -> u8 {
+    if let Some(enemy_infos) = &world.data.enemy.info {
+        enemy_infos.goalkeeper as u8
+    } else if let Some(enemy_keeper) = closest_bot_to_point(
+        world.enemies_bot.values().collect(),
+        world.geometry.enemy_goal.line.center()
+    ) {
+        enemy_keeper.id
+    } else {
+        // There's no enemies on the field
+        7
+    }
+}
