@@ -1,13 +1,17 @@
 use std::cmp::Ordering;
 use std::f64::consts::PI;
+use crate::utils::closest_bot_to_point;
 use crate::{action::move_to::MoveTo, message::MessageData};
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
+use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
 use crabe_math::shape::Line;
 use crabe_math::vectors;
 use std::time::{SystemTime, UNIX_EPOCH};
+
+const KICK_RANGE: f64 = 0.4;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
@@ -23,8 +27,6 @@ impl DefenseWall {
     pub fn new(ids: Vec<u8>) -> Self {
         Self { ids, messages: vec![], }
     }
-
-    
 
     /// Move around the penalty zone
     pub fn oscillate(
@@ -122,17 +124,29 @@ impl Strategy for DefenseWall {
             let mut wall_starting_pos = intersection_shooting_dir_ratio - (bot_spacing_ratio / 2.) * (robot_nb - 1.);
             
             // Clamp the position of the wall so that he's not going out of the field
+            let closest = closest_bot_to_point(robots.iter().map(|(_, r)| *r).collect(), ball_pos);
             wall_starting_pos = wall_starting_pos.clamp(bot_spacing_ratio / 2., 1. - bot_spacing_ratio / 2. - (robot_nb-1.)*bot_spacing_ratio);
             for (i, (current_pos, robot)) in robots.iter().enumerate() {
                 //clamp new bot position so they have to move along the penalty line instead of just moving through the goal field
-                let mut robot_wall_destination = wall_starting_pos + (i as f64) * bot_spacing_ratio;
-                robot_wall_destination = robot_wall_destination.clamp(current_pos-0.1, current_pos+0.1);
+                let robot_wall_destination = wall_starting_pos + (i as f64) * bot_spacing_ratio;
                 let pos_on_penalty_line = enlarged_penalty.on_penalty_line(robot_wall_destination);
                 let orientation = vectors::angle_to_point(robot.pose.position,  world.geometry.ally_goal.line.center()) + PI;
-                action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                let distance_to_ball = (ball_pos - robot.pose.position.xy()).norm();
+                if distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
+                    if let Some(closest_bot_to_ball) = closest{
+                        if closest_bot_to_ball.id == robot.id {
+                            let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
+                            action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false));
+                        }else {
+                            action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                        }
+                    }else {
+                        action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                    }
+                } else {
+                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                }
             }
-        } else {
-            println!("No intersection point found");
         }
         false
     }
