@@ -1,6 +1,6 @@
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
-use crabe_framework::data::world::{self, game_state::{GameState, RunningState}, Ball, TeamColor, World};
+use crabe_framework::data::world::{game_state::{GameState, RunningState}, Ball, BallTouchInfo, TeamColor, World};
 use crabe_decision::utils::closest_bot_to_point;
 
 pub struct BallFilter;
@@ -88,10 +88,69 @@ fn calculated_possession(ball: &mut Ball, world: &World) {
     }
 }
 
+fn calculate_last_touch(ball: &mut Ball, world: &World) {
+    let ball_world = match &world.ball {
+        Some(b) => b,
+        None => {
+            ball.last_touch = None; return;}
+    };
+    let ball_dist = world.geometry.robot_radius+world.geometry.ball_radius + 0.01;
+    ball.last_touch = ball_world.last_touch.clone();
+    let closest_ally = closest_bot_to_point(world.allies_bot.values().collect(), ball.position.xy());
+    let closest_enemy = closest_bot_to_point(world.enemies_bot.values().collect(), ball.position.xy());
+    match (closest_ally, closest_enemy) {
+        (Some(ally), Some(enemy)) => {
+            let distance_ally = ally.distance(&ball.position.xy());
+            let distance_enemy = enemy.distance(&ball.position.xy());
+            if distance_ally < distance_enemy {
+                if distance_ally < ball_dist{
+                    ball.last_touch = Some(BallTouchInfo {
+                        robot_id: ally.id,
+                        team_color: world.team_color,
+                        timestamp: ball.timestamp,
+                        position: ball.position,
+                    });
+                }
+            } else if distance_enemy < ball_dist{
+                ball.last_touch = Some(BallTouchInfo {
+                    robot_id: enemy.id,
+                    team_color: world.team_color.opposite(),
+                    timestamp: ball.timestamp,
+                    position: ball.position,
+                });
+            }
+        }
+        (Some(ally), None) => {
+            if ally.distance(&ball.position_2d()) < ball_dist{
+                ball.last_touch = Some(BallTouchInfo {
+                    robot_id: ally.id,
+                    team_color: world.team_color,
+                    timestamp: ball.timestamp,
+                    position: ball.position,
+                });
+            }
+        }
+        (None, Some(enemy)) => {
+            if enemy.distance(&ball.position_2d())  < ball_dist{
+                ball.last_touch = Some(BallTouchInfo {
+                    robot_id: enemy.id,
+                    team_color: world.team_color.opposite(),
+                    timestamp: ball.timestamp,
+                    position: ball.position,
+                });
+            }
+        }
+        (None, None) => {}
+    }
+}
+
 impl PostFilter for BallFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
-        let mut ball = filter_data.ball.data.clone();
-        calculated_possession(&mut ball, &world);
-        world.ball = Some(ball);
+        if let Some(tracked_ball) = &filter_data.ball {
+            let mut ball = tracked_ball.data.clone();
+            calculated_possession(&mut ball, &world);
+            calculate_last_touch(&mut ball, &world);
+            world.ball = Some(ball);
+        }
     }
 }

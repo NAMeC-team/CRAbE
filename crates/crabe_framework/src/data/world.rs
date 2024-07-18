@@ -6,7 +6,7 @@ pub use self::robot::{
 use serde_with::serde_as;
 
 mod ball;
-pub use self::ball::Ball;
+pub use self::ball::{Ball, BallTouchInfo};
 
 mod team;
 pub use self::team::{Team, TeamColor};

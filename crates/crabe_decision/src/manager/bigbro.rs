@@ -7,11 +7,12 @@ use crate::message::MessageData;
 use crate::strategy::offensive::Attacker;
 use crate::strategy::offensive::Receiver;
 use crate::strategy::testing::{Aligned, GoLeft, GoRight};
-use crate::strategy::formations::Stop;
-use crate::strategy::defensive::GoalKeeper;
+use crate::strategy::formations::{Stop, PrepareKickOff};
+use crate::strategy::defensive::{GoalKeeper, BotMarking, BotContesting};
 use crate::strategy::Strategy;
 use crate::utils::everyone_stop;
 use crabe_framework::data::tool::ToolData;
+use crabe_framework::data::world;
 use crabe_framework::data::world::game_state::*;
 use crabe_framework::data::world::World;
 use crate::utils::bigbro_decisions::run_state;
@@ -33,7 +34,7 @@ impl BigBro {
         Self {
             strategies: vec![
                 Box::new(Stop::new(vec![2, 3, 4])),
-                Box::new(GoalKeeper::new(0)),
+                Box::new(GoalKeeper::new(0, vec![])),
                 Box::new(Attacker::new(1)),
             ],
         }
@@ -306,6 +307,8 @@ impl BigBro {
     }
     
 
+
+    
 }
 
 impl Manager for BigBro {
