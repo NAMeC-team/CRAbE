@@ -326,7 +326,7 @@ impl Manager for BigBro {
                 StoppedState::Stop => everyone_stop(self, world),
                 StoppedState::PrepareKickoff(_team) => prepare_kick_off(self, world),
                 StoppedState::PreparePenalty(_team) =>  everyone_stop_except_keeper(self, world),
-                StoppedState::BallPlacement(_team) =>  everyone_halt(self, world),
+                StoppedState::BallPlacement(_team) =>  everyone_stop(self, world),
                 StoppedState::PrepareForGameStart => prepare_start(self, world),
                 StoppedState::BallLeftFieldTouchLine(_) => everyone_halt(self, world),
                 StoppedState::CornerKick(team) => if team == world.team_color{
