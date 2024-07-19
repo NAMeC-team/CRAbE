@@ -39,7 +39,8 @@ impl Demark {
         let ball_handler_pos = &ball_handler.pose;
         let robot_pos= &robot.pose;
 
-        let target = get_first_angle_free_trajectory_from_side(
+
+        let mut target = get_first_angle_free_trajectory_from_side(
             cercles,
             world.geometry.ball_radius+MIN_DISTANCE_TO_ROBOT_ENEMY,
             &ball_handler_pos.position,
@@ -51,11 +52,30 @@ impl Demark {
             tools_data
         );
 
-        if target.0 == 0.0 && robot.distance(&target.1) > 0.5{
+        if !target.2{
+            target = get_first_angle_free_trajectory_from_side(
+                cercles,
+                world.geometry.ball_radius+MIN_DISTANCE_TO_ROBOT_ENEMY,
+                &ball_handler_pos.position,
+                &world.geometry.enemy_goal.line.center(),
+                !side,
+                robot.distance(&ball_handler_pos.position),
+                EXPLORATION_ANGLE,
+                &world,
+                tools_data
+            );
+        }
+
+        if !target.2 {
+            target.1 = ball_handler_pos.position - ( ball_handler_pos.position - world.geometry.ally_goal.line.center()).normalize() * 0.5;
+        }
+
+        if target.0 == 0.0 && robot.distance(&target.1) < 0.1{
             let orientation = vectors::angle_to_point(robot_pos.position, ball_handler_pos.position);
             action_wrapper.push(self.id, OrientTo::new(orientation, 0.0, false, None, true));
             return None;
         }
+        
 
         return Some(target.1);
 
@@ -130,13 +150,18 @@ impl Strategy for Demark {
             cercles.push(c);
         });
 
+
+
         world.enemies_bot
         .iter()
             .filter(|(enemy_id,enemy)|*enemy_id != &enemy_keeper.id)
         .for_each(|(enemy_id, enemy)|{
             let c = Circle::new(enemy.pose.position, world.geometry.robot_radius+MIN_DISTANCE_TO_ROBOT_ENEMY);
-            cercles.push(c);    
+            cercles.push(c);
         });
+
+
+
 
         let ball_trajectory = Line::new(*ball_pos, ball_pos + ball.velocity.xy().normalize() * 100.);
         let try_to_shoot = match world.geometry.enemy_goal.line.intersection_segment_line(&ball_trajectory){
@@ -152,13 +177,17 @@ impl Strategy for Demark {
 
         match self.positive_side {
             Some(side) => {
-
+                println!("OHOHOH");
                 let target1 = match self.get_target_to_demark(action_wrapper,&side, ball_handler, &cercles, world, robot,tools_data){
                     Some(p) => p,
                     None => return false
                 };
                 let orientation = vectors::angle_to_point(target1, ball_handler.pose.position);
-               // action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+
+                action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+
+
+
             },
             None => {
                 let target1 = match self.get_target_to_demark(action_wrapper,&true, ball_handler, &cercles, world, robot,tools_data){
@@ -169,16 +198,17 @@ impl Strategy for Demark {
                     Some(p) => p,
                     None => return false
                 };
-        
+
                 if robot.distance(&target1) < robot.distance(&target2){
                     let orientation = vectors::angle_to_point(target1, ball_handler.pose.position);
-                    //action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+                    action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
                 } else {
                     let orientation = vectors::angle_to_point(target2, ball_handler.pose.position);
-                   // action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
+                    action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
                 }
             }
         }
+
 
 
 
