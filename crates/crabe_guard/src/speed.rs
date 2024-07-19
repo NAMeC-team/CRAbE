@@ -5,6 +5,7 @@ use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use nalgebra::Vector2;
 use log::warn;
+use crabe_framework::data::world::game_state::GameState;
 
 pub struct SpeedGuard {
     max_linear: f32,
@@ -35,7 +36,7 @@ impl Default for SpeedGuard {
 impl Guard for SpeedGuard {
     fn guard(
         &mut self,
-        _world: &World,
+        world: &World,
         commands: &mut CommandMap,
         _tool_commands: &mut ToolCommands,
     ) {
@@ -52,8 +53,16 @@ impl Guard for SpeedGuard {
             }
 
             let direction = Vector2::new(command.forward_velocity, command.left_velocity);
-            if direction.norm() > self.max_linear {
-                let direction_normalized = direction.normalize() * self.max_linear;
+            let mut max_speed = self.max_linear;
+            match world.data.ref_orders.state {
+                GameState::Stopped(_) => {
+                    max_speed = 1.;// world.data.ref_orders.speed_limit;
+                }
+                _ => {}
+            }
+
+            if direction.norm() > max_speed {
+                let direction_normalized = direction.normalize() * max_speed;
                 command.forward_velocity = direction_normalized.x;
                 command.left_velocity = direction_normalized.y;
             }
