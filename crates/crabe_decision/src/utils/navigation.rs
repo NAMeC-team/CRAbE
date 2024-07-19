@@ -185,37 +185,44 @@ pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64,
 /// # Returns
 /// The angle and the new target point on the available direction
 pub fn get_first_angle_free_trajectory_from_side(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool,exploration_step_length:f64,angle_between_two_exploration:f64, world: &World, tools_data: &mut ToolData) -> (f64, Point2<f64>){
-    let mut angle = if positive_rotation {7.*PI/4.} else {-7.*PI/4.};
+    let mut angle = if positive_rotation {-PI} else {PI};
+    let mut angle2 = if positive_rotation {-PI} else {PI};
     let mut new_target = target.clone();
+    let mut new_target2 = start.clone();
     let mut free = false;
-    while !free && angle <= -0.1 || angle >= 0.1{
+    while !free {
+        println!("SHIT");
         let dir = rotate_vector((target - start).normalize(), angle);
+        let dir2 = rotate_vector((start-target).normalize() , angle2);
         new_target = start + dir.normalize() * exploration_step_length;
+        new_target2 = target + dir2.normalize() * exploration_step_length;
         let trajectory_1 = Line::new(*start, new_target);
-        let trajectory_2 = Line::new(*target, new_target);
+        let trajectory_2 = Line::new(*target, new_target2);
         let objects_on_trajectory_1 = front_objects_in_trajectory(&trajectory_1, &objects, segment_width);
         let objects_on_trajectory_2= front_objects_in_trajectory(&trajectory_2, &objects, segment_width);
-        let intersect = match trajectory_1.intersection_segments(&trajectory_2){
-            Ok(r) => r,
-            Err(e) => Point2::new(100.,100.)
-        };
+
+        let intersect = trajectory_1.intersection_segments(&trajectory_2).unwrap_or_else(|e| Point2::new(100., 100.));
         let field = Rectangle::new(world.geometry.field.length,world.geometry.field.width,Point2::new(-world.geometry.field.length/2.,-world.geometry.field.width/2.));
 
         if objects_on_trajectory_1.len() == 0 && objects_on_trajectory_2.len() == 0 && field.is_inside(intersect) {
+            println!("ouf");
             free = true;
-            new_target = intersect
+            new_target = intersect;
+            tools_data.annotations.add_line(positive_rotation.to_string() + trajectory_1.start.to_string().as_str(),trajectory_1);
+            tools_data.annotations.add_line(positive_rotation.to_string() + trajectory_2.start.to_string().as_str(),trajectory_2);
         } else {
             if positive_rotation{
                 angle -= angle_between_two_exploration;
+                angle2 += angle_between_two_exploration;
             } else {
                 angle += angle_between_two_exploration;
+                angle2 -= angle_between_two_exploration;
             }
         }
-        tools_data.annotations.add_line(positive_rotation.to_string() + trajectory_1.start.to_string().as_str(),trajectory_1);
-        tools_data.annotations.add_line(positive_rotation.to_string() + trajectory_2.start.to_string().as_str(),trajectory_2);
-        tools_data.annotations.add_point("jnfk".to_string(),Point2::new(0.,0.));
+
 
     }
+
     (angle, new_target)
 }
 

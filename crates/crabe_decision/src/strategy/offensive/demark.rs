@@ -158,7 +158,7 @@ impl Strategy for Demark {
                     None => return false
                 };
                 let orientation = vectors::angle_to_point(target1, ball_handler.pose.position);
-                action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+               // action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
             },
             None => {
                 let target1 = match self.get_target_to_demark(action_wrapper,&true, ball_handler, &cercles, world, robot,tools_data){
@@ -172,10 +172,10 @@ impl Strategy for Demark {
         
                 if robot.distance(&target1) < robot.distance(&target2){
                     let orientation = vectors::angle_to_point(target1, ball_handler.pose.position);
-                    action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
+                    //action_wrapper.push(self.id, MoveTo::new(target1, orientation, 0.0, false, None, true));
                 } else {
                     let orientation = vectors::angle_to_point(target2, ball_handler.pose.position);
-                    action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
+                   // action_wrapper.push(self.id, MoveTo::new(target2,orientation, 0.0, false, None, true));
                 }
             }
         }
