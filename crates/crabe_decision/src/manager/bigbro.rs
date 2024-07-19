@@ -11,6 +11,7 @@ use crate::strategy::Strategy;
 use crate::utils::everyone_halt;
 use crate::utils::everyone_stop;
 use crate::utils::everyone_stop_except_keeper;
+use crate::utils::penalty_state;
 use crate::utils::prepare_kick_off;
 use crate::utils::prepare_start;
 use crabe_framework::data::tool::ToolData;
@@ -346,11 +347,7 @@ impl Manager for BigBro {
                 }else{
                     prepare_kick_off(self, world, team);
                 },
-                RunningState::Penalty(team) => if team == world.team_color{
-                    run_state(self, world, tools_data);
-                }else{
-                    everyone_stop_except_keeper(self, world);
-                },
+                RunningState::Penalty(team) => penalty_state(self, world, team),
                 RunningState::FreeKick(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{

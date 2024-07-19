@@ -84,6 +84,21 @@ pub fn prepare_kick_off(bigbro: &mut BigBro, world: &World, team: TeamColor) {
     put_goal(bigbro);
 }
 
+pub fn penalty_state(bigbro: &mut BigBro, world: &World, team: TeamColor){
+    for bot in world.allies_bot.values(){
+        bigbro.remove_bot_from_strategies(bot.id);
+    }
+    if team == world.team_color{
+        if let Some(ball) = &world.ball{
+            put_attacker(bigbro, world, &world.allies_bot.values().collect(), ball);
+        }
+        
+    }else{
+        put_goal(bigbro);
+    }
+    
+}
+
 /// Put the goal keeper to the GoalKeeper strategy.
 fn put_goal(bigbro: &mut BigBro) {
     if let Some(current_strategy) = bigbro.get_bot_current_strategy(KEEPER_ID) {
