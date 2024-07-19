@@ -344,7 +344,7 @@ impl Manager for BigBro {
                 RunningState::KickOff(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{
-                    prepare_start(self, world);
+                    prepare_kick_off(self, world, team);
                 },
                 RunningState::Penalty(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
