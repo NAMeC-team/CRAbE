@@ -27,9 +27,9 @@ use crate::utils::bigbro_decisions::run_state;
 ///
 /// To add a strategy, simply create a new instance of the desired strategy and add it to the
 /// `strategies` field in the `new()` method of the `BigBro` struct.
-#[derive(Default)]
 pub struct BigBro {
     pub strategies: Vec<Box<dyn Strategy>>,
+    pub team_penalty: TeamColor,
 }
 
 impl BigBro {
@@ -37,6 +37,7 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![],
+            team_penalty: TeamColor::Blue,
         }
     }
 
@@ -328,10 +329,13 @@ impl Manager for BigBro {
             GameState::Stopped(stopped_state) => match stopped_state {
                 StoppedState::Stop => everyone_stop(self, world),
                 StoppedState::PrepareKickoff(team) => prepare_kick_off(self, world, team),
-                StoppedState::PreparePenalty(team) => if team == world.team_color{
-                    everyone_stop(self, world);
-                }else{
-                    everyone_stop(self, world);
+                StoppedState::PreparePenalty(team) => {
+                    self.team_penalty = team;
+                    if team == world.team_color{
+                        everyone_stop(self, world);
+                    }else{
+                        everyone_stop(self, world);
+                    }
                 }
                 StoppedState::BallPlacement(_team) =>  everyone_stop(self, world),
                 StoppedState::PrepareForGameStart => prepare_start(self, world),
@@ -359,10 +363,9 @@ impl Manager for BigBro {
                 }else{
                     prepare_kick_off(self, world,team);
                 },
-                RunningState::Run => run_state(self, world, tools_data),
+                RunningState::Run => penalty_state(self, world, self.team_penalty),
             }
         }
-        penalty_state(self, world, TeamColor::Blue);
         
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
