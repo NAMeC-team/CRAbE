@@ -337,7 +337,7 @@ impl Manager for BigBro {
                 StoppedState::GoalKick(_team) => run_state(self, world, tools_data),
                 StoppedState::AimlessKick(_) => everyone_halt(self, world),
                 StoppedState::NoProgressInGame => run_state(self, world, tools_data),
-                StoppedState::PrepareFreekick(_) => everyone_stop_except_keeper(self, world),
+                StoppedState::PrepareFreekick(team) => prepare_kick_off(self, world, team),
                 StoppedState::FoulStop => run_state(self, world, tools_data),
             },
             GameState::Running(running_state) => match running_state {
@@ -354,7 +354,7 @@ impl Manager for BigBro {
                 RunningState::FreeKick(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{
-                    everyone_stop_except_keeper(self, world);
+                    prepare_kick_off(self, world,team);
                 },
                 RunningState::Run => run_state(self, world, tools_data),
             }
