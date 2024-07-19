@@ -1,4 +1,4 @@
-use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Ball, Robot, World}};
+use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Ball, Robot, TeamColor, World}};
 
 use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::{Halt, MoveAwayFromBall, PrepareKickOff, PrepareStart}}};
 
@@ -63,17 +63,25 @@ pub fn everyone_stop_except_keeper(bigbro: &mut BigBro, world: &World) {
     }
 }
 
-pub fn prepare_kick_off(bigbro: &mut BigBro, world: &World) {
+pub fn prepare_kick_off(bigbro: &mut BigBro, world: &World, team: TeamColor) {
     let mut ids = vec![];
     for bot in world.allies_bot.values() {
+        if bot.id == KEEPER_ID {
+            continue;
+        }
         ids.push(bot.id);
     }
+    let ally_count = ids.len();
     if let Some(strategy_index) = bigbro.get_index_strategy_with_name("PrepareKickOff") {
         bigbro.move_bots_to_existing_strategy(ids, strategy_index);
     }else{
-        let strategy = Box::new(PrepareKickOff::new(vec![]));
+        let strategy = Box::new(PrepareKickOff::new(vec![], team));
         bigbro.move_bots_to_new_strategy(ids, strategy);
     }
+    if ally_count > 1{
+        put_defense_wall(bigbro, world, &filter_robots_not_in_ids(world.allies_bot.values().collect(), &vec![KEEPER_ID]), ally_count -1);
+    }
+    put_goal(bigbro);
 }
 
 /// Put the goal keeper to the GoalKeeper strategy.
