@@ -36,16 +36,18 @@ pub fn shoot(
             
     // Check if the shooting trajectory will score
     let robot_shooting_trajectory = Line::new(robot_position, robot_position + robot_to_ball * 100.);
-    let shooting_trajectory_will_score = match robot_shooting_trajectory.intersection_segments(&world.geometry.enemy_goal.line) {
+    let shooting_trajectory_will_score = match robot_shooting_trajectory.intersection_segments(&world.geometry.enemy_penalty.back_line) {
         Ok(_) => true,
         Err(_) => false,
     };
 
     if shooting_trajectory_will_score && dot_with_ball > 0.95{
-        let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.002) { 
-            Some(Kick::StraightKick {  power: 4. }) 
+        let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius - 0.005) { 
+            Some(Kick::StraightKick {  power: 5. }) 
         }else {None};
-        return MoveTo::new(ball_position, vectors::angle_to_point(robot_position,*target_shooting_position), 1.,  true, kick, true);
+        let dir  = (ball_position - robot_position).normalize()*0.3;
+        let target = robot_position + dir;
+        return MoveTo::new(target, vectors::angle_to_point(robot_position,*target_shooting_position), 0.,  true, kick, false);
     }
     MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, *target_shooting_position), 0., false, None, true)
 }

@@ -12,7 +12,7 @@ const EXPLORATION_STOP_DIST : f64 = 0.4;    // distance to the target to stop th
 const EXPLORATION_ANGLE : f64 = 0.1;        // angle between two exploration steps
 const EXPLORATION_ITTERATION : usize = 8;   // number of iterations for the exploration (O(n*2) so be careful)
 const AVOIDANCE_MARGIN : f64 = 0.05;        // margin to avoid obstacles (added to the bot radius)
-const BALL_AVOIDANCE_MARGIN : f64 = 0.03;   // margin to avoid ball (added to the bot radius)
+const BALL_AVOIDANCE_MARGIN : f64 = 0.06;   // margin to avoid ball (added to the bot radius)
 const OVERSHOOTING_DIST : f64 = 0.5;        // overshooting dist to the new target, use to regulate speed while avoiding obstacles
 
 
