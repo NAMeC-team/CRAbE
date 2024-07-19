@@ -51,7 +51,7 @@ impl Strategy for PrepareStart {
         let mut i = 0;
         for id in &self.ids {
             action_wrapper.clear(*id);
-            if world.allies_bot.len() >= self.ids.len(){
+            if world.allies_bot.len() as u8 >= *id{
                 let robot = &world.allies_bot[id];
                 let orientation  = angle_to_point(robot.pose.position, nalgebra::Point2::new(0.0, 0.0));
                 if *id == KEEPER_ID{
