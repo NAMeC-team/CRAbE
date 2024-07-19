@@ -1,6 +1,6 @@
 use crabe_framework::data::{tool::ToolData, world::{AllyInfo, Ball, Robot, TeamColor, World}};
 
-use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::{Halt, MoveAwayFromBall, PrepareKickOff, PrepareStart}}};
+use crate::{manager::bigbro::BigBro, strategy::{self, defensive::{DefenseWall, GoalKeeper}, formations::{Halt, MoveAwayFromBall, PrepareKickOff, PrepareStart}, offensive::Attacker}};
 
 use super::{closest_bot_to_point, closest_bots_to_point, filter_robots_not_in_ids, get_enemy_keeper_id, KEEPER_ID};
 
@@ -89,12 +89,13 @@ pub fn penalty_state(bigbro: &mut BigBro, world: &World, team: TeamColor){
         bigbro.remove_bot_from_strategies(bot.id);
     }
     if team == world.team_color{
-        if let Some(ball) = &world.ball{
-            put_attacker(bigbro, world, &world.allies_bot.values().collect(), ball);
-        }
+        bigbro.strategies.push(Box::new(Attacker::new(KEEPER_ID)));
+        // if let Some(ball) = &world.ball{
+        //     put_attacker(bigbro, world, &world.allies_bot.values().collect(), ball);
+        // }
         
     }else{
-        put_goal(bigbro);
+        bigbro.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID, vec![])));
     }
     
 }

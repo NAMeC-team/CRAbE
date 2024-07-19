@@ -14,8 +14,10 @@ use crate::utils::everyone_stop_except_keeper;
 use crate::utils::penalty_state;
 use crate::utils::prepare_kick_off;
 use crate::utils::prepare_start;
+use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::*;
+use crabe_framework::data::world::TeamColor;
 use crabe_framework::data::world::World;
 use crate::utils::bigbro_decisions::run_state;
 
@@ -326,7 +328,11 @@ impl Manager for BigBro {
             GameState::Stopped(stopped_state) => match stopped_state {
                 StoppedState::Stop => everyone_stop(self, world),
                 StoppedState::PrepareKickoff(team) => prepare_kick_off(self, world, team),
-                StoppedState::PreparePenalty(_team) =>  everyone_stop_except_keeper(self, world),
+                StoppedState::PreparePenalty(team) => if team == world.team_color{
+                    everyone_stop(self, world);
+                }else{
+                    everyone_stop(self, world);
+                }
                 StoppedState::BallPlacement(_team) =>  everyone_stop(self, world),
                 StoppedState::PrepareForGameStart => prepare_start(self, world),
                 StoppedState::BallLeftFieldTouchLine(_) => everyone_halt(self, world),
@@ -356,6 +362,7 @@ impl Manager for BigBro {
                 RunningState::Run => run_state(self, world, tools_data),
             }
         }
+        penalty_state(self, world, TeamColor::Blue);
         
         // mailbox to grab the messages
         // (we can't iter the strategies and modify them at the same time so we need to collect the messages first and then process them)
