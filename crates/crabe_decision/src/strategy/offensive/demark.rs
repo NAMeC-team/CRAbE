@@ -51,7 +51,7 @@ impl Demark {
             tools_data
         );
 
-        if target.0 == 0.0 && robot.distance(&target.1) < 0.5{
+        if target.0 == 0.0 && robot.distance(&target.1) > 0.5{
             let orientation = vectors::angle_to_point(robot_pos.position, ball_handler_pos.position);
             action_wrapper.push(self.id, OrientTo::new(orientation, 0.0, false, None, true));
             return None;

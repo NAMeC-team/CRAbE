@@ -185,8 +185,8 @@ pub fn get_first_angle_free_trajectory(objects:&Vec<Circle>, segment_width: f64,
 /// # Returns
 /// The angle and the new target point on the available direction
 pub fn get_first_angle_free_trajectory_from_side(objects:&Vec<Circle>, segment_width: f64, start: &Point2<f64>, target: &Point2<f64>, positive_rotation: bool,exploration_step_length:f64,angle_between_two_exploration:f64, world: &World, tools_data: &mut ToolData) -> (f64, Point2<f64>){
-    let mut angle = if positive_rotation {-PI} else {PI};
-    let mut angle2 = if positive_rotation {-PI} else {PI};
+    let mut angle = if positive_rotation {PI} else {-PI};
+    let mut angle2 = if positive_rotation {PI} else {-PI};
     let mut new_target = target.clone();
     let mut new_target2 = start.clone();
     let mut free = false;
@@ -223,7 +223,7 @@ pub fn get_first_angle_free_trajectory_from_side(objects:&Vec<Circle>, segment_w
 
     }
 
-    (angle, new_target)
+    (angle + angle2, new_target)
 }
 
 /// Smooth the path by removing points that are not necessary (i.e. in case he can cross the path without colliding with an object we shorten the path)
