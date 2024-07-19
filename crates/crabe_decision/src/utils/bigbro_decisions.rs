@@ -148,9 +148,13 @@ fn put_attacker(bigbro: &mut BigBro, world: &World, bots: &Vec<&Robot<AllyInfo>>
 /// Run the strategy for the running state with 5 line robots.
 fn run_state_line_robots(bigbro: &mut BigBro, allies: Vec<&Robot<AllyInfo>>, ball: &Ball, world: &World, _tools_data: &mut ToolData) {
     if allies.len() == 0{return;}
-    let defense_wall_ids = put_defense_wall(bigbro, world, &allies, allies.len() -1);
-    let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
-    put_attacker(bigbro, world, &offensive_line, ball);
+    if world.geometry.ally_penalty.is_inside(&ball.position_2d()){
+        let defense_wall_ids = put_defense_wall(bigbro, world, &allies, allies.len());
+    }else{
+        let defense_wall_ids = put_defense_wall(bigbro, world, &allies, allies.len() -1);
+        let offensive_line: Vec<&Robot<AllyInfo>> = allies.iter().filter(|bot| !defense_wall_ids.contains(&bot.id)).map(|bot| *bot).collect();
+        put_attacker(bigbro, world, &offensive_line, ball);
+    }
 }
 
 /// Run the strategy for the running state.
