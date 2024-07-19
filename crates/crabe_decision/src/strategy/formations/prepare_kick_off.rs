@@ -60,26 +60,29 @@ impl Strategy for PrepareKickOff {
         for id in &self.ids {
             action_wrapper.clear(*id);
             if world.allies_bot.len() >= self.ids.len(){
-                let robot = &world.allies_bot[id];
-                if robot.pose.position.x > -0.1{
-                    action_wrapper.push(*id, comeback(
-                        &world.allies_bot[id],
-                        world,
-                    ));
-                }else{
-                    if let Some(closest_enemy) = opt_closest_enemy{
-                        let dir = if world.team_color == self.team{
-                            (world.geometry.ally_goal.line.center() - ball.position_2d()).normalize()
-                        }else{
-                            (ball.position_2d() - closest_enemy.pose.position).normalize()
-                        };
-                        let perp = rotate_vector(dir, PI/2.) * (world.geometry.robot_radius * 2. + 0.02);
-                        let target_center = ball.position_2d() + dir;
-                        let pos_along_block = perp * i as f64;
-                        action_wrapper.push(*id, MoveTo::new(target_center + pos_along_block, angle_to_point(robot.pose.position, ball.position_2d()), 0., false, None, true));
-                        i+=1;
-                    }else{}
+                if let Some(robot) = &world.allies_bot.get(id) {
+                    if robot.pose.position.x > -0.1{
+                        action_wrapper.push(*id, comeback(
+                            &world.allies_bot[id],
+                            world,
+                        ));
+                    }else{
+                        if let Some(closest_enemy) = opt_closest_enemy{
+                            let dir = if world.team_color == self.team{
+                                (world.geometry.ally_goal.line.center() - ball.position_2d()).normalize()
+                            }else{
+                                (ball.position_2d() - closest_enemy.pose.position).normalize()
+                            };
+                            let perp = rotate_vector(dir, PI/2.) * (world.geometry.robot_radius * 2. + 0.02);
+                            let target_center = ball.position_2d() + dir;
+                            let pos_along_block = perp * i as f64;
+                            action_wrapper.push(*id, MoveTo::new(target_center + pos_along_block, angle_to_point(robot.pose.position, ball.position_2d()), 0., false, None, true));
+                            i+=1;
+                        }else{}
+                    }
+
                 }
+
             }
         }
 
