@@ -167,7 +167,7 @@ impl GameStateBranch for StopStateBranch {
                     _ => return GameState::Stopped(StoppedState::PrepareForGameStart)
                 }
             }
-            None => return GameState::Stopped(StoppedState::Stop)
+            None => {  }
         }
 
         // otherwise, it might be because of an event that occurred
