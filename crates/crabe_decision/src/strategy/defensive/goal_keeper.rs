@@ -36,7 +36,7 @@ impl GoalKeeper {
     fn follow_velocity_trajectory(&self, ball: &Ball, world: &World) -> Option<Point2<f64>> {
         let ball_pos = ball.position_2d();
         let ball_velocity_trajectory = Line::new(ball_pos, ball_pos + ball.velocity.xy().normalize() * 100.);
-        if ball.velocity.norm() > 0.1 {
+        if ball.velocity.norm() > 0.01 {
             if let Ok(intersection) = world.geometry.ally_goal.line.intersection_segments(&ball_velocity_trajectory) {
                 return Some(intersection);
             }
@@ -131,6 +131,13 @@ impl Strategy for GoalKeeper {
                 position_target = ball_position;
                 let mut closests_receivers = closest_bots_to_point(world.allies_bot.values().collect(), ball_position);
                 closests_receivers.retain(|receiver| receiver.id != self.id && !self.ids_to_not_pass.contains(&receiver.id));
+                if closests_receivers.len() == 0{
+                    let kick = if robot.distance(&ball_position) < world.geometry.robot_radius + world.geometry.ball_radius -0.01 {
+                        Some(Kick::StraightKick { power: 4. })
+                    }else{None};
+                    action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, kick, false));
+                    return false;
+                }
                 for receiver in closests_receivers.iter(){
                     if object_in_bot_trajectory(world, self.id, receiver.pose.position, false, false, true).len() == 0{
                         let pass_action = pass(robot, receiver, ball, world);
