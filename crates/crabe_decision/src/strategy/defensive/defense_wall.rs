@@ -160,7 +160,7 @@ impl Strategy for DefenseWall {
                 let distance_to_ball = (ball_pos - robot.pose.position.xy()).norm();
                 if distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
                     if let Some(closest_bot_to_ball) = closest{
-                        if closest_bot_to_ball.id == robot.id {
+                        if closest_bot_to_ball.id == robot.id && !enlarged_penalty.is_inside(&ball_pos){
                             let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
                             action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false));
                         }else {
