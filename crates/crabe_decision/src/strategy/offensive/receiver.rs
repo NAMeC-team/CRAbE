@@ -86,7 +86,7 @@ impl Strategy for Receiver {
         if robot.distance(&interception_point) < 0.3 {
             dribbler = 1.;
         }
-        action_wrapper.push(self.id, MoveTo::new(interception_point, vectors::angle_to_point(robot_position,ball.position_2d()), dribbler,  false, None, true));
+        action_wrapper.push(self.id, MoveTo::new(interception_point, vectors::angle_to_point(robot_position,ball.position_2d()), dribbler,  false, None, true, true));
         false
     }
 }

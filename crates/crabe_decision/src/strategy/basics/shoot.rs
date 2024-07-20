@@ -47,7 +47,7 @@ pub fn shoot(
         }else {None};
         let dir  = (ball_position - robot_position).normalize()*0.4;
         let target = robot_position + dir;
-        return MoveTo::new(target, vectors::angle_to_point(robot_position,*target_shooting_position), 0.,  true, kick, false);
+        return MoveTo::new(target, vectors::angle_to_point(robot_position,*target_shooting_position), 0.,  true, kick, false, false);
     }
-    MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, *target_shooting_position), 0., false, None, true)
+    MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, *target_shooting_position), 0., false, None, true, true)
 }

@@ -49,7 +49,7 @@ impl Strategy for GoLeft {
         self.messages.clear();
         action_wrapper.push(
             self.id,
-            MoveTo::new(dest, -PI / 4.0, 0.0, false, None, true),
+            MoveTo::new(dest, -PI / 4.0, 0.0, false, None, true, true),
         );
         match world.allies_bot.get(&self.id) {
             Some(bot) => {  

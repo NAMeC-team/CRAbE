@@ -124,7 +124,7 @@ impl Strategy for BotContesting {
 
         let fast = robot.distance(&enemy.pose.position) > 1.;
 
-        action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribble , false , None, fast ));
+        action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribble , false , None, fast, true ));
         return false;
     }
 }

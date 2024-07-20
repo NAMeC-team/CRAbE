@@ -135,7 +135,7 @@ impl Strategy for GoalKeeper {
                     let kick = if robot.distance(&ball_position) < world.geometry.robot_radius + world.geometry.ball_radius -0.01 {
                         Some(Kick::StraightKick { power: 4. })
                     }else{None};
-                    action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, kick, false));
+                    action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, kick, false, false));
                     return false;
                 }
                 for receiver in closests_receivers.iter(){
@@ -144,7 +144,7 @@ impl Strategy for GoalKeeper {
                         action_wrapper.push(self.id, pass_action);
                         return false;
                     } else {
-                        action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false));
+                        action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false, false));
                         return false;
                     }
                 }
@@ -171,7 +171,7 @@ impl Strategy for GoalKeeper {
         }
 
         // Move the robot to the calculated position and orientation
-        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false));
+        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false, false));
         false
     }
 

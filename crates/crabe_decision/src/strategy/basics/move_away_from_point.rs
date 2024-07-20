@@ -26,7 +26,8 @@ pub fn move_away(
                 0., 
                 false, 
                 None, 
-                true
+                true,
+                true,
             ))
         }
         let dir = (robot_pos - away_point).normalize()* (distance+INNACURACY);
@@ -44,6 +45,7 @@ pub fn move_away(
             0., 
             false, 
             None, 
+            true,
             true
         ))
         

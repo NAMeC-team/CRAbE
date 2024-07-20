@@ -23,6 +23,7 @@ pub struct MoveTo {
     pub dribbler: f32,
     pub kicker: Option<Kick>,
     pub fast: bool,
+    pub avoidance: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -35,6 +36,7 @@ impl From<&mut MoveTo> for MoveTo {
             dribbler: other.dribbler,
             kicker: other.kicker,
             fast: other.fast,
+            avoidance: other.avoidance
         }
     }
 }
@@ -53,6 +55,7 @@ impl MoveTo {
         charge: bool,
         kicker: Option<Kick>,
         fast: bool,
+        avoidance: bool,
     ) -> Self {
         Self {
             state: State::Running,
@@ -62,6 +65,7 @@ impl MoveTo {
             dribbler,
             kicker,
             fast,
+            avoidance
         }
     }
 }
@@ -128,7 +132,9 @@ impl Action for MoveTo {
             if id != KEEPER_ID{
                 target = penalty_zone_prevention(&robot.pose.position, &self.target, world)
             }
-            target = obstacle_avoidance(&target, robot, world, _tools);
+            if self.avoidance{
+                target = obstacle_avoidance(&target, robot, world, _tools);
+            }
             let ti = frame_inv(robot_frame(robot));
             let target_in_robot = ti * Point2::new(target.x, target.y);
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
