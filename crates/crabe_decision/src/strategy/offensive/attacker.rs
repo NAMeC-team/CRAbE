@@ -20,8 +20,7 @@ use crabe_framework::data::world::World;
 use crabe_math::vectors::vector_from_angle;
 use crabe_math::{shape::Line, vectors::rotate_vector};
 use nalgebra::Point2;
-use crabe_framework::data::output::{Command, Kick};
-use crate::action::go_to::GoTo;
+
 
 /// The Attacker strategy is responsible for moving the robot to the ball and then try scoring a goal
 pub struct Attacker {
@@ -35,13 +34,13 @@ impl Attacker {
     pub fn new(id: u8) -> Self {
         Self { id, messages: vec![]}
     }
-    
+
     /// Find the best ally to pass the ball to
-    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo {
-        // grab allies in the enemy side 
+    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo{
+        // grab allies in the enemy side
         let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
         if allies_in_positive_x.len() == 0{
-            shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
+            return shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
         }
         let robot_position = robot.pose.position;
         let closest_ally: Option<&Robot<AllyInfo>> = get_best_shooting_window_bot(&allies_in_positive_x, world);
@@ -69,7 +68,7 @@ impl Strategy for Attacker {
     fn name(&self) -> &'static str {
         return "Attacker";
     }
-    
+
     fn get_messages(&self) -> &Vec<MessageData>  {
         &self.messages
     }
@@ -85,7 +84,7 @@ impl Strategy for Attacker {
     /// # Arguments
     ///
     /// * world: The current state of the game world.
-    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.    
+    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.
     /// * action_wrapper: An `ActionWrapper` instance used to issue actions to the robot.
     ///
     /// # Returns
@@ -104,13 +103,13 @@ impl Strategy for Attacker {
             Some(robot) => robot,
             None => return false,
         };
-        
+
         // Get the ball position, otherwise exit the function
         let ball = match &world.ball {
             Some(ball) => ball,
             None => return false,
         };
-        
+
         // If the ball is moving in the direction of our goal, intercept it
         let ball_trajectory_intersect_with_goal = world.geometry.enemy_goal.line.intersection_segments(&Line::new(ball.position_2d(), ball.position_2d() + ball.velocity.xy() * 1000.));
         if ball.velocity.norm() > 0.5 && !ball_trajectory_intersect_with_goal.is_ok(){
@@ -133,17 +132,7 @@ impl Strategy for Attacker {
             action_wrapper.push(self.id, shoot(robot, &ball, &target, world));
             self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
         }else{
-            let movement = self.pass_to_ally(world, robot, ball, tools_data);
-            let goto = GoTo::new(movement.target, movement.dribbler, movement.charge, movement.kicker, movement.fast);
-            let cmd = Command {
-                forward_velocity: 1.0,
-                left_velocity: 0.0,
-                angular_velocity: 0.0,
-                charge: true,
-                kick: movement.kicker,
-                dribbler: 400.0,
-            };
-            action_wrapper.push(self.id,goto);
+            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data));
         }
         false
     }

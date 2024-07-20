@@ -151,7 +151,7 @@ impl Strategy for DefenseWall {
                 let pos_on_penalty_line = enlarged_penalty.on_penalty_line(robot_wall_destination);
                 if world.geometry.ally_penalty.is_inside(&ball_pos){
                     if let Some(intersection) = keeper_intersection {
-                        if (pos_on_penalty_line - intersection).norm()<=world.geometry.robot_radius + 0.05{
+                        if (pos_on_penalty_line - intersection).norm()<=world.geometry.robot_radius *2.{
                             i+=1;
                         }
                     }
