@@ -42,7 +42,7 @@ pub fn shoot(
     };
 
     if shooting_trajectory_will_score && dot_with_ball > 0.95 && dist_to_ball < 0.5 {
-        let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 1.) { 
+        let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius ) {
             Some(Kick::StraightKick {  power: 7. }) 
         }else {None};
         let dir  = (ball_position - robot_position).normalize()*0.4;
