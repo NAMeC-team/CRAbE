@@ -6,3 +6,5 @@ mod move_away_from_ball;
 pub use self::move_away_from_ball::MoveAwayFromBall;
 mod prepare_start;
 pub use self::prepare_start::PrepareStart;
+mod latteral_attack;
+pub use self::latteral_attack::LateralAttack;
