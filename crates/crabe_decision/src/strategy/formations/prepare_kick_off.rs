@@ -76,7 +76,7 @@ impl Strategy for PrepareKickOff {
                             let perp = rotate_vector(dir, PI/2.) * (world.geometry.robot_radius * 2. + 0.02);
                             let target_center = ball.position_2d() + dir;
                             let pos_along_block = perp * i as f64;
-                            action_wrapper.push(*id, MoveTo::new(target_center + pos_along_block, angle_to_point(robot.pose.position, ball.position_2d()), 0., false, None, true));
+                            action_wrapper.push(*id, MoveTo::new(target_center + pos_along_block, angle_to_point(robot.pose.position, ball.position_2d()), 0., false, None, true, true));
                             i+=1;
                         }else{}
                     }

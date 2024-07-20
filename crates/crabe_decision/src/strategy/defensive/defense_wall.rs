@@ -47,7 +47,7 @@ impl DefenseWall {
         let oscillating_value = (0.00005 * 2.0 * std::f64::consts::PI * x).sin() * 0.5 + 0.5;
         let pos = enlarged_penalty.on_penalty_line(oscillating_value);
         for id in self.ids.clone() {
-            action_wrapper.push(id, MoveTo::new(pos, 0., 0., false, None, false));
+            action_wrapper.push(id, MoveTo::new(pos, 0., 0., false, None, false, false));
         }
         false
     }
@@ -162,15 +162,15 @@ impl Strategy for DefenseWall {
                     if let Some(closest_bot_to_ball) = closest{
                         if closest_bot_to_ball.id == robot.id && !enlarged_penalty.is_inside(&ball_pos){
                             let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
-                            action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false));
+                            action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false, false));
                         }else {
-                            action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                            action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, false));
                         }
                     }else {
-                        action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                        action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, false));
                     }
                 } else {
-                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true));
+                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, false));
                 }
                 i+=1;
             }

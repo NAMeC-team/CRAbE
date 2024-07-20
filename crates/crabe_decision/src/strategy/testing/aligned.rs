@@ -50,7 +50,7 @@ impl Strategy for Aligned {
             action_wrapper.clear(*id);
             let offset = 0.15 * ((self.ids.len() as f64) - 1.);
             let dest = Point2::new((i as f64) * 0.3 - offset, 2.0);
-            action_wrapper.push(*id, MoveTo::new(dest, -PI / 4.0, 0.0, false, None, false));
+            action_wrapper.push(*id, MoveTo::new(dest, -PI / 4.0, 0.0, false, None, false, true));
             if *id == 1 {
                 match world.allies_bot.get(id) {
                     Some(bot) => {

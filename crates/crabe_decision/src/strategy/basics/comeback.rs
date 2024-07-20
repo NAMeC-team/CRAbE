@@ -31,9 +31,9 @@ pub fn comeback(
             } else {
                 Point2::new(target.x, target.y - 1.0)
             };
-            return MoveTo::new(new_target, orientation, 0.0, false, None, true);
+            return MoveTo::new(new_target, orientation, 0.0, false, None, true, true);
         }
     }
     
-    MoveTo::new(target, orientation, 0.0, false, None, true)
+    MoveTo::new(target, orientation, 0.0, false, None, true , true)
 }

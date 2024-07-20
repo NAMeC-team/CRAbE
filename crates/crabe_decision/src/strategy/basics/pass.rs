@@ -47,7 +47,7 @@ pub fn pass(
         let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.002) { 
             Some(Kick::StraightKick {  power: 4. }) 
         }else {None};
-        return MoveTo::new(ball_position, vectors::angle_to_point(robot_position,receiver.pose.position), 1.,  true, kick, true);
+        return MoveTo::new(ball_position, vectors::angle_to_point(robot_position,receiver.pose.position), 1.,  true, kick, true, false);
     }
-    MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, receiver.pose.position), 0., false, None, true)
+    MoveTo::new(behind_ball_position, vectors::angle_to_point(robot_position, receiver.pose.position), 0., false, None, true, true)
 }
