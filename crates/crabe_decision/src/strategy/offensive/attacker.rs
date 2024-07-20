@@ -140,10 +140,10 @@ impl Strategy for Attacker {
                 left_velocity: 0.0,
                 angular_velocity: 0.0,
                 charge: true,
-                kick: Some(Kick::StraightKick),
+                kick: movement.kicker,
                 dribbler: 400.0,
             };
-            action_wrapper.push(self.id, cmd);
+            action_wrapper.push(self.id,goto);
         }
         false
     }
