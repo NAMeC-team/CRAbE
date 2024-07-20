@@ -128,26 +128,8 @@ impl Strategy for GoalKeeper {
             if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
                 position_target = intersection;
             } else if ball.velocity.norm() < 0.1 && penalty.is_inside(&ball_position) {
-                position_target = ball_position;
-                let mut closests_receivers = closest_bots_to_point(world.allies_bot.values().collect(), ball_position);
-                closests_receivers.retain(|receiver| receiver.id != self.id && !self.ids_to_not_pass.contains(&receiver.id));
-                if closests_receivers.len() == 0{
-                    let kick = if robot.distance(&ball_position) < world.geometry.robot_radius + world.geometry.ball_radius -0.01 {
-                        Some(Kick::StraightKick { power: 4. })
-                    }else{None};
-                    action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, kick, false, false));
-                    return false;
-                }
-                for receiver in closests_receivers.iter(){
-                    if object_in_bot_trajectory(world, self.id, receiver.pose.position, false, false, true).len() == 0{
-                        let pass_action = pass(robot, receiver, ball, world);
-                        action_wrapper.push(self.id, pass_action);
-                        return false;
-                    } else {
-                        action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false, false));
-                        return false;
-                    }
-                }
+                action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false, false));
+                return false;
             } else if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_position){
                 if let Some(intersection) = self.follow_enemy_to_ball_trajectory(ball, world, closest_enemy){
                     position_target = intersection;
@@ -171,7 +153,7 @@ impl Strategy for GoalKeeper {
         }
 
         // Move the robot to the calculated position and orientation
-        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, false, false));
+        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, true, false));
         false
     }
 
