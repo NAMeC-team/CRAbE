@@ -47,7 +47,7 @@ impl DefenseWall {
         let oscillating_value = (0.00005 * 2.0 * std::f64::consts::PI * x).sin() * 0.5 + 0.5;
         let pos = enlarged_penalty.on_penalty_line(oscillating_value);
         for id in self.ids.clone() {
-            action_wrapper.push(id, MoveTo::new(pos, 0., 0., false, None, false, false));
+            action_wrapper.push(id, MoveTo::new(pos, 0., 0., false, None, false, true));
         }
         false
     }
@@ -156,21 +156,26 @@ impl Strategy for DefenseWall {
                         }
                     }
                 }
+                let robot_to_goal = Line::new(robot.pose.position, goal_center);
+                let dist_to_goal = if let Some(intersection) = enlarged_penalty.intersection_line(robot_to_goal){
+                    (robot.pose.position - intersection).norm()
+                }else{0.};
+                let avoidance = dist_to_goal > 0.5;
                 let orientation = vectors::angle_to_point(robot.pose.position,  world.geometry.ally_goal.line.center()) + PI;
                 let distance_to_ball = (ball_pos - robot.pose.position.xy()).norm();
-                if distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
+                if dist_to_goal < 0.7 && distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
                     if let Some(closest_bot_to_ball) = closest{
                         if closest_bot_to_ball.id == robot.id && !enlarged_penalty.is_inside(&ball_pos){
                             let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
-                            action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false, false));
+                            action_wrapper.push(robot.id, MoveTo::new(ball_pos, ball_orientation, 0., true, Some(Kick::StraightKick { power: 4. }), false, avoidance));
                         }else {
-                            action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, false));
+                            action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, avoidance));
                         }
                     }else {
-                        action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, false));
+                        action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, avoidance));
                     }
                 } else {
-                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, false));
+                    action_wrapper.push(robot.id, MoveTo::new(pos_on_penalty_line, orientation, 0., false, None, true, avoidance));
                 }
                 i+=1;
             }
