@@ -20,7 +20,8 @@ use crabe_framework::data::world::World;
 use crabe_math::vectors::vector_from_angle;
 use crabe_math::{shape::Line, vectors::rotate_vector};
 use nalgebra::Point2;
-
+use crabe_framework::data::output::{Command, Kick};
+use crate::action::go_to::GoTo;
 
 /// The Attacker strategy is responsible for moving the robot to the ball and then try scoring a goal
 pub struct Attacker {
@@ -36,11 +37,11 @@ impl Attacker {
     }
     
     /// Find the best ally to pass the ball to
-    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo{
+    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo {
         // grab allies in the enemy side 
         let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
         if allies_in_positive_x.len() == 0{
-            return shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
+            shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
         }
         let robot_position = robot.pose.position;
         let closest_ally: Option<&Robot<AllyInfo>> = get_best_shooting_window_bot(&allies_in_positive_x, world);
@@ -132,7 +133,17 @@ impl Strategy for Attacker {
             action_wrapper.push(self.id, shoot(robot, &ball, &target, world));
             self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
         }else{
-            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data));
+            let movement = self.pass_to_ally(world, robot, ball, tools_data);
+            let goto = GoTo::new(movement.target, movement.dribbler, movement.charge, movement.kicker, movement.fast);
+            let cmd = Command {
+                forward_velocity: 1.0,
+                left_velocity: 0.0,
+                angular_velocity: 0.0,
+                charge: true,
+                kick: movement.kicker,
+                dribbler: 400.0,
+            };
+            action_wrapper.push(self.id,goto);
         }
         false
     }
