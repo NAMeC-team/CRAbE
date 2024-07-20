@@ -5,7 +5,7 @@ use serde::Serialize;
 use super::TeamColor;
 
 /// The `Ball` struct represents the ball in the SSL game.
-#[derive(Serialize, Default, Clone, Debug)]
+#[derive(Serialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Ball {
     /// The position of the ball in 3D space in meters, with respect to the center of the field.
@@ -20,6 +20,20 @@ pub struct Ball {
     pub possession: Option<TeamColor>,
     /// The last touch of the ball by a robot.
     pub last_touch: Option<BallTouchInfo>,
+}
+
+
+impl Default for Ball {
+    fn default() -> Self {
+        Ball {
+            position: Point3::new(10000.,10000., 10000.),
+            timestamp: Default::default(),
+            velocity: Default::default(),
+            acceleration:  Default::default(),
+            possession:  Default::default(),
+            last_touch:  Default::default(),
+        }
+    }
 }
 
 impl Ball {

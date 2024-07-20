@@ -148,9 +148,18 @@ impl PostFilter for BallFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         if let Some(tracked_ball) = &filter_data.ball {
             let mut ball = tracked_ball.data.clone();
-            calculated_possession(&mut ball, &world);
-            calculate_last_touch(&mut ball, &world);
-            world.ball = Some(ball);
+            if ball.position.x > 1000.{
+                if let Some(b) = &world.ball{
+                    ball = b.clone();
+                    calculated_possession(&mut ball, &world);
+                    calculate_last_touch(&mut ball, &world);
+                    world.ball = Some(ball);
+                }
+            }else{
+                calculated_possession(&mut ball, &world);
+                calculate_last_touch(&mut ball, &world);
+                world.ball = Some(ball);
+            }
         }
     }
 }
