@@ -11,10 +11,13 @@ use crate::strategy::Strategy;
 use crate::utils::everyone_halt;
 use crate::utils::everyone_stop;
 use crate::utils::everyone_stop_except_keeper;
+use crate::utils::penalty_state;
 use crate::utils::prepare_kick_off;
 use crate::utils::prepare_start;
+use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::*;
+use crabe_framework::data::world::TeamColor;
 use crabe_framework::data::world::World;
 use crate::utils::bigbro_decisions::run_state;
 
@@ -24,9 +27,9 @@ use crate::utils::bigbro_decisions::run_state;
 ///
 /// To add a strategy, simply create a new instance of the desired strategy and add it to the
 /// `strategies` field in the `new()` method of the `BigBro` struct.
-#[derive(Default)]
 pub struct BigBro {
     pub strategies: Vec<Box<dyn Strategy>>,
+    pub team_penalty: TeamColor,
 }
 
 impl BigBro {
@@ -34,6 +37,7 @@ impl BigBro {
     pub fn new() -> Self {
         Self {
             strategies: vec![],
+            team_penalty: TeamColor::Blue,
         }
     }
 
@@ -325,7 +329,14 @@ impl Manager for BigBro {
             GameState::Stopped(stopped_state) => match stopped_state {
                 StoppedState::Stop => everyone_stop(self, world),
                 StoppedState::PrepareKickoff(team) => prepare_kick_off(self, world, team),
-                StoppedState::PreparePenalty(_team) =>  everyone_stop_except_keeper(self, world),
+                StoppedState::PreparePenalty(team) => {
+                    self.team_penalty = team;
+                    if team == world.team_color{
+                        everyone_stop(self, world);
+                    }else{
+                        everyone_stop(self, world);
+                    }
+                }
                 StoppedState::BallPlacement(_team) =>  everyone_stop(self, world),
                 StoppedState::PrepareForGameStart => prepare_start(self, world),
                 StoppedState::BallLeftFieldTouchLine(_) => everyone_halt(self, world),
@@ -346,11 +357,7 @@ impl Manager for BigBro {
                 }else{
                     prepare_kick_off(self, world, team);
                 },
-                RunningState::Penalty(team) => if team == world.team_color{
-                    run_state(self, world, tools_data);
-                }else{
-                    everyone_stop_except_keeper(self, world);
-                },
+                RunningState::Penalty(team) => penalty_state(self, world, team),
                 RunningState::FreeKick(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{
