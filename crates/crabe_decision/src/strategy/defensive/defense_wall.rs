@@ -163,7 +163,7 @@ impl Strategy for DefenseWall {
                 let avoidance = dist_to_goal > 0.5;
                 let orientation = vectors::angle_to_point(robot.pose.position,  world.geometry.ally_goal.line.center()) + PI;
                 let distance_to_ball = (ball_pos - robot.pose.position.xy()).norm();
-                if dist_to_goal < 0.7 && distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
+                if dist_to_goal < 0.4 && distance_to_ball < KICK_RANGE + world.geometry.robot_radius + world.geometry.ball_radius {
                     if let Some(closest_bot_to_ball) = closest{
                         if closest_bot_to_ball.id == robot.id && !enlarged_penalty.is_inside(&ball_pos){
                             let ball_orientation = vectors::angle_to_point(robot.pose.position, ball_pos);
