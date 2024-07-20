@@ -363,7 +363,7 @@ impl Manager for BigBro {
                 }else{
                     prepare_kick_off(self, world,team);
                 },
-                RunningState::Run => penalty_state(self, world, self.team_penalty),
+                RunningState::Run => run_state(self, world, tools_data),
             }
         }
         
