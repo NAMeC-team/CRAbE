@@ -6,6 +6,7 @@ use crabe_framework::data::geometry::Penalty;
 use crabe_framework::data::geometry::{Field, Geometry};
 use crabe_framework::data::world::World;
 use crabe_math::shape::Circle;
+use crabe_math::shape::Line;
 use nalgebra::Point2;
 
 pub struct GeometryFilter;
@@ -31,23 +32,97 @@ fn geometry_to_penalty(cam_geometry: &CamGeometry, positive: bool) -> Penalty {
         .get("LeftFieldLeftPenaltyStretch")
         .map(|line| {
             let width = 2.0 * line.line.start.y.abs();
+            let depth = (line.line.start.x - line.line.end.x).abs();
             Penalty {
                 width,
-                depth: (line.line.start.x - line.line.end.x).abs(),
-                top_left_position: Point2::new(
-                    factor * (cam_geometry.field_length / 2.0),
-                    factor * (width / 2.0),
+                depth,
+                front_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        -factor * (width / 2.0),
+                    ),
+                ),
+                back_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        -factor * (width / 2.0),
+                    ),
+                ),
+                left_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        factor * (width / 2.0),
+                    ),
+                ),
+                right_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        -factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        -factor * (width / 2.0),
+                    ),
                 ),
             }
         })
         .unwrap_or_else(|| {
             let width = cam_geometry.penalty_area_width.unwrap_or(2.0);
+            let depth = cam_geometry.penalty_area_depth.unwrap_or(1.0);
             Penalty {
                 width,
-                depth: cam_geometry.penalty_area_depth.unwrap_or(1.0),
-                top_left_position: Point2::new(
-                    factor * (cam_geometry.field_length / 2.0),
-                    factor * (width / 2.0),
+                depth,
+                front_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        -factor * (width / 2.0),
+                    ),
+                ),
+                back_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        -factor * (width / 2.0),
+                    ),
+                ),
+                left_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        factor * (width / 2.0),
+                    ),
+                ),
+                right_line: Line::new(
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0),
+                        -factor * (width / 2.0),
+                    ),
+                    Point2::new(
+                        factor * (cam_geometry.field_length / 2.0 - depth),
+                        -factor * (width / 2.0),
+                    ),
                 ),
             }
         })
@@ -58,9 +133,15 @@ fn geometry_to_goal(cam_geometry: &CamGeometry, positive: bool) -> Goal {
     Goal {
         width: cam_geometry.goal_width,
         depth: cam_geometry.goal_depth,
-        top_left_position: Point2::new(
-            factor * ((cam_geometry.field_length / 2.0) + cam_geometry.goal_depth),
-            factor * (cam_geometry.goal_width / 2.0),
+        line: Line::new(
+            Point2::new(
+                factor * (cam_geometry.field_length / 2.0),
+                factor * (cam_geometry.goal_width / 2.0),
+            ),
+            Point2::new(
+                factor * (cam_geometry.field_length / 2.0),
+                -factor * (cam_geometry.goal_width / 2.0),
+            ),
         ),
     }
 }
@@ -80,6 +161,8 @@ impl PostFilter for GeometryFilter {
             ally_penalty: geometry_to_penalty(cam_geometry, false),
             enemy_penalty: geometry_to_penalty(cam_geometry, true),
             center: geometry_to_center(cam_geometry),
+            robot_radius: cam_geometry.max_robot_radius.unwrap_or(0.09),
+            ball_radius: cam_geometry.ball_radius.unwrap_or(0.0215),
         };
 
         world.geometry = geometry;

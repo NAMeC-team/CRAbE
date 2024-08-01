@@ -1,6 +1,8 @@
 pub mod ball;
 pub mod geometry;
 pub mod robot;
+pub mod game_controller;
+pub mod field_mask;
 
 use crate::data::FilterData;
 use crabe_framework::data::world::World;

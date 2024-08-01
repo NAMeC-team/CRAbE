@@ -1,3 +1,6 @@
+use std::thread::sleep;
+use std::time::Duration;
+
 use crate::league::real::RealConfig;
 use log::error;
 
@@ -55,6 +58,7 @@ impl CommandSenderTask for Real {
 
         let packet = self.prepare_packet(commands.into_iter());
         self.usb.send(packet);
+        sleep(Duration::from_millis(32));
 
         Default::default()
     }

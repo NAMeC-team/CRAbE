@@ -3,3 +3,15 @@
 /// for use in a game.
 mod square;
 pub use self::square::Square;
+
+mod go_left;
+pub use self::go_left::GoLeft;
+mod go_right;
+pub use self::go_right::GoRight;
+mod aligned;
+pub use self::aligned::Aligned;
+mod prembule;
+pub use self::prembule::Prembule;
+mod test_vision_moveto;
+pub use self::test_vision_moveto::TestVisionMoveTo;
+

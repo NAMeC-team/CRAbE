@@ -6,12 +6,15 @@ pub use self::robot::{
 use serde_with::serde_as;
 
 mod ball;
-pub use self::ball::Ball;
+pub use self::ball::{Ball, BallTouchInfo};
 
 mod team;
 pub use self::team::{Team, TeamColor};
 
-mod game_data;
+pub mod game_data;
+pub mod game_state;
+pub mod stage_info;
+
 pub use self::game_data::GameData;
 
 use crate::config::CommonConfig;

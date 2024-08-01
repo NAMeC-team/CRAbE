@@ -14,3 +14,9 @@ pub mod tool;
 /// The world module contains the data structures for representing the state of the world
 /// in the control system. It includes information about robots, the ball, and the field.
 pub mod world;
+/// The referee module contains the different orders issued by a referee
+pub mod referee;
+/// The state_handler module contains the definition of the internal
+/// state machine that we use to process the current state of the game,
+/// based on the commands sent by the referee
+pub mod state_handler;

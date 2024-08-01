@@ -1,4 +1,4 @@
-use crabe_math::shape::{Circle, Line, Rectangle};
+use crabe_math::shape::{Arc, Circle, Line, Rectangle};
 use nalgebra::Point2;
 use serde::Serialize;
 use serde_with::serde_as;
@@ -20,6 +20,7 @@ pub enum Annotation {
     Line(Line),
     Rectangle(Rectangle),
     Point(Point2<f64>),
+    Arc(Arc),
 }
 
 impl AnnotationStore {
@@ -52,6 +53,27 @@ impl AnnotationStore {
     pub fn add_rectangle(&mut self, id: String, rectangle: Rectangle) {
         self.annotations
             .insert(id, Annotation::Rectangle(rectangle));
+    }
+
+    /// Add a line annotation to be displayed in the field viewer.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id`: A unique identifier for the annotation.
+    /// * `line`: The line shape to be added as an annotation.
+    pub fn add_line(&mut self, id: String, line: Line) {
+        self.annotations.insert(id, Annotation::Line(line));
+    }
+
+
+    /// Add an arc annotation to be displayed in the field viewer.
+    /// 
+    /// # Arguments
+    /// 
+    /// * `id`: A unique identifier for the annotation.
+    /// * `arc`: The arc shape to be added as an annotation.
+    pub fn add_arc(&mut self, id: String, arc: Arc) {
+        self.annotations.insert(id, Annotation::Arc(arc));
     }
 
     /// Remove all annotations from the store.
