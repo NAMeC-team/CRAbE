@@ -52,6 +52,9 @@ Run `cargo run -- -h`to see the arguments available
 ### Real setup
 A guide is available on the main computer of NAMeC's SSL room.
 
+## Viewer
+Our own viewer has been implemented and can be found [here](https://github.com/NAMeC-team/aquarium)
+
 ## Modules
 - crabe
 
@@ -88,7 +91,7 @@ Used to impose a limit on output commands, such as limiting the target speed of 
 Input/Output handling.
 Contains binaries to test correct reception of data from external systems
 
-Manages vision reception, emission of commands to the mainboard, and emissoin of data to the viewer.
+Manages vision reception, emission of commands to the mainboard, and emission of data to the viewer.
 
 - crabe_math
 
