@@ -1,0 +1,68 @@
+@startuml
+hide empty description
+
+'Legend
+' - Yellow filled line : New transition from original document
+' - Yellow dotted line : transition not implemented
+' - Green : implemented
+' - White : todo
+
+'Notes
+' New transitions are interpreted directly
+' from the game controller league software
+'
+' Fouls lead to a transition only during a Running state
+' (missing transition Running (big one) -> Stop ?)
+'
+' The (human) referee can choose to transition 
+' to the Stop state during any state.
+
+
+[*] --> Halt : (from any state) Halt
+[*] -[#yellow]-> Stop : (from any state) Stop
+
+state Halted {
+    state Halt : Robots are not allowed to move
+    Halt -[#green]-> Stop : Stop
+    state Timeout : Both teams can do what ever they want
+    Timeout -[#green]-> Stop : Stop
+}
+
+state Stopped {
+    state Stop : Both teams have to keep distance to the ball
+    Stop -[#green]-> PrepareKickoff : PrepareKickoff
+    Stop -[#green]-> PreparePenalty : PreparePenalty
+    Stop -[#green]-> BallPlacement : BallPlacement
+    Stop -[#green]-> Timeout : Timeout
+    Stop -[#green]-> Run : ForceStart
+    Stop -[#yellow]-> FreeKick : DirectFree
+  
+    state BallPlacement : One team places the ball, \nthe other keeps distance to ball
+    BallPlacement -[#green]-> Stop : Stop
+    
+    'this is a phantom transition
+    'in reality, referee sends "Stop" after a successful ball placement
+    BallPlacement -[dotted,#yellow]-> FreeKick : //continue//
+   
+    state PrepareKickoff : Teams have to move to their sides
+    PrepareKickoff -[#green]-> Kickoff : NormalStart
+   
+    state PreparePenalty : Keeper on goal line, \nattacker behind ball, \nother robots on legal positions
+    PreparePenalty -[#green]-> Penalty : NormalStart
+}
+
+state Running {
+    state Kickoff : One team may kick the ball \nwithin 5 (A) or 10 (B) seconds
+    Kickoff -[#green]-> Run : after x seconds OR if ball moved
+   
+    state FreeKick : One team may kick the ball \nwithin 5 (A) or 10 (B) seconds
+    FreeKick --> Run : after x seconds OR if ball moved
+   
+    state Penalty : Execute a penalty kick within 10 seconds
+    Penalty --> Stop : after 10 seconds
+   
+    state Run : Both teams may manipulate the ball
+    Run -[#green]-> Stop : Stop
+}
+
+@enduml

@@ -158,11 +158,7 @@ impl GameControllerPostFilter {
             //     }
             // }
 
-            // Run
-            (Running(RunningState::Run), RefereeCommand::Stop, _) => { Stopped(StoppedState::Stop) }
-
             // FreeKick (time-dependent ?)
-            // todo: when do we enter freekick state ?
             (Running(RunningState::FreeKick(team)), RefereeCommand::DirectFree(_), Some(updater)) => {
                 if let Some(ball) = &world.ball {
                     let switch_state = updater(&StateData { ball_pos: ball.position_2d(), world });
@@ -178,15 +174,23 @@ impl GameControllerPostFilter {
                 }
             }
 
-            // any state can lead to Halt
-            (_, RefereeCommand::Halt, _) => {
-                self.cond_transition = None;
-                Halted(HaltedState::Halt)
+            // any running state can lead to a Stop
+            // (this performs the Run -> Stop transition as well)
+            (Running(_), RefereeCommand::Stop, _) => {
+                println!("{:?}", referee.game_events.last());
+                Stopped(StoppedState::Stop)
             }
+
             // The human referee can trigger Stop from any state
             (_, RefereeCommand::Stop, _) => {
                 self.cond_transition = None;
                 Stopped(StoppedState::Stop)
+            }
+
+            // any state can lead to Halt
+            (_, RefereeCommand::Halt, _) => {
+                self.cond_transition = None;
+                Halted(HaltedState::Halt)
             }
 
             (_, _, _) => {
