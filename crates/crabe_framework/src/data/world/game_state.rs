@@ -27,8 +27,6 @@ pub enum GameState {
 #[derive(Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum HaltedState {
-    /// [Non-official] The game hasn't started yet
-    GameNotStarted,
     /// A halt command has been issued
     Halt,
     /// A team is having a timeout
@@ -50,40 +48,10 @@ pub enum HaltedState {
 #[derive(Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum StoppedState {
-    /// [Non-official] Prepare to move to our side of the field
-    /// before the game starts. At this point, we don't know who
-    /// is going to perform the first kickoff
-    PrepareForGameStart,
-
-    /// The team `TeamColor` made the ball leave the field by touching a touch line,
-    /// (the longest horizontal lines)
-    /// that will lead to a free kick for the opposite team
-    BallLeftFieldTouchLine(TeamColor),
-
-    /// [Extension] The ball crossed a goal line, and led to a corner kick
-    /// that will be shot by team `TeamColor` (a bot will kick the ball)
-    CornerKick(TeamColor),
-
-    /// [Extension] The ball crossed a goal line, and will lead to a goal kick
-    /// that will be shot by team `TeamColor` (the goalkeeper will kick the ball)
-    GoalKick(TeamColor),
-
-    /// An aimless kick was fired by team `TeamColor`, meaning it was not directed towards
-    /// the goal posts, and went out of the field. The opposite team will obtain a free kick
-    AimlessKick(TeamColor),
-    //AimlessKick(crate::data::referee::event::AimlessKick), //TODO: wish I could've done this
-
-    /// The game is stalling and no one is making any progression
-    NoProgressInGame,
-
+    
     /// The team `TeamColor` is going to do their kickoff.
     /// dev note: we use this state directly after a goal is scored
     PrepareKickoff(TeamColor),
-
-    /// [Non-official]
-    /// The team `TeamColor` will perform a free kick and
-    /// must put its robots in position
-    PrepareFreekick(TeamColor),
 
     /// The team `TeamColor` must prepare for a penalty kick
     PreparePenalty(TeamColor),
@@ -91,12 +59,6 @@ pub enum StoppedState {
     /// The team `TeamColor` is trying to place the ball automatically
     /// without the help of a human to pursue the game
     BallPlacement(TeamColor),
-
-    /// [Collection] A foul has occurred and will lead to a new state in the next seconds
-    /// Refer to the latest event from the referee to get data about the foul
-    /// Is not used for every stopping foul, but rather for fouls that could
-    /// be ignored while still playing a proper game
-    FoulStop,
 
     /// Generic stop command, issued when robots must slow down after
     /// a foul, for example. Can be issued manually

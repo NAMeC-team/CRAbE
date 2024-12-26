@@ -87,7 +87,7 @@ impl RefereeOrders {
 impl Default for RefereeOrders {
     fn default() -> Self {
         Self {
-            state: GameState::Halted(HaltedState::GameNotStarted),
+            state: GameState::Halted(HaltedState::Halt),
             event: None,
             speed_limit: MAX_SPEED_HALTED,
             min_dist_from_ball: None,
