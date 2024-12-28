@@ -2,8 +2,6 @@ use crate::data::world::TeamColor;
 use serde::Serialize;
 
 /// Defines the possible game states of the match
-/// Some states are not associated with commands sent from the referee
-/// These states are marked with the [Non-official] tag
 #[derive(Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum GameState {

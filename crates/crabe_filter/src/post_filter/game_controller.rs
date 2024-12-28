@@ -218,3 +218,74 @@ impl PostFilter for GameControllerPostFilter {
         }
     }
 }
+
+/// ------------------
+///   Testing module
+/// ------------------
+#[cfg(test)]
+mod tests {
+    use crabe_framework::config::CommonConfig;
+    use crabe_framework::data::referee::Stage;
+    use crabe_framework::data::world::TeamColor;
+    use super::HaltedState::*;
+    use super::StoppedState::*;
+    use super::RunningState::*;
+    use super::*;
+
+    fn all_states() -> Vec<GameState> {
+        let team = TeamColor::Blue;
+        vec![
+            Halted(Halt), Halted(Timeout(team)),
+            Stopped(PrepareKickoff(team)), Stopped(PreparePenalty(team)),
+            Stopped(BallPlacement(team)),
+            Running(KickOff(team)), Running(Penalty(team)), Running(FreeKick(team)),
+            Running(Run)
+        ]
+    }
+    
+    fn set_refcmd_to(filter_data: &mut FilterData, command: RefereeCommand) -> &FilterData {
+        filter_data.referee.clear();
+        filter_data.referee.push(Referee {
+            source_identifier: None,
+            match_type: None,
+            packet_timestamp: Default::default(),
+            stage: Stage::NormalFirstHalfPre,
+            stage_time_left: None,
+            command,
+            command_counter: 0,
+            command_timestamp: Default::default(),
+            ally: Default::default(),
+            enemy: Default::default(),
+            designated_position: None,
+            positive_half: None,
+            next_command: None,
+            game_events: vec![],
+            game_event_proposals: vec![],
+            current_action_time_remaining: None,
+        });
+        filter_data
+    }
+
+    #[test]
+    fn any_state_to_stop() {
+        let mut gcpf = GameControllerPostFilter::default();
+        let mut world = World::with_config(&CommonConfig {gc: false, real: false, yellow: false});
+        let mut filter_data = FilterData::default();
+        set_refcmd_to(&mut filter_data, RefereeCommand::Stop);
+
+        all_states().iter().for_each(|state| {
+            let prev_state = world.data.ref_orders.state;
+            world.data.ref_orders.state = *state;
+            gcpf.step(&mut filter_data, &mut world);
+            
+            assert!(
+                matches!(world.data.ref_orders.state, Stopped(_)),
+                "Invalid transition {:?} -> {:?}",
+                prev_state,
+                world.data.ref_orders.state,
+            );
+            world.data.ref_orders.state = Halted(Halt);
+            gcpf.ref_cmd = RefereeCommand::Halt
+        });
+    }   
+}
