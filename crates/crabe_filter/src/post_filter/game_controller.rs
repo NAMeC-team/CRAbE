@@ -1,5 +1,3 @@
-use std::future::{Future, IntoFuture};
-use std::os::linux::raw::stat;
 use std::time::{Duration, Instant};
 use log::warn;
 use nalgebra::{distance, min, Point2};
