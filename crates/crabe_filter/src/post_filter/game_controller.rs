@@ -224,9 +224,12 @@ impl PostFilter for GameControllerPostFilter {
             // - the current state must be refreshed with new data
             if self.ref_cmd != referee.command || self.cond_transition.is_some() {
                 let prev_state = world.data.ref_orders.state;
-                world.data.ref_orders.state = self.transition(referee, world);
-                println!("{:?} -> {:?})", prev_state, &world.data.ref_orders.state);
+                let new_state = self.transition(referee, world);
+                println!("{:?} -> {:?})", prev_state, &new_state);
                 self.ref_cmd = referee.command;
+                
+                world.data.ref_orders.update(new_state, referee);
+                world.data.ref_orders.state = new_state;
             }
         }
     }
