@@ -32,6 +32,7 @@ const MAX_SPEED_STOPPED: f32 = 1.5;
 //TODO: use MAX_LINEAR constant ? (can't because of circular dependency
 // between crabe_framework and crabe_guard)
 const MAX_SPEED_RUNNING: f32 = 6.; // Arbitrary value, not defined by the rulebook
+const MIN_DIST_FROM_BALL_STOPPED: f64 = 1.5;
 
 impl RefereeOrders {
     /// Get the maximum speed authorized during a given game state
@@ -51,20 +52,8 @@ impl RefereeOrders {
     fn get_min_dist_from_ball_during(game_state: GameState) -> f64 {
         match game_state {
             GameState::Halted(_) => 0.,
-            GameState::Stopped(_) => 1.5,
+            GameState::Stopped(_) => MIN_DIST_FROM_BALL_STOPPED,
             GameState::Running(_) => 0.,
-        }
-    }
-
-    /// Creates a new instance, that defines the speed limits
-    /// depending on the current game state provided
-    pub fn new(game_state: GameState, game_event: Option<GameEvent>) -> Self {
-        Self {
-            state: game_state,
-            event: game_event,
-            speed_limit: Self::get_speed_limit_during(game_state),
-            min_dist_from_ball: Self::get_min_dist_from_ball_during(game_state),
-            designated_position: None,
         }
     }
 
