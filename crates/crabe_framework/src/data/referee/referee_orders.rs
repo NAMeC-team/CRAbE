@@ -19,8 +19,9 @@ pub struct RefereeOrders {
     pub speed_limit: f32,
     /// Minimum distance to stay away from the ball
     /// There might not be any distance required, for example
-    /// during a normal running state
-    pub min_dist_from_ball: Option<f32>,
+    /// during a normal running state. In that case,
+    /// it will be set to 0.
+    pub min_dist_from_ball: f64,
     /// The last designated position for a ball placement event
     /// If no ball placement is required, this field is set to None
     pub designated_position: Option<Point2<f64>>,
@@ -37,7 +38,7 @@ impl RefereeOrders {
     /// There are no specific speed limits for certain events,
     /// such as a penalty.
     /// Speed limits are only defined for three main types of game states
-    pub fn get_speed_limit_during(game_state: GameState) -> f32 {
+    fn get_speed_limit_during(game_state: GameState) -> f32 {
         match game_state {
             GameState::Halted(_) => MAX_SPEED_HALTED,
             GameState::Stopped(_) => MAX_SPEED_STOPPED,
@@ -47,11 +48,11 @@ impl RefereeOrders {
     
     /// Get the minimum distance our robots have to stay away
     /// from the ball during a given state
-    pub fn get_min_dist_from_ball_during(game_state: GameState) -> Option<f32> {
+    fn get_min_dist_from_ball_during(game_state: GameState) -> f64 {
         match game_state {
-            GameState::Halted(_) => None,
-            GameState::Stopped(_) => Some(1.5),
-            GameState::Running(_) => None,
+            GameState::Halted(_) => 0.,
+            GameState::Stopped(_) => 1.5,
+            GameState::Running(_) => 0.,
         }
     }
 
@@ -62,7 +63,7 @@ impl RefereeOrders {
             state: game_state,
             event: game_event,
             speed_limit: Self::get_speed_limit_during(game_state),
-            min_dist_from_ball: None,
+            min_dist_from_ball: Self::get_min_dist_from_ball_during(game_state),
             designated_position: None,
         }
     }
@@ -90,7 +91,7 @@ impl Default for RefereeOrders {
             state: GameState::Halted(HaltedState::Halt),
             event: None,
             speed_limit: MAX_SPEED_HALTED,
-            min_dist_from_ball: None,
+            min_dist_from_ball: 0.,
             designated_position: None,
         }
     }
