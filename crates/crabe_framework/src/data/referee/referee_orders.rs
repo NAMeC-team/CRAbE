@@ -59,7 +59,7 @@ impl RefereeOrders {
 
     /// Updates the struct with the new information provided
     /// Convenience function to avoid having to create/drop similar objects
-    pub fn update(&mut self, game_state: GameState, referee: &Referee) {
+    pub fn update(&mut self, game_state: GameState, referee: &Referee, ball_ref_pos: Option<Point2<f64>>) {
         self.state = game_state;
         self.speed_limit = Self::get_speed_limit_during(game_state);
         self.min_dist_from_ball = Self::get_min_dist_from_ball_during(game_state);
@@ -70,7 +70,7 @@ impl RefereeOrders {
             Some(ge_ref) => { Some(ge_ref.clone()) }
         };
 
-        self.designated_position = referee.designated_position;
+        self.designated_position = ball_ref_pos;
     }
 }
 

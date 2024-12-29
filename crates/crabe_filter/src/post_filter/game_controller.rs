@@ -104,6 +104,29 @@ fn maker_robot_touched_ball() -> impl Fn(&StateData) -> bool {
 }
 
 impl GameControllerPostFilter {
+    
+    /// In a given state, returns the reference position to use.
+    /// For example, before a freekick occurs, the ball should be placed at a specific position.
+    /// The human referee is allowed to not place the ball exactly at the specific position
+    /// designated (in other words, a margin of error of about 0.3 is allowed).
+    /// Thus, once we enter a dynamic state (for instance, FreeKick), we should compute
+    /// the distance of the ball position before placement, against its current position.
+    fn get_reference_position(&self, world: &World, referee: &Referee, state: &GameState) -> Option<Point2<f64>> {
+        if matches!(state, Running(RunningState::FreeKick(_))
+                        | Running(RunningState::KickOff(_))
+        ) {
+            match &world.ball {
+                Some(ball) => Some(ball.position_2d()),
+                None => None
+            }
+        } else {
+            match referee.designated_position {
+                Some(pos) => Some(pos),
+                None => None,
+            }
+        }
+    }
+    
     /// Transitions to another state based on the referee's
     /// last command, the current state and the world
     fn transition(&mut self, referee: &Referee, world: &World) -> GameState {
@@ -221,12 +244,13 @@ impl PostFilter for GameControllerPostFilter {
             // - a new ref command is received
             // - the current state must be refreshed with new data
             if self.ref_cmd != referee.command || self.cond_transition.is_some() {
+                // some variables are only here for debugging
                 let prev_state = world.data.ref_orders.state;
                 let new_state = self.transition(referee, world);
-                println!("{:?} -> {:?})", prev_state, &new_state);
                 self.ref_cmd = referee.command;
                 
-                world.data.ref_orders.update(new_state, referee);
+                world.data.ref_orders.update(new_state, referee, self.get_reference_position(world, referee, &new_state));
+                println!("{:?} -> {:?}) (ref_pos: {:?}) (des_pos: {:?}) (next_cmd: {:?})", prev_state, &new_state, world.data.ref_orders.designated_position, &referee.designated_position, &referee.next_command);
                 world.data.ref_orders.state = new_state;
             }
         }
@@ -257,6 +281,13 @@ mod tests {
         ]
     }
     
+    fn dummy_data(command: RefereeCommand, point: Point2<f64>) -> (FilterData, World) {
+        let mut filter_data = FilterData::default();
+        let world = World::with_config(&CommonConfig {gc: false, real: false, yellow: false});
+        set_refcmd_to(&mut filter_data, RefereeCommand::Stop);
+        return (filter_data, world)
+    }
+    
     fn set_refcmd_to(filter_data: &mut FilterData, command: RefereeCommand) -> &FilterData {
         filter_data.referee.clear();
         filter_data.referee.push(Referee {
@@ -282,10 +313,8 @@ mod tests {
 
     #[test]
     fn any_state_to_stop() {
+        let (mut filter_data, mut world) = dummy_data(RefereeCommand::Stop, Point2::origin());
         let mut gcpf = GameControllerPostFilter::default();
-        let mut world = World::with_config(&CommonConfig {gc: false, real: false, yellow: false});
-        let mut filter_data = FilterData::default();
-        set_refcmd_to(&mut filter_data, RefereeCommand::Stop);
 
         all_states().iter().for_each(|state| {
             let prev_state = world.data.ref_orders.state;
@@ -299,7 +328,33 @@ mod tests {
                 world.data.ref_orders.state,
             );
             world.data.ref_orders.state = Halted(Halt);
-            gcpf.ref_cmd = RefereeCommand::Halt
+            gcpf.ref_cmd = RefereeCommand::Halt // actual value doesn't matter, as long as it is different
         });
     }   
+    #[test]
+    fn any_state_to_halt() {
+        let (mut filter_data, mut world) = dummy_data(RefereeCommand::Halt, Point2::origin());
+        let mut gcpf = GameControllerPostFilter::default();
+        all_states().iter().for_each(|state| {
+            let prev_state = world.data.ref_orders.state;
+            world.data.ref_orders.state = *state;
+            gcpf.step(&mut filter_data, &mut world);
+            
+            assert!(
+                matches!(world.data.ref_orders.state, Halted(_)),
+                "Invalid transition {:?} -> {:?}",
+                prev_state,
+                world.data.ref_orders.state,
+            );
+            world.data.ref_orders.state = Stopped(Stop);
+            gcpf.ref_cmd = RefereeCommand::Stop
+        });
+    }
+    
+    #[test]
+    fn freekick_exit_if_ball_moved() {
+        let (mut filter_data, mut world) = dummy_data(RefereeCommand::Stop, Point2::new(1.0, 0.5));
+        let mut gcpf = GameControllerPostFilter::default();
+        
+    }
 }
