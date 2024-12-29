@@ -25,7 +25,7 @@ pub struct GameControllerPostFilter {
     /// A closure to be called for dynamic state updates
     /// Returns true if we must perform the transition,
     /// false if we should stay in the current state
-    cond_transition: Option<Box<dyn Fn(&StateData) -> bool>>,
+    cond_transition: Option<Box<dyn Fn(&World) -> bool>>,
 }
 
 impl Default for GameControllerPostFilter {
@@ -37,26 +37,23 @@ impl Default for GameControllerPostFilter {
     }
 }
 
-struct StateData<'a> {
-    ball_pos: Point2<f64>,
-    world: &'a World,
-}
-
 /// dev note: why not put the return type into a type alias ?
 /// this feature is still unstable, so we have to copy it around
 
-fn maker_all(ball_ref_pos: Point2<f64>, secs: u64) -> impl Fn(&StateData) -> bool {
+/// Produces a closure that returns true or false
+/// depending on if we should change states or not
+fn transition_cond_builder(ball_ref_pos: Point2<f64>, secs: u64) -> impl Fn(&World) -> bool {
     let ball_moved = maker_ball_moved(ball_ref_pos);
     let timing = maker_timer(secs);
     let robot_touched_ball = maker_robot_touched_ball();
-    return move |state_data| {
-        timing(state_data) || ball_moved(state_data) || robot_touched_ball(state_data)
+    return move |world| {
+        timing(world) || ball_moved(world) || robot_touched_ball(world)
     }
 }
 
 /// Returns true if `secs` seconds have passed
 /// since the closure was created
-fn maker_timer(secs: u64) -> impl Fn(&StateData) -> bool {
+fn maker_timer(secs: u64) -> impl Fn(&World) -> bool {
     let timer = Instant::now();
     return move |_| {
         timer.elapsed() > Duration::from_secs(secs)
@@ -65,20 +62,25 @@ fn maker_timer(secs: u64) -> impl Fn(&StateData) -> bool {
 
 /// Returns true if the ball moved from its reference position
 /// by at least a certain delta (specified by the rulebook)
-fn maker_ball_moved(ball_ref_pos: Point2<f64>) -> impl Fn(&StateData) -> bool {
-    return move |state_data: &StateData| -> bool {
-        distance(&state_data.ball_pos, &ball_ref_pos) > MIN_DIST_BALL_MOVED
+fn maker_ball_moved(ball_ref_pos: Point2<f64>) -> impl Fn(&World) -> bool {
+    return move |world: &World| -> bool {
+        if let Some(ball) = &world.ball {
+            distance(&ball.position_2d(), &ball_ref_pos) > MIN_DIST_BALL_MOVED
+        } else {
+            warn!("No ball detected, considerign ball did not move");
+            false
+        }
     }
 }
 
 /// Returns true if a robot has touched the ball.
 /// When this happens, the state changes immediately
-fn maker_robot_touched_ball() -> impl Fn(&StateData) -> bool {
-    return move |state_data: &StateData| {
-        if let Some(ball) = &state_data.world.ball {
+fn maker_robot_touched_ball() -> impl Fn(&World) -> bool {
+    return move |world| {
+        if let Some(ball) = &world.ball {
             // compute the closest enemy and ally to ball
-            let opt_c_ally_to_ball = ball.closest_ally_robot(&state_data.world);
-            let opt_c_enemy_to_ball = ball.closest_enemy_robot(&state_data.world);
+            let opt_c_ally_to_ball = ball.closest_ally_robot(world);
+            let opt_c_enemy_to_ball = ball.closest_enemy_robot(world);
 
             let min_dist = match (opt_c_ally_to_ball, opt_c_enemy_to_ball) {
                 (Some(c_ally), Some(c_enemy)) => {
@@ -97,9 +99,10 @@ fn maker_robot_touched_ball() -> impl Fn(&StateData) -> bool {
             };
             
             return min_dist < MIN_DIST_BALL_TOUCH
+        } else {
+            warn!("No ball detected, considering no robot touched it");
+            false            
         }
-        // if no ball is detected, consider no robot has touched it
-        false
     }
 }
 
@@ -147,7 +150,7 @@ impl GameControllerPostFilter {
             (Stopped(StoppedState::Stop), RefereeCommand::Timeout(team), _) => { Halted(HaltedState::Timeout(*team)) }
             (Stopped(StoppedState::Stop), RefereeCommand::DirectFree(team), _) => {
                 if let Some(ball) = &world.ball {
-                    self.cond_transition = Some(Box::new(maker_all(ball.position_2d(), ACTION_TIME_LIMIT_SECS)));
+                    self.cond_transition = Some(Box::new(transition_cond_builder(ball.position_2d(), ACTION_TIME_LIMIT_SECS)));
                 }
                 Running(RunningState::FreeKick(*team))
             }
@@ -166,25 +169,21 @@ impl GameControllerPostFilter {
                         Point2::origin()
                     }
                 };
-                self.cond_transition = Some(Box::new(maker_all(ball_pos, ACTION_TIME_LIMIT_SECS)));
+                self.cond_transition = Some(Box::new(transition_cond_builder(ball_pos, ACTION_TIME_LIMIT_SECS)));
                 Running(RunningState::KickOff(team))
             }
             
             (Running(RunningState::KickOff(team)), RefereeCommand::NormalStart, Some(updater)) => {
-                return if let Some(ball) = &world.ball {
-                    let switch_state = updater(&StateData { ball_pos: ball.position_2d(), world});
-                    if switch_state {
-                        // kickoff ends, we change to Run
-                        self.cond_transition = None;
-                        Running(RunningState::Run)
-                    } else {
-                        // KickOff still in progress
-                        Running(RunningState::KickOff(team))
-                    }
+                let switch_state = updater(world);
+                if switch_state {
+                    // kickoff ends, we change to Run
+                    self.cond_transition = None;
+                    Running(RunningState::Run)
                 } else {
-                    warn!("No ball detected, staying in current state");
-                    cur_state
+                    // KickOff still in progress
+                    Running(RunningState::KickOff(team))
                 }
+            
             }
 
             // PreparePenalty
@@ -192,17 +191,12 @@ impl GameControllerPostFilter {
 
             // FreeKick (time-dependent ?)
             (Running(RunningState::FreeKick(team)), RefereeCommand::DirectFree(_), Some(updater)) => {
-                if let Some(ball) = &world.ball {
-                    let switch_state = updater(&StateData { ball_pos: ball.position_2d(), world });
-                    return if switch_state {
-                        self.cond_transition = None;
-                        Running(RunningState::Run)
-                    } else {
-                        Running(RunningState::FreeKick(team))
-                    }
+                let switch_state = updater(world);
+                return if switch_state {
+                    self.cond_transition = None;
+                    Running(RunningState::Run)
                 } else {
-                    warn!("No ball detected, staying in current state");
-                    cur_state
+                    Running(RunningState::FreeKick(team))
                 }
             }
 
