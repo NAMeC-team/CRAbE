@@ -266,7 +266,7 @@ mod tests {
     use nalgebra::Point3;
     use crabe_framework::config::CommonConfig;
     use crabe_framework::data::referee::Stage;
-    use crabe_framework::data::world::{Robot, TeamColor};
+    use crabe_framework::data::world::{Robot, Team, TeamColor};
     use crate::data::TrackedRobot;
     use super::RefereeCommand as RC;
     use super::HaltedState::*;
@@ -284,12 +284,13 @@ mod tests {
             Running(Run)
         ]
     }
-    
+
     /// Provides dummy data configured to the parameters given
+    /// I recommend looking at test kickoff_correct_reference_pos() to see how to use it
     fn dummy_data(current_ref_cmd: RefereeCommand, current_state: GameState, next_ref_cmd: RefereeCommand, point: &Point2<f64>) -> (GameControllerPostFilter, FilterData, World) {
         let mut gcpf = GameControllerPostFilter::default();
         gcpf.ref_cmd = current_ref_cmd;
-        
+
         let mut filter_data = FilterData::default();
         set_refcmd_to(&mut filter_data, next_ref_cmd);
 
@@ -326,6 +327,13 @@ mod tests {
         filter_data
     }
 
+    /// Moves the ball in the world, always setting its z at 0
+    fn move_ball(world: &mut World, new_ball_pos: &Point2<f64>) {
+        if let Some(ball) = &mut world.ball {
+            ball.position = Point3::new(new_ball_pos.x, new_ball_pos.y, 0.);
+        }
+    }
+    
     #[test]
     fn any_state_to_stop() {
         // setup parameters
@@ -361,7 +369,7 @@ mod tests {
         let ball_pos = Point2::new(0.05, 0.05);
 
         let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_pos);
-        
+
         all_states().iter().for_each(|state| {
             let prev_state = world.data.ref_orders.state;
             world.data.ref_orders.state = *state;
@@ -383,13 +391,18 @@ mod tests {
     #[test]
     fn kickoff_correct_reference_pos() {
         // setup parameters
-        let current_ref_cmd = RC::PrepareKickoff(TeamColor::Blue);
-        let current_state = Stopped(PrepareKickoff(TeamColor::Blue));
-        let next_ref_cmd = RC::NormalStart;
         let ball_pos = Point2::new(0.05, 0.05);
+        let (mut gc_postfilter, mut filter_data, mut world) = 
+            dummy_data(
+                // current state
+                RC::PrepareKickoff(TeamColor::Blue), // current ref command saved
+                Stopped(PrepareKickoff(TeamColor::Blue)), // current game state we are in
+                
+                // inbound data
+                RC::NormalStart, // Referee command issued
+                &ball_pos // where to place the ball in the world
+            );
 
-        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_pos);
-        
         gc_postfilter.step(&mut filter_data, &mut world);
 
         let designated_pos= &world.data.ref_orders.designated_position;
@@ -402,13 +415,10 @@ mod tests {
     #[test]
     fn freekick_correct_reference_pos() {
         // setup parameters
-        let current_ref_cmd = RC::Stop;
-        let current_state = Stopped(Stop);
-        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
         let ball_pos = Point2::new(0.05, 0.05);
-        
-        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_pos);
-        
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &ball_pos);
+
         gc_postfilter.step(&mut filter_data, &mut world);
 
         let designated_pos= &world.data.ref_orders.designated_position;
@@ -422,13 +432,10 @@ mod tests {
     /// if it does not work, this test will fail
     #[test]
     fn freekick_has_transition_condition_func() {
-        let current_ref_cmd = RC::Stop;
-        let current_state = Stopped(Stop);
-        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
         let ball_t0 = Point2::new(4.0, 3.0);
+        let (mut gc_postfilter, mut filter_data, mut world) = 
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &ball_t0);
 
-        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_t0);
-        
         // Stop -> FreeKick
         // ball should be saved as reference point
         gc_postfilter.step(&mut filter_data, &mut world);
@@ -447,16 +454,14 @@ mod tests {
             "Transition condition function was not cleared even though we left state FreeKick"
         );
     }
-    
+
     #[test]
     fn freekick_exit_if_ball_moved() {
-        let current_ref_cmd = RC::Stop;
-        let current_state = Stopped(Stop);
-        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
         let ball_t0 = Point2::new(4.0, 3.0);
+        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), next_ref_cmd, &ball_t0);
 
-        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_t0);
-        
         // Stop -> FreeKick
         // ball should be saved as reference point
         gc_postfilter.step(&mut filter_data, &mut world);
@@ -465,69 +470,65 @@ mod tests {
             matches!(state_t0, Running(FreeKick(_))),
             "Stop -> FreeKick not occurred properly, with command {:?}", next_ref_cmd
         );
-        
+
         // ball moves such that distance > MIN_DIST_BALL_MOVED
-        let ball_t1 = Point3::new(ball_t0.x, ball_t0.y + MIN_DIST_BALL_MOVED * 2., 0.);
-        world.ball = Some(Ball {
-            position: ball_t1,
-            ..world.ball.unwrap()
-        });
-        
+        let ball_t1 = Point2::new(ball_t0.x, ball_t0.y + MIN_DIST_BALL_MOVED * 2.);
+        move_ball(&mut world, &ball_t1);
+
         // gc postfilter should change the state
         gc_postfilter.step(&mut filter_data, &mut world);
         let state_t1 = world.data.ref_orders.state;
         assert_ne!(
-            state_t0, state_t1, 
-            "FreeKick did not change state, even though ball moved by distance {:?} (min dist : {:?})", 
-            distance(&ball_t0, &ball_t1.xy()), MIN_DIST_BALL_MOVED
+            state_t0, state_t1,
+            "FreeKick did not change state, even though ball moved by distance {:?} (min dist : {:?})",
+            distance(&ball_t0, &ball_t1), MIN_DIST_BALL_MOVED
         );
-        
+
         assert_eq!(
             state_t1, Running(Run),
             "Expected FreeKick -> Running(Run), got FreeKick -> {:?}", state_t1
         );
     }
-    
+
     /// Checks that FreeKick -> Running(Run) after 10 seconds.
     /// This test is ignored by default because it needs to wait ten seconds on the main thread.
     /// It's pretty annoying. Use `cargo test -- --include-ignored` to run absolutely all tests.
     #[test]
     #[ignore]
     fn freekick_exit_if_ten_seconds_elapsed() {
-        let current_ref_cmd = RC::Stop;
-        let current_state = Stopped(Stop);
-        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
-
-        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &Point2::origin());
+        // setup
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &Point2::origin());
         gc_postfilter.step(&mut filter_data, &mut world);
-        
+
+        // wait 10 secs
         sleep(Duration::from_secs(10));
         gc_postfilter.step(&mut filter_data, &mut world);
 
+        // heck we changed states
         assert_eq!(
             world.data.ref_orders.state, Running(Run),
             "FreeKick -> Running(Run) did not occur after 10 seconds"
         )
     }
-    
+
     #[test]
     fn freekick_exit_if_robot_touches_ball() {
-        let current_ref_cmd = RC::Stop;
-        let current_state = Stopped(Stop);
-        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
         let ball_pos = Point2::origin();
-
-        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &Point2::origin());
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &Point2::origin());
+        
         gc_postfilter.step(&mut filter_data, &mut world);
 
         // place robot right next to ball (such that dist(robot, ball) < MIN_DIST_BALL_TOUCH)
         let mut enemy = Robot::<EnemyInfo>::default();
         enemy.pose.position = Point2::new(0.02, 0.02);
         world.enemies_bot.insert(0, enemy);
-        
+
         // step through state machine again
         gc_postfilter.step(&mut filter_data, &mut world);
-        
+
+        // verify we switched states
         let enemy_pose = world.enemies_bot.get(&0).unwrap().pose.position;
         assert_eq!(
             world.data.ref_orders.state, Running(Run),
