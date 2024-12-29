@@ -2,7 +2,7 @@ use nalgebra::Point2;
 use serde::Serialize;
 use crate::data::referee::event::GameEvent;
 use crate::data::referee::Referee;
-use crate::data::world::game_state::{GameState, HaltedState};
+use crate::data::world::game_state::{GameState, HaltedState, StoppedState};
 
 /// Retains information sent by the game controller
 /// to both teams, about the current game state,
@@ -77,11 +77,12 @@ impl RefereeOrders {
 impl Default for RefereeOrders {
     fn default() -> Self {
         Self {
-            state: GameState::Halted(HaltedState::Halt),
             event: None,
             speed_limit: MAX_SPEED_HALTED,
             min_dist_from_ball: 0.,
             designated_position: None,
-        }
+            // this way, we can see if our robots move directly
+            // if robot behaviours are properly coded, this shouldn't pose a problem
+            state: GameState::Stopped(StoppedState::Stop),        }
     }
 }
