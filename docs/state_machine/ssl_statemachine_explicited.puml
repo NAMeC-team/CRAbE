@@ -6,7 +6,6 @@ hide empty description
 ' - Yellow dotted line : transition not implemented
 ' - Green line : implemented
 ' - Aqua outline : dynamic state
-' - White : todo
 
 'Notes
 ' New transitions are interpreted directly
