@@ -530,4 +530,33 @@ mod tests {
             distance(&enemy_pose, &ball_pos), MIN_DIST_BALL_TOUCH
         );
     }
+    
+    /// Checks if this transition (state_t0, ref_cmd) -> expected_state
+    /// occurs correctly in the state machine
+    fn valid_transition(state_t0: GameState, ref_cmd: RefereeCommand, expected_state: GameState) {
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Halt, state_t0, ref_cmd, &Point2::origin());
+        
+        gc_postfilter.step(&mut filter_data, &mut world);
+
+        assert_eq!(
+            world.data.ref_orders.state, expected_state,
+            "{:?} -> {:?} transition does not exist in state machine",
+            world.data.ref_orders.state, expected_state
+        );
+    }
+    
+    #[test]
+    fn all_transitions_correct() {
+        valid_transition(Halted(Halt), RC::Stop, Stopped(Stop));
+        
+        // timeout transitions
+        valid_transition(Stopped(Stop), RC::Timeout(TeamColor::Blue), Halted(Timeout(TeamColor::Blue)));
+        valid_transition(Halted(Timeout(TeamColor::Blue)), RC::Stop, Stopped(Stop));
+        
+        valid_transition(Stopped(Stop), RC::Timeout(TeamColor::Yellow), Halted(Timeout(TeamColor::Yellow)));
+        valid_transition(Halted(Timeout(TeamColor::Yellow)), RC::Stop, Stopped(Stop));
+        
+        //todo: all of the other arrows
+    }
 }
