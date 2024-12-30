@@ -13,8 +13,12 @@ const MIN_DIST_BALL_TOUCH: f64 = 0.05;
 /// Minimum distance to consider whether the ball has moved
 /// from a reference point in the rules
 const MIN_DIST_BALL_MOVED: f64 = MIN_DIST_BALL_TOUCH; // see the rulebook, section 5.4
-/// Maximum time of an action (in Div B)
-const ACTION_TIME_LIMIT_SECS: u64 = 10;
+
+/// Maximum length in seconds for a freekick (in Div B)
+const FREEKICK_TIME_DIV_B_SECS: u64 = 10;
+
+/// Maximum length in seconds for a kickoff (same in both divisions)
+const KICKOFF_TIME_SECS: u64 = 10;
 
 pub struct GameControllerPostFilter {
     /// Last command sent by the referee
@@ -150,7 +154,7 @@ impl GameControllerPostFilter {
             (Stopped(StoppedState::Stop), RefereeCommand::Timeout(team), _) => { Halted(HaltedState::Timeout(*team)) }
             (Stopped(StoppedState::Stop), RefereeCommand::DirectFree(team), _) => {
                 if let Some(ball) = &world.ball {
-                    self.cond_transition = Some(Box::new(transition_cond_builder(ball.position_2d(), ACTION_TIME_LIMIT_SECS)));
+                    self.cond_transition = Some(Box::new(transition_cond_builder(ball.position_2d(), FREEKICK_TIME_DIV_B_SECS)));
                 }
                 Running(RunningState::FreeKick(*team))
             }
@@ -169,7 +173,7 @@ impl GameControllerPostFilter {
                         Point2::origin()
                     }
                 };
-                self.cond_transition = Some(Box::new(transition_cond_builder(ball_pos, ACTION_TIME_LIMIT_SECS)));
+                self.cond_transition = Some(Box::new(transition_cond_builder(ball_pos, KICKOFF_TIME_SECS)));
                 Running(RunningState::KickOff(team))
             }
             
