@@ -1,10 +1,10 @@
 use std::time::{Duration, Instant};
 use log::warn;
-use nalgebra::{distance, min, Point2};
+use nalgebra::{distance, Point2};
 use crabe_framework::data::referee::{Referee, RefereeCommand};
 use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
 use crabe_framework::data::world::game_state::GameState::{Halted, Stopped, Running};
-use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, World};
+use crabe_framework::data::world::{Ball, EnemyInfo, World};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
@@ -26,92 +26,64 @@ pub struct GameControllerPostFilter {
     /// perform a transition in the state machine
     ref_cmd: RefereeCommand,
 
-    /// A closure to be called for dynamic state updates
-    /// Returns true if we must perform the transition,
-    /// false if we should stay in the current state
-    cond_transition: Option<Box<dyn Fn(&World) -> bool>>,
+    
+    ball_ref_pos: Option<Point2<f64>>,
 }
 
 impl Default for GameControllerPostFilter {
     fn default() -> Self {
         Self {
             ref_cmd: RefereeCommand::Halt,
-            cond_transition: None,
+            ball_ref_pos: None,
         }
     }
 }
 
-/// dev note: why not put the return type into a type alias ?
-/// this feature is still unstable, so we have to copy it around
 
-/// Produces a closure that returns true or false
-/// depending on if we should change states or not
-fn transition_cond_builder(ball_ref_pos: Point2<f64>, secs: u64) -> impl Fn(&World) -> bool {
-    let ball_moved = maker_ball_moved(ball_ref_pos);
-    let timing = maker_timer(secs);
-    let robot_touched_ball = maker_robot_touched_ball();
-    return move |world| {
-        timing(world) || ball_moved(world) || robot_touched_ball(world)
-    }
-}
-
-/// Returns true if `secs` seconds have passed
-/// since the closure was created
-fn maker_timer(secs: u64) -> impl Fn(&World) -> bool {
-    let timer = Instant::now();
-    return move |_| {
-        timer.elapsed() > Duration::from_secs(secs)
-    }
-}
-
-/// Returns true if the ball moved from its reference position
+/// Returns true if the ball is considered to be "in play",
+/// that is, it has moved from its reference position
 /// by at least a certain delta (specified by the rulebook)
-fn maker_ball_moved(ball_ref_pos: Point2<f64>) -> impl Fn(&World) -> bool {
-    return move |world: &World| -> bool {
-        if let Some(ball) = &world.ball {
-            distance(&ball.position_2d(), &ball_ref_pos) > MIN_DIST_BALL_MOVED
-        } else {
-            warn!("No ball detected, considerign ball did not move");
-            false
-        }
+fn is_ball_in_play(ball_ref_pos: &Point2<f64>, opt_ball: &Option<Ball>) -> bool {
+    if let Some(ball) = &opt_ball {
+        distance(&ball.position_2d(), &ball_ref_pos) > MIN_DIST_BALL_MOVED
+    } else {
+        warn!("No ball detected, considering ball did not move");
+        false
     }
 }
 
-/// Returns true if a robot has touched the ball.
-/// When this happens, the state changes immediately
-fn maker_robot_touched_ball() -> impl Fn(&World) -> bool {
-    return move |world| {
-        if let Some(ball) = &world.ball {
-            // compute the closest enemy and ally to ball
-            let opt_c_ally_to_ball = ball.closest_ally_robot(world);
-            let opt_c_enemy_to_ball = ball.closest_enemy_robot(world);
+/// Returns true if a robot is touching the ball.
+fn robot_touched_ball(world: &World) -> bool {
+    if let Some(ball) = &world.ball {
+        // compute the closest enemy and ally to ball
+        let opt_c_ally_to_ball = ball.closest_ally_robot(world);
+        let opt_c_enemy_to_ball = ball.closest_enemy_robot(world);
 
-            let min_dist = match (opt_c_ally_to_ball, opt_c_enemy_to_ball) {
-                (Some(c_ally), Some(c_enemy)) => {
-                    // check, for the closest robot (in terms of distance)
-                    // if its distance to the ball meets the condition
-                    let d_a = c_ally.2;
-                    let d_e= c_enemy.2;
-                    d_a.min(d_e)
-                }
-                (Some(c_ally), None) => c_ally.2,
-                (None, Some(c_enemy)) => c_enemy.2,
+        let min_dist = match (opt_c_ally_to_ball, opt_c_enemy_to_ball) {
+            (Some(c_ally), Some(c_enemy)) => {
+                // check, for the closest robot (in terms of distance)
+                // if its distance to the ball meets the condition
+                let d_a = c_ally.2;
+                let d_e= c_enemy.2;
+                d_a.min(d_e)
+            }
+            (Some(c_ally), None) => c_ally.2,
+            (None, Some(c_enemy)) => c_enemy.2,
 
-                // no robot on the field ? that shouldn't happen in a real game
-                // the min dist given in this case is meaningless
-                (None, None) => 42.
-            };
-            
-            return min_dist < MIN_DIST_BALL_TOUCH
-        } else {
-            warn!("No ball detected, considering no robot touched it");
-            false            
-        }
+            // no robot on the field ? that shouldn't happen in a real game
+            // the min dist given in this case is meaningless
+            (None, None) => 42.
+        };
+        
+        return min_dist < MIN_DIST_BALL_TOUCH
+    } else {
+        warn!("No ball detected, considering no robot touched it");
+        false            
     }
 }
 
 impl GameControllerPostFilter {
-
+    
     /// In a given state, returns the reference position to use.
     /// For example, before a freekick occurs, the ball should be placed at a specific position.
     /// The human referee is allowed to not place the ball exactly at the specific position
@@ -134,12 +106,20 @@ impl GameControllerPostFilter {
         }
     }
 
+    fn should_change_state(&self, world: &World, referee: &Referee, ball_ref_pos: &Point2<f64>) -> bool {
+        if let Some(time_remaining) = referee.current_action_time_remaining {
+            time_remaining.num_seconds() <= 0 // todo: check if valid
+        } else {
+            is_ball_in_play(ball_ref_pos, &world.ball)
+        }
+    }
+
     /// Transitions to another state based on the referee's
     /// last command, the current state and the world
     fn transition(&mut self, referee: &Referee, world: &World) -> GameState {
         let cur_state = world.data.ref_orders.state;
         
-        return match (cur_state, &referee.command, &self.cond_transition) {
+        match (cur_state, &referee.command, &self.ball_ref_pos) {
             // Halt
             (Halted(HaltedState::Halt), RefereeCommand::Stop, _) => { Stopped(StoppedState::Stop) }
 
@@ -153,16 +133,18 @@ impl GameControllerPostFilter {
             (Stopped(StoppedState::Stop), RefereeCommand::ForceStart, _) => { Running(RunningState::Run) }
             (Stopped(StoppedState::Stop), RefereeCommand::Timeout(team), _) => { Halted(HaltedState::Timeout(*team)) }
             (Stopped(StoppedState::Stop), RefereeCommand::DirectFree(team), _) => {
+                // todo: what happens if there is no ball ?
+                // must add test case
                 if let Some(ball) = &world.ball {
-                    self.cond_transition = Some(Box::new(transition_cond_builder(ball.position_2d(), FREEKICK_TIME_DIV_B_SECS)));
+                    self.ball_ref_pos = Some(ball.position_2d());
                 }
                 Running(RunningState::FreeKick(*team))
             }
 
             // Ball placement
+            // is there a command sent when ball placement ends ?
+            // yes, on success, returns to Stop and sends FreeKick
             (Stopped(StoppedState::BallPlacement(_)), RefereeCommand::Stop, _) => { Stopped(StoppedState::Stop) }
-            // todo : command sent when ball placement ends ?
-            // no, on success, returns to Stop and sends FreeKick
             
             // Kickoff
             (Stopped(StoppedState::PrepareKickoff(team)), RefereeCommand::NormalStart, _) => {
@@ -173,31 +155,28 @@ impl GameControllerPostFilter {
                         Point2::origin()
                     }
                 };
-                self.cond_transition = Some(Box::new(transition_cond_builder(ball_pos, KICKOFF_TIME_SECS)));
+                self.ball_ref_pos = Some(ball_pos);
                 Running(RunningState::KickOff(team))
             }
             
-            (Running(RunningState::KickOff(team)), RefereeCommand::NormalStart, Some(updater)) => {
-                let switch_state = updater(world);
-                if switch_state {
+            (Running(RunningState::KickOff(team)), RefereeCommand::NormalStart, Some(ball_ref_pos)) => {
+                if self.should_change_state(world, referee, ball_ref_pos) {
                     // kickoff ends, we change to Run
-                    self.cond_transition = None;
+                    self.ball_ref_pos = None;
                     Running(RunningState::Run)
                 } else {
                     // KickOff still in progress
                     Running(RunningState::KickOff(team))
                 }
-            
             }
 
             // PreparePenalty
             (Stopped(StoppedState::PreparePenalty(team)), RefereeCommand::NormalStart, _) => { Running(RunningState::Penalty(team)) }
 
             // FreeKick (time-dependent ?)
-            (Running(RunningState::FreeKick(team)), RefereeCommand::DirectFree(_), Some(updater)) => {
-                let switch_state = updater(world);
-                return if switch_state {
-                    self.cond_transition = None;
+            (Running(RunningState::FreeKick(team)), RefereeCommand::DirectFree(_), Some(ball_ref_pos)) => {
+                if self.should_change_state(world, referee, ball_ref_pos) {
+                    self.ball_ref_pos = None;
                     Running(RunningState::Run)
                 } else {
                     Running(RunningState::FreeKick(team))
@@ -213,22 +192,21 @@ impl GameControllerPostFilter {
 
             // The human referee can trigger Stop from any state
             (_, RefereeCommand::Stop, _) => {
-                self.cond_transition = None;
+                self.ball_ref_pos = None;
                 Stopped(StoppedState::Stop)
             }
 
             // any state can lead to Halt
             (_, RefereeCommand::Halt, _) => {
-                self.cond_transition = None;
+                self.ball_ref_pos = None;
                 Halted(HaltedState::Halt)
             }
 
             (_, _, _) => {
-                // todo: handle rollback ?
-                warn!("Unknown transition (should implement rollback ?)");
-                println!("({:?}, {:?}, {:?})", &cur_state, &referee.command, &self.cond_transition.is_some());
-                self.cond_transition = None;
-                Halted(HaltedState::Halt)
+                warn!("Unknown transition, staying in Halt just in case");
+                println!("({:?}, {:?}, {:?})", &cur_state, &referee.command, &self.ball_ref_pos.is_some());
+                self.ball_ref_pos = None;
+                Halted(HaltedState::Halt) // TODO: maybe this should be Stop instead
             }
         }
     }
@@ -241,14 +219,15 @@ impl PostFilter for GameControllerPostFilter {
             // apply transition to state machine only if
             // - a new ref command is received
             // - the current state must be refreshed with new data
-            if self.ref_cmd != referee.command || self.cond_transition.is_some() {
+            if self.ref_cmd != referee.command || self.ball_ref_pos.is_some() {
                 // some variables are only here for debugging
                 let prev_state = world.data.ref_orders.state;
                 let new_state = self.transition(referee, world);
                 self.ref_cmd = referee.command;
 
                 world.data.ref_orders.update(new_state, referee, self.get_reference_position(world, referee, &new_state));
-                println!("{:?} -> {:?}) (ref_pos: {:?}) (des_pos: {:?}) (next_cmd: {:?})", prev_state, &new_state, world.data.ref_orders.designated_position, &referee.designated_position, &referee.next_command);
+                // println!("{:?} -> {:?}) (ref_pos: {:?}) (des_pos: {:?}) (next_cmd: {:?})", prev_state, &new_state, world.data.ref_orders.designated_position, &referee.designated_position, &referee.next_command);
+                println!("{:?} -> {:?}) (next_cmd: {:?})", prev_state, &new_state, &referee.next_command);
                 world.data.ref_orders.state = new_state;
             }
         }
@@ -265,7 +244,6 @@ mod tests {
     use crabe_framework::config::CommonConfig;
     use crabe_framework::data::referee::Stage;
     use crabe_framework::data::world::{Robot, Team, TeamColor};
-    use crate::data::TrackedRobot;
     use super::RefereeCommand as RC;
     use super::HaltedState::*;
     use super::StoppedState::*;
@@ -429,7 +407,7 @@ mod tests {
     /// This test forces to leave the FreeKick state by moving the ball,
     /// if it does not work, this test will fail
     #[test]
-    fn freekick_has_transition_condition_func() {
+    fn freekick_has_ball_reference_position() {
         let ball_t0 = Point2::new(4.0, 3.0);
         let (mut gc_postfilter, mut filter_data, mut world) = 
             dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &ball_t0);
@@ -438,7 +416,7 @@ mod tests {
         // ball should be saved as reference point
         gc_postfilter.step(&mut filter_data, &mut world);
         assert!(
-            gc_postfilter.cond_transition.is_some(),
+            gc_postfilter.ball_ref_pos.is_some(),
             "No updating function even though FreeKick should be updated dynamically"
         );
 
@@ -448,7 +426,7 @@ mod tests {
         world.ball = Some(Ball {position: ball_t1, ..world.ball.unwrap()});
         gc_postfilter.step(&mut filter_data, &mut world);
         assert!(
-            gc_postfilter.cond_transition.is_none(),
+            gc_postfilter.ball_ref_pos.is_none(),
             "Transition condition function was not cleared even though we left state FreeKick"
         );
     }
@@ -488,11 +466,8 @@ mod tests {
         );
     }
 
-    /// Checks that FreeKick -> Running(Run) after 10 seconds.
-    /// This test is ignored by default because it needs to wait ten seconds on the main thread.
-    /// It's pretty annoying. Use `cargo test -- --include-ignored` to run absolutely all tests.
+    /// Checks that FreeKick -> Running(Run) after 10 seconds as measured by the referee.
     #[test]
-    #[ignore]
     fn freekick_exit_if_ten_seconds_elapsed() {
         // setup
         let (mut gc_postfilter, mut filter_data, mut world) =
@@ -500,40 +475,44 @@ mod tests {
         gc_postfilter.step(&mut filter_data, &mut world);
 
         // wait 10 secs
-        sleep(Duration::from_secs(10));
+        let mut referee = filter_data.referee.pop().unwrap();
+        referee.current_action_time_remaining = chrono::Duration::new(-1, 0);
+        
+        filter_data.referee.push(referee);
+        
         gc_postfilter.step(&mut filter_data, &mut world);
 
-        // heck we changed states
+        // heck we changed states // i never wrote that ??? ~wanchai
         assert_eq!(
             world.data.ref_orders.state, Running(Run),
             "FreeKick -> Running(Run) did not occur after 10 seconds"
         )
     }
 
-    #[test]
-    fn freekick_exit_if_robot_touches_ball() {
-        let ball_pos = Point2::origin();
-        let (mut gc_postfilter, mut filter_data, mut world) =
-            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &Point2::origin());
-        
-        gc_postfilter.step(&mut filter_data, &mut world);
-
-        // place robot right next to ball (such that dist(robot, ball) < MIN_DIST_BALL_TOUCH)
-        let mut enemy = Robot::<EnemyInfo>::default();
-        enemy.pose.position = Point2::new(0.02, 0.02);
-        world.enemies_bot.insert(0, enemy);
-
-        // step through state machine again
-        gc_postfilter.step(&mut filter_data, &mut world);
-
-        // verify we switched states
-        let enemy_pose = world.enemies_bot.get(&0).unwrap().pose.position;
-        assert_eq!(
-            world.data.ref_orders.state, Running(Run),
-            "FreeKick -> Running(Run) did not occur, even though dist(enemy_0, ball) = {:?} < {:?}",
-            distance(&enemy_pose, &ball_pos), MIN_DIST_BALL_TOUCH
-        );
-    }
+    // #[test]
+    // fn freekick_exit_if_robot_touches_ball() {
+    //     let ball_pos = Point2::origin();
+    //     let (mut gc_postfilter, mut filter_data, mut world) =
+    //         dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &Point2::origin());
+    //     
+    //     gc_postfilter.step(&mut filter_data, &mut world);
+    // 
+    //     // place robot right next to ball (such that dist(robot, ball) < MIN_DIST_BALL_TOUCH)
+    //     let mut enemy = Robot::<EnemyInfo>::default();
+    //     enemy.pose.position = Point2::new(0.02, 0.02);
+    //     world.enemies_bot.insert(0, enemy);
+    // 
+    //     // step through state machine again
+    //     gc_postfilter.step(&mut filter_data, &mut world);
+    // 
+    //     // verify we switched states
+    //     let enemy_pose = world.enemies_bot.get(&0).unwrap().pose.position;
+    //     assert_eq!(
+    //         world.data.ref_orders.state, Running(Run),
+    //         "FreeKick -> Running(Run) did not occur, even though dist(enemy_0, ball) = {:?} < {:?}",
+    //         distance(&enemy_pose, &ball_pos), MIN_DIST_BALL_TOUCH
+    //     );
+    // }
     
     /// Checks if this transition (state_t0, ref_cmd) -> expected_state
     /// occurs correctly in the state machine
