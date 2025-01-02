@@ -8,17 +8,9 @@ use crabe_framework::data::world::{Ball, EnemyInfo, World};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
-/// Minimum distance at which the ball is considered to be touched by a robot
-const MIN_DIST_BALL_TOUCH: f64 = 0.05;
 /// Minimum distance to consider whether the ball has moved
 /// from a reference point in the rules
-const MIN_DIST_BALL_MOVED: f64 = MIN_DIST_BALL_TOUCH; // see the rulebook, section 5.4
-
-/// Maximum length in seconds for a freekick (in Div B)
-const FREEKICK_TIME_DIV_B_SECS: u64 = 10;
-
-/// Maximum length in seconds for a kickoff (same in both divisions)
-const KICKOFF_TIME_SECS: u64 = 10;
+const MIN_DIST_BALL_MOVED: f64 = 0.05; // see the rulebook, section 5.4
 
 pub struct GameControllerPostFilter {
     /// Last command sent by the referee
@@ -49,36 +41,6 @@ fn is_ball_in_play(ball_ref_pos: &Point2<f64>, opt_ball: &Option<Ball>) -> bool 
     } else {
         warn!("No ball detected, considering ball did not move");
         false
-    }
-}
-
-/// Returns true if a robot is touching the ball.
-fn robot_touched_ball(world: &World) -> bool {
-    if let Some(ball) = &world.ball {
-        // compute the closest enemy and ally to ball
-        let opt_c_ally_to_ball = ball.closest_ally_robot(world);
-        let opt_c_enemy_to_ball = ball.closest_enemy_robot(world);
-
-        let min_dist = match (opt_c_ally_to_ball, opt_c_enemy_to_ball) {
-            (Some(c_ally), Some(c_enemy)) => {
-                // check, for the closest robot (in terms of distance)
-                // if its distance to the ball meets the condition
-                let d_a = c_ally.2;
-                let d_e= c_enemy.2;
-                d_a.min(d_e)
-            }
-            (Some(c_ally), None) => c_ally.2,
-            (None, Some(c_enemy)) => c_enemy.2,
-
-            // no robot on the field ? that shouldn't happen in a real game
-            // the min dist given in this case is meaningless
-            (None, None) => 42.
-        };
-        
-        return min_dist < MIN_DIST_BALL_TOUCH
-    } else {
-        warn!("No ball detected, considering no robot touched it");
-        false            
     }
 }
 
@@ -239,11 +201,10 @@ impl PostFilter for GameControllerPostFilter {
 /// ------------------
 #[cfg(test)]
 mod tests {
-    use std::thread::sleep;
     use nalgebra::Point3;
     use crabe_framework::config::CommonConfig;
     use crabe_framework::data::referee::Stage;
-    use crabe_framework::data::world::{Robot, Team, TeamColor};
+    use crabe_framework::data::world::TeamColor;
     use super::RefereeCommand as RC;
     use super::HaltedState::*;
     use super::StoppedState::*;
