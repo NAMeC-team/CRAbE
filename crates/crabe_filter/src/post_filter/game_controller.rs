@@ -488,31 +488,6 @@ mod tests {
             "FreeKick -> Running(Run) did not occur after 10 seconds"
         )
     }
-
-    // #[test]
-    // fn freekick_exit_if_robot_touches_ball() {
-    //     let ball_pos = Point2::origin();
-    //     let (mut gc_postfilter, mut filter_data, mut world) =
-    //         dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &Point2::origin());
-    //     
-    //     gc_postfilter.step(&mut filter_data, &mut world);
-    // 
-    //     // place robot right next to ball (such that dist(robot, ball) < MIN_DIST_BALL_TOUCH)
-    //     let mut enemy = Robot::<EnemyInfo>::default();
-    //     enemy.pose.position = Point2::new(0.02, 0.02);
-    //     world.enemies_bot.insert(0, enemy);
-    // 
-    //     // step through state machine again
-    //     gc_postfilter.step(&mut filter_data, &mut world);
-    // 
-    //     // verify we switched states
-    //     let enemy_pose = world.enemies_bot.get(&0).unwrap().pose.position;
-    //     assert_eq!(
-    //         world.data.ref_orders.state, Running(Run),
-    //         "FreeKick -> Running(Run) did not occur, even though dist(enemy_0, ball) = {:?} < {:?}",
-    //         distance(&enemy_pose, &ball_pos), MIN_DIST_BALL_TOUCH
-    //     );
-    // }
     
     /// Checks if this transition (state_t0, ref_cmd) -> expected_state
     /// occurs correctly in the state machine
