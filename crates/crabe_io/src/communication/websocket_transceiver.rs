@@ -103,6 +103,9 @@ impl<RX: Send + DeserializeOwned + 'static, TX: Send + Serialize + 'static>
     }
 }
 
+/// Generic implementation of a Websocket communication struct
+/// using [channels](https://doc.rust-lang.org/rust-by-example/std_misc/channels.html),
+/// and the crate [`flume`](https://github.com/zesterer/flume)
 pub struct WebSocketTransceiver<RX, TX> {
     rx: Receiver<RX>,
     tx: Sender<TX>,
@@ -113,6 +116,8 @@ pub struct WebSocketTransceiver<RX, TX> {
 impl<RX: DeserializeOwned + Send + 'static, TX: Serialize + Send + 'static>
     WebSocketTransceiver<RX, TX>
 {
+    /// Factory function creating a new websocket transceiver
+    /// working in his own separate thread.
     pub fn spawn(addr: SocketAddr) -> Self {
         let (task_tx, transceiver_rx) = unbounded();
         let (transceiver_tx, task_rx) = unbounded();
@@ -136,7 +141,7 @@ impl<RX: DeserializeOwned + Send + 'static, TX: Serialize + Send + 'static>
             .send(msg)
             .unwrap_or_else(|x| error!("Send error: #{x}"));
     }
-
+    
     pub fn receive(&mut self) -> Option<RX> {
         self.rx.try_recv().ok()
     }
@@ -144,7 +149,7 @@ impl<RX: DeserializeOwned + Send + 'static, TX: Serialize + Send + 'static>
     pub fn close(self) {
         self.cancellation_tx
             .send(())
-            .unwrap_or_else(|_e| error!("Error sending cancellation"));
-        self.handle.join().unwrap_or_else(|_e| error!("Join error"));
+            .unwrap_or_else(|_e| error!("Error sending cancellation to websocket thread"));
+        self.handle.join().unwrap_or_else(|_e| error!("Join error on websocket thread"));
     }
 }
