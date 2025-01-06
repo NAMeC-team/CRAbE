@@ -9,10 +9,16 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::net::{Ipv4Addr, SocketAddrV4};
 
+const TOOL_MESSAGE_PROTO_VER: u8 = 1;
+
 /// Actual message sent to external tools as JSON.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ToolMessage {
+    // current message version.
+    // should be updated whenever one of the struct members
+    // change in content
+    version: u8,
     world: World,
     data: ToolData,
 }
@@ -69,6 +75,7 @@ impl ToolComponent for ToolServer {
         commands: &mut CommandMap,
     ) -> ToolCommands {
         let msg = ToolMessage {
+            version: TOOL_MESSAGE_PROTO_VER,
             data: tool_data.clone(),
             world: world_data.clone(),
         };
