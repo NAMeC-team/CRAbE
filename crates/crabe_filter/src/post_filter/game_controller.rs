@@ -10,35 +10,18 @@ use crabe_framework::data::world::game_state::RunningState::Run;
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
-/// TODO: what can be extended/enriched ?
-/// ================= IMPLEMENTED
-/// Base transitions : Run -> Stop -> FreeKick
-/// Wanted transitions :
-///     Run -> PrepareCornerKick -> CornerKick
-///
-/// Ball left field via touch line (ally touched): CornerKick
-/// Ball left field via touch line (enemy touched): GoalKick
-/// => goal_or_corner_kick()
-/// => New states : PrepareCornerKick, PrepareGoalKick
-/// => New transitions
-///   Run -> Stopped(PrepareCornerKick) -> Running(CornerKick)
-///   Run -> Stopped(PrepareCornerKick) -> Running(CornerKick)
-/// =================
-
-///
-/// Goal scored but invalid : CornerKick
-/// => invalidated_goal()
-/// => New state : Halted::PossibleGoal
-/// PossibleGoal -> (BallPlacement) -> FreeKick
-/// PossibleGoal -> Stop -> PrepareKickoff -> Kickoff
-///
-
-/// Ball left outer field line :
-/// - Check for BallPlacement ?
-/// - PrepareFreekick ?
-
-/// Minimum distance to consider whether the ball has moved
-/// from a reference point in the rules
+// some stuff to be done later
+// Goal scored but invalid : CornerKick
+// => invalidated_goal()
+// => New state : Halted::PossibleGoal
+// PossibleGoal -> (BallPlacement) -> FreeKick
+// PossibleGoal -> Stop -> PrepareKickoff -> Kickoff
+//
+// Ball left outer field line :
+// - Check for BallPlacement ?
+// - PrepareFreekick ?
+// Minimum distance to consider whether the ball has moved
+// from a reference point in the rules
 const MIN_DIST_BALL_MOVED: f64 = 0.05; // see the rulebook, section 5.4
 
 pub struct GameControllerPostFilter {
@@ -100,7 +83,7 @@ impl GameControllerPostFilter {
 
     fn should_change_state(&self, world: &World, referee: &Referee, ball_ref_pos: &Point2<f64>) -> bool {
         if let Some(time_remaining) = referee.current_action_time_remaining {
-            time_remaining.num_seconds() <= 0 // todo: check if valid
+            time_remaining.num_seconds() <= 0
         } else {
             is_ball_in_play(ball_ref_pos, &world.ball)
         }
@@ -230,7 +213,7 @@ impl GameControllerPostFilter {
                     Running(RunningState::GoalKick(*team))
                 } else {
                     warn!("Ball position not available when switching to running GoalKick.");
-                    Running(RunningState::GoalKick(*team)) // todo: what should we do here ?
+                    Running(RunningState::GoalKick(*team)) 
                 }
             }
 
@@ -287,7 +270,7 @@ impl PostFilter for GameControllerPostFilter {
 
             // apply transition to state machine only if
             // - a new ref command is received
-            // - the current state must be refreshed with new data
+            // - the current state must be refreshed with new data (dynamic state)
             if self.ref_cmd != referee.command || self.ball_ref_pos.is_some() {
                 // some variables are only here for debugging
                 let prev_state = world.data.ref_orders.state;
