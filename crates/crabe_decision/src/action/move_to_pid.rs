@@ -237,7 +237,7 @@ impl Action for MoveToPID {
 
     fn state(&mut self) -> State { self.state }
 
-    fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
+    fn compute_order(&mut self, id: u8, world: &World, tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
             // take current error in account for next command
             let current_error = self.error_to_target(robot, self.target, self.orientation);
@@ -263,7 +263,7 @@ impl Action for MoveToPID {
             // it has to be at the end of the computations, otherwise you're gonna compute orders
             // for an error of 0. (the default value with which it was initialized)
             self.error_tracker.err_index = self.error_tracker.next_error_idx();
-
+            
             Command {
                 // assuming that the precision lost by casting can be ignored/neglected
                 forward_velocity: vec_command.x as f32,
