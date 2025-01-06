@@ -87,49 +87,24 @@ In the implementation, a transition occurs everytime we receive a referee comman
 But, it is not possible to do this for each state of the match.
 
 Consider the KickOff state. It starts with the following transition : `Stop -> PrepareKickoff -> KickOff`.
-When entering the `KickOff` state, the kick-off may end on one of three conditions :
-- one robot of the playing team touches the ball
+When entering the `KickOff` state, the kick-off may end on one of two conditions :
 - the ball moves by a certain distance from the reference point
 - 10 seconds have elapsed
 
 It is necessary to check at every iteration whether we should change state or not.
-The implementation uses curryfied closures to achieve this, which is stored inside the struct.
-The closure returns true if we must switch to the next state in the state machine,
-or false if we need to stay in the current state
+The implementation uses a struct defining the reference position of the ball.
 ```rust
 pub struct GameControllerPostFilter {
     //...
-    cond_transition: Option<Box<dyn Fn(&World) -> bool>>,
+    ball_ref_pos: Option<Point2<f64>>
 }
 ```
+Whenever we enter a parent of the dynamic state, the parent is responsible for setting the `ball_ref_pos` field
+to some value that can be used when updating the dynamic state. The dynamic state then uses this value
+to check if the ball moved a certain distance from that reference point.
+So in this case, the `PrepareKickoff` state is responsible for setting that value.
 
-The transitions in the state machine is written using a match statement.
-In simplified Rust code, the usage looks like this :
-
-```rust
-// FreeKick (time-dependent ?)
-pub fn transition() -> GameState {
-    return match (cur_state, ref_cmd, cond_transition) {
-        // ...
-        (FreeKick(team), DirectFree, Some(updater)) => {
-            // updater: impl Fn(&World) -> bool
-            let switch_state = updater(world);
-            if switch_state {
-                self.cond_transition = None;
-                Running(RunningState::Run)
-            } else {
-                Running(RunningState::FreeKick(team))
-            }
-        }
-        //...
-    };
-}
-```
-Whenever we enter a parent of the dynamic state, the parent is responsible for setting the `cond_transition` field
-to some closure that can be used when updating the dynamic state.
-So in this case, the `Stop` state is responsible for setting that value.
-
-At the time, all dynamic states are updated the same way, so you could implement it differently.
-But we expect the `Penalty` state to have different handling, so we leave more flexibility.
+Once we leave this dynamic state, we reset this field to `None`. This might not be necessary,
+but is written as a just-in-case case.
 
 The FreeKick state works in an analogous way, but with different referee commands and states.
