@@ -1,3 +1,4 @@
+use std::error::Error;
 use log::warn;
 use nalgebra::{distance, Point2};
 use crabe_framework::data::referee::{Referee, RefereeCommand};
@@ -126,7 +127,16 @@ impl GameControllerPostFilter {
         }
         Stopped(Stop)
     }
-    
+
+    /// Updates the reference position to use to check whether we should step out
+    /// of the dynamic state or not.
+    fn setup_dynamic_state_precond(&mut self, ball: &Option<Ball>) -> bool {
+       match ball {
+           Some(b) => { self.ball_ref_pos = Some(b.position_2d()); true }
+           None => false
+       }
+    }
+
     /// Transitions to another state based on the referee's
     /// last command, the current state and the world
     fn transition(&mut self, referee: &Referee, world: &World) -> GameState {
@@ -155,6 +165,20 @@ impl GameControllerPostFilter {
                 }
                 Running(FreeKick(*team))
             }
+            (Stopped(PrepareCornerKick(_)), RefereeCommand::DirectFree(team), ..) => {
+                if !self.setup_dynamic_state_precond(&world.ball) {
+                    warn!("Ball position not available when switching to Running::CornerKick.")
+                }
+                Running(CornerKick(*team))
+            }
+
+            (Stopped(PrepareGoalKick(_)), RefereeCommand::DirectFree(team), ..) => {
+                if !self.setup_dynamic_state_precond(&world.ball) {
+                    warn!("Ball position not available when switching to Running::GoalKick.");
+                }
+                Running(GoalKick(*team))
+            }
+
 
             // Ball placement
             // is there a command sent when ball placement ends ?
@@ -171,32 +195,11 @@ impl GameControllerPostFilter {
                     }
                 };
                 self.ball_ref_pos = Some(ball_pos);
-                Running(
-                    KickOff(team))
+                Running(KickOff(team))
             }
 
             // PreparePenalty
             (Stopped(PreparePenalty(team)), RefereeCommand::NormalStart, ..) => { Running(Penalty(team)) }
-
-            (Stopped(PrepareCornerKick(_)), RefereeCommand::DirectFree(team), _, _) => {
-                if let Some(ball) = &world.ball {
-                    self.ball_ref_pos = Some(ball.position_2d());
-                    Running(CornerKick(*team))
-                } else {
-                    warn!("Ball position not available when switching to running CornerKick.");
-                    Running(CornerKick(*team)) // todo: what should we do here ?
-                }
-            }
-            
-            (Stopped(PrepareGoalKick(_)), RefereeCommand::DirectFree(team), _, _) => {
-                if let Some(ball) = &world.ball {
-                    self.ball_ref_pos = Some(ball.position_2d());
-                    Running(GoalKick(*team))
-                } else {
-                    warn!("Ball position not available when switching to running GoalKick.");
-                    Running(GoalKick(*team))
-                }
-            }
 
             // KickOff    ┐
             // FreeKick   ╣ --DirectFree--> Running
