@@ -2,7 +2,7 @@ use nalgebra::Point2;
 use serde::Serialize;
 use crate::data::referee::event::GameEvent;
 use crate::data::referee::Referee;
-use crate::data::world::game_state::{GameState, HaltedState};
+use crate::data::world::game_state::{GameState, HaltedState, StoppedState};
 
 /// Retains information sent by the game controller
 /// to both teams, about the current game state,
@@ -19,8 +19,9 @@ pub struct RefereeOrders {
     pub speed_limit: f32,
     /// Minimum distance to stay away from the ball
     /// There might not be any distance required, for example
-    /// during a normal running state
-    pub min_dist_from_ball: Option<f32>,
+    /// during a normal running state. In that case,
+    /// it will be set to 0.
+    pub min_dist_from_ball: f64,
     /// The last designated position for a ball placement event
     /// If no ball placement is required, this field is set to None
     pub designated_position: Option<Point2<f64>>,
@@ -31,13 +32,14 @@ const MAX_SPEED_STOPPED: f32 = 1.5;
 //TODO: use MAX_LINEAR constant ? (can't because of circular dependency
 // between crabe_framework and crabe_guard)
 const MAX_SPEED_RUNNING: f32 = 6.; // Arbitrary value, not defined by the rulebook
+const MIN_DIST_FROM_BALL_STOPPED: f64 = 1.5;
 
 impl RefereeOrders {
     /// Get the maximum speed authorized during a given game state
     /// There are no specific speed limits for certain events,
     /// such as a penalty.
     /// Speed limits are only defined for three main types of game states
-    pub fn get_speed_limit_during(game_state: GameState) -> f32 {
+    fn get_speed_limit_during(game_state: GameState) -> f32 {
         match game_state {
             GameState::Halted(_) => MAX_SPEED_HALTED,
             GameState::Stopped(_) => MAX_SPEED_STOPPED,
@@ -47,29 +49,17 @@ impl RefereeOrders {
     
     /// Get the minimum distance our robots have to stay away
     /// from the ball during a given state
-    pub fn get_min_dist_from_ball_during(game_state: GameState) -> Option<f32> {
+    fn get_min_dist_from_ball_during(game_state: GameState) -> f64 {
         match game_state {
-            GameState::Halted(_) => None,
-            GameState::Stopped(_) => Some(1.5),
-            GameState::Running(_) => None,
-        }
-    }
-
-    /// Creates a new instance, that defines the speed limits
-    /// depending on the current game state provided
-    pub fn new(game_state: GameState, game_event: Option<GameEvent>) -> Self {
-        Self {
-            state: game_state,
-            event: game_event,
-            speed_limit: Self::get_speed_limit_during(game_state),
-            min_dist_from_ball: None,
-            designated_position: None,
+            GameState::Halted(_) => 0.,
+            GameState::Stopped(_) => MIN_DIST_FROM_BALL_STOPPED,
+            GameState::Running(_) => 0.,
         }
     }
 
     /// Updates the struct with the new information provided
     /// Convenience function to avoid having to create/drop similar objects
-    pub fn update(&mut self, game_state: GameState, referee: &Referee) {
+    pub fn update(&mut self, game_state: GameState, referee: &Referee, ball_ref_pos: Option<Point2<f64>>) {
         self.state = game_state;
         self.speed_limit = Self::get_speed_limit_during(game_state);
         self.min_dist_from_ball = Self::get_min_dist_from_ball_during(game_state);
@@ -80,18 +70,19 @@ impl RefereeOrders {
             Some(ge_ref) => { Some(ge_ref.clone()) }
         };
 
-        self.designated_position = referee.designated_position;
+        self.designated_position = ball_ref_pos;
     }
 }
 
 impl Default for RefereeOrders {
     fn default() -> Self {
         Self {
-            state: GameState::Halted(HaltedState::GameNotStarted),
             event: None,
             speed_limit: MAX_SPEED_HALTED,
-            min_dist_from_ball: None,
+            min_dist_from_ball: 0.,
             designated_position: None,
-        }
+            // this way, we can see if our robots move directly
+            // if robot behaviours are properly coded, this shouldn't pose a problem
+            state: GameState::Stopped(StoppedState::Stop),        }
     }
 }
