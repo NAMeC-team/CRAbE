@@ -1,12 +1,13 @@
-use std::time::{Duration, Instant};
 use log::warn;
 use nalgebra::{distance, Point2};
 use crabe_framework::data::referee::{Referee, RefereeCommand};
 use crabe_framework::data::referee::event::{BallLeftField, Event};
 use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
 use crabe_framework::data::world::game_state::GameState::{Halted, Stopped, Running};
-use crabe_framework::data::world::{Ball, EnemyInfo, TeamColor, World};
-use crabe_framework::data::world::game_state::RunningState::Run;
+use crabe_framework::data::world::{Ball, TeamColor, World};
+use crabe_framework::data::world::game_state::HaltedState::*;
+use crabe_framework::data::world::game_state::StoppedState::*;
+use crabe_framework::data::world::game_state::RunningState::*;
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
@@ -48,7 +49,7 @@ impl Default for GameControllerPostFilter {
 /// Returns true if the ball is considered to be "in play",
 /// that is, it has moved from its reference position
 /// by at least a certain delta (specified by the rulebook)
-pub(super) fn is_ball_in_play(ball_ref_pos: &Point2<f64>, opt_ball: &Option<Ball>) -> bool {
+fn is_ball_in_play(ball_ref_pos: &Point2<f64>, opt_ball: &Option<Ball>) -> bool {
     if let Some(ball) = &opt_ball {
         distance(&ball.position_2d(), &ball_ref_pos) > MIN_DIST_BALL_MOVED
     } else {
@@ -66,8 +67,8 @@ impl GameControllerPostFilter {
     /// Thus, once we enter a dynamic state (for instance, FreeKick), we should compute
     /// the distance of the ball position before placement, against its current position.
     fn get_reference_position(&self, world: &World, referee: &Referee, state: &GameState) -> Option<Point2<f64>> {
-        if matches!(state, Running(RunningState::FreeKick(_))
-                        | Running(RunningState::KickOff(_))
+        if matches!(state, Running(FreeKick(_))
+                        | Running(KickOff(_))
         ) {
             match &world.ball {
                 Some(ball) => Some(ball.position_2d()),
@@ -116,14 +117,14 @@ impl GameControllerPostFilter {
             return if side == last_touch {
                 // the faulting team pushes the ball through their side of the field,
                 // CornerKick for the opposite team
-                Stopped(StoppedState::PrepareCornerKick(event_info.by_team.opposite()))
+                Stopped(PrepareCornerKick(event_info.by_team.opposite()))
             } else {
                 // the faulting team pushed the ball towards their enemies' side of the field,
                 // GoalKick for the opposite team
-                Stopped(StoppedState::PrepareGoalKick(event_info.by_team.opposite()))
+                Stopped(PrepareGoalKick(event_info.by_team.opposite()))
             }
         }
-        Stopped(StoppedState::Stop)
+        Stopped(Stop)
     }
     
     /// Transitions to another state based on the referee's
@@ -135,33 +136,33 @@ impl GameControllerPostFilter {
 
         match (cur_state, &referee.command, &self.ball_ref_pos, last_ge_event) {
             // Halt
-            (Halted(HaltedState::Halt), RefereeCommand::Stop, ..) => { Stopped(StoppedState::Stop) }
+            (Halted(Halt), RefereeCommand::Stop, ..) => { Stopped(Stop) }
 
             // Timeout
-            (Halted(HaltedState::Timeout(_)), RefereeCommand::Stop, ..) => { Stopped(StoppedState::Stop) }
+            (Halted(Timeout(_)), RefereeCommand::Stop, ..) => { Stopped(Stop) }
 
             // Stop
-            (Stopped(StoppedState::Stop), RefereeCommand::BallPlacement(team), ..) => { Stopped(StoppedState::BallPlacement(*team)) }
-            (Stopped(StoppedState::Stop), RefereeCommand::PrepareKickoff(team), ..) => { Stopped(StoppedState::PrepareKickoff(*team)) }
-            (Stopped(StoppedState::Stop), RefereeCommand::PreparePenalty(team), ..) => { Stopped(StoppedState::PreparePenalty(*team)) }
-            (Stopped(StoppedState::Stop), RefereeCommand::ForceStart, ..) => { Running(RunningState::Run) }
-            (Stopped(StoppedState::Stop), RefereeCommand::Timeout(team), ..) => { Halted(HaltedState::Timeout(*team)) }
-            (Stopped(StoppedState::Stop), RefereeCommand::DirectFree(team), ..) => {
+            (Stopped(Stop), RefereeCommand::BallPlacement(team), ..) => { Stopped(BallPlacement(*team)) }
+            (Stopped(Stop), RefereeCommand::PrepareKickoff(team), ..) => { Stopped(PrepareKickoff(*team)) }
+            (Stopped(Stop), RefereeCommand::PreparePenalty(team), ..) => { Stopped(PreparePenalty(*team)) }
+            (Stopped(Stop), RefereeCommand::ForceStart, ..) => { Running(Run) }
+            (Stopped(Stop), RefereeCommand::Timeout(team), ..) => { Halted(Timeout(*team)) }
+            (Stopped(Stop), RefereeCommand::DirectFree(team), ..) => {
                 // todo: what happens if there is no ball ?
                 // must add test case
                 if let Some(ball) = &world.ball {
                     self.ball_ref_pos = Some(ball.position_2d());
                 }
-                Running(RunningState::FreeKick(*team))
+                Running(FreeKick(*team))
             }
 
             // Ball placement
             // is there a command sent when ball placement ends ?
             // yes, on success, returns to Stop and sends FreeKick
-            (Stopped(StoppedState::BallPlacement(_)), RefereeCommand::Stop, ..) => { Stopped(StoppedState::Stop) }
+            (Stopped(BallPlacement(_)), RefereeCommand::Stop, ..) => { Stopped(Stop) }
             
             // Kickoff
-            (Stopped(StoppedState::PrepareKickoff(team)), RefereeCommand::NormalStart, ..) => {
+            (Stopped(PrepareKickoff(team)), RefereeCommand::NormalStart, ..) => {
                 let ball_pos = match &world.ball {
                     Some(ball) => ball.position_2d(),
                     None => {
@@ -170,55 +171,56 @@ impl GameControllerPostFilter {
                     }
                 };
                 self.ball_ref_pos = Some(ball_pos);
-                Running(RunningState::KickOff(team))
+                Running(
+                    KickOff(team))
             }
             
             // todo: merge with second branch below ?
-            (Running(RunningState::KickOff(team)), RefereeCommand::NormalStart, Some(ball_ref_pos), _) => {
+            (Running(KickOff(team)), RefereeCommand::NormalStart, Some(ball_ref_pos), _) => {
                 if self.should_change_state(world, referee, ball_ref_pos) {
                     // kickoff ends, we change to Run
                     self.ball_ref_pos = None;
-                    Running(RunningState::Run)
+                    Running(Run)
                 } else {
                     // KickOff still in progress
-                    Running(RunningState::KickOff(team))
+                    Running(KickOff(team))
                 }
             }
 
             // PreparePenalty
-            (Stopped(StoppedState::PreparePenalty(team)), RefereeCommand::NormalStart, ..) => { Running(RunningState::Penalty(team)) }
+            (Stopped(PreparePenalty(team)), RefereeCommand::NormalStart, ..) => { Running(Penalty(team)) }
 
             // FreeKick (time-dependent ?)
-            (Running(RunningState::FreeKick(team)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
+            (Running(FreeKick(team)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
                 if self.should_change_state(world, referee, ball_ref_pos) {
                     self.ball_ref_pos = None;
-                    Running(RunningState::Run)
+                    Running(Run)
                 } else {
-                    Running(RunningState::FreeKick(team))
+                    Running(FreeKick(team))
                 }
             }
-            (Stopped(StoppedState::PrepareCornerKick(_)), RefereeCommand::DirectFree(team), _, _) => {
+            (Stopped(PrepareCornerKick(_)), RefereeCommand::DirectFree(team), _, _) => {
                 if let Some(ball) = &world.ball {
                     self.ball_ref_pos = Some(ball.position_2d());
-                    Running(RunningState::CornerKick(*team))
+                    Running(CornerKick(*team))
                 } else {
                     warn!("Ball position not available when switching to running CornerKick.");
-                    Running(RunningState::CornerKick(*team)) // todo: what should we do here ?
+                    Running(CornerKick(*team)) // todo: what should we do here ?
                 }
             }
             
-            (Stopped(StoppedState::PrepareGoalKick(_)), RefereeCommand::DirectFree(team), _, _) => {
+            (Stopped(PrepareGoalKick(_)), RefereeCommand::DirectFree(team), _, _) => {
                 if let Some(ball) = &world.ball {
                     self.ball_ref_pos = Some(ball.position_2d());
-                    Running(RunningState::GoalKick(*team))
+                    Running(GoalKick(*team))
                 } else {
                     warn!("Ball position not available when switching to running GoalKick.");
-                    Running(RunningState::GoalKick(*team)) 
+                    Running(GoalKick(*team)) 
                 }
             }
 
-            (Running(RunningState::CornerKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _)
-            | (Running(RunningState::GoalKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
+            (Running(CornerKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _)
+            | (Running(GoalKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
                 match self.should_change_state(&world, &referee, ball_ref_pos) {
                     false => cur_state,
                     true => {
@@ -238,19 +240,19 @@ impl GameControllerPostFilter {
             // (this performs the Run -> Stop transition as well)
             (Running(_), RefereeCommand::Stop, ..) => {
                 // println!("{:?}", referee.game_events.last());
-                Stopped(StoppedState::Stop)
+                Stopped(Stop)
             }
 
             // The human referee can trigger Stop from any state
             (_, RefereeCommand::Stop, ..) => {
                 self.ball_ref_pos = None;
-                Stopped(StoppedState::Stop)
+                Stopped(Stop)
             }
 
             // any state can lead to Halt
             (_, RefereeCommand::Halt, ..) => {
                 self.ball_ref_pos = None;
-                Halted(HaltedState::Halt)
+                Halted(Halt)
             }
 
             // .. means match anything
@@ -258,7 +260,7 @@ impl GameControllerPostFilter {
                 warn!("Unknown transition, staying in Halt just in case");
                 println!("({:?}, {:?}, {:?})", &cur_state, &referee.command, &self.ball_ref_pos.is_some());
                 self.ball_ref_pos = None;
-                Halted(HaltedState::Halt) // TODO: maybe this should be Stop instead
+                Halted(Halt) // TODO: maybe this should be Stop instead
             }
         }
     }
@@ -328,7 +330,7 @@ mod tests {
         });
         world.data.ref_orders.state = current_state;
 
-        return (gcpf, filter_data, world)
+        (gcpf, filter_data, world)
     }
 
     fn set_refcmd_to(filter_data: &mut FilterData, command: RefereeCommand) -> &FilterData {
