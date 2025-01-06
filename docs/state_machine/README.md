@@ -108,3 +108,17 @@ Once we leave this dynamic state, we reset this field to `None`. This might not 
 but is written as a just-in-case case.
 
 The FreeKick state works in an analogous way, but with different referee commands and states.
+
+## "Enriched" states
+In certain cases, using the last game event that occurred, it is possible to know more about the current game states.
+A direct case of this is when the ball leaves the field via the goal line. Depending on which team touched the ball last,
+this can lead to a goal kick or a corner kick. As mentioned in the SSL rulebook ([section 5.3.3](https://robocup-ssl.github.io/ssl-rules/sslrules.pdf#%5B%7B%22num%22%3A329%2C%22gen%22%3A0%7D%2C%7B%22name%22%3A%22XYZ%22%7D%2C0%2C628.439%2Cnull%5D)),
+goal and corner kicks are mapped to the same command.
+
+Instead of keeping this level of indirection, we decided to lift it by adding new states for each case.
+The extension implemented is shown below (as usual, an aqua outline is a dynamic state) :
+
+![Enriched states "GoalKick" and "CornerKick" diagram](./goalcorner_kick_states.png)
+
+In the end, these transitions are exactly the same of a FreeKick, the difference being that
+when developing strategies, you get more precise data.
