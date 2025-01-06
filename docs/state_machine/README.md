@@ -122,3 +122,52 @@ The extension implemented is shown below (as usual, an aqua outline is a dynamic
 
 In the end, these transitions are exactly the same of a FreeKick, the difference being that
 when developing strategies, you get more precise data.
+
+## Merging similar branches into one
+When you take these two new states, CornerKick and GoalKick, they have the same behaviour.
+While they convey different information, both check the same conditions to compute
+whether we should change to the `Running::Run` state or stay in the current state.
+
+Instead of always repeating branches this way :
+```rs
+match (w, x, y, z) {
+    (Running(CornerKick(team)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
+        match self.should_change_state(&world, &referee, ball_ref_pos) {
+            false => Running(CornerKick(*team)),
+            true => {
+                self.ball_ref_pos = None;
+                Running(Run)
+            },
+        }
+    }
+    (Running(GoalKick(team)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
+        match self.should_change_state(&world, &referee, ball_ref_pos) {
+            false => Running(GoalKick(*team)),
+            true => {
+                self.ball_ref_pos = None;
+                Running(Run)
+            },
+        }
+    }
+}
+
+```
+
+you can just reduce it to much fewer lines this way :
+```rs
+match (w, x, y, z) {
+    (Running(CornerKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _)
+    | (Running(GoalKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
+        match self.should_change_state(&world, &referee, ball_ref_pos) {
+            false => cur_state,
+            true => {
+                self.ball_ref_pos = None;
+                Running(Run)
+            },
+        }
+    }
+}
+```
+
+It has the benefit of being easier to read, but albeit more difficult to understand if you don't know
+that both of these states work the same way.

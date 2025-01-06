@@ -174,31 +174,10 @@ impl GameControllerPostFilter {
                 Running(
                     KickOff(team))
             }
-            
-            // todo: merge with second branch below ?
-            (Running(KickOff(team)), RefereeCommand::NormalStart, Some(ball_ref_pos), _) => {
-                if self.should_change_state(world, referee, ball_ref_pos) {
-                    // kickoff ends, we change to Run
-                    self.ball_ref_pos = None;
-                    Running(Run)
-                } else {
-                    // KickOff still in progress
-                    Running(KickOff(team))
-                }
-            }
 
             // PreparePenalty
             (Stopped(PreparePenalty(team)), RefereeCommand::NormalStart, ..) => { Running(Penalty(team)) }
 
-            // FreeKick (time-dependent ?)
-            (Running(FreeKick(team)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
-                if self.should_change_state(world, referee, ball_ref_pos) {
-                    self.ball_ref_pos = None;
-                    Running(Run)
-                } else {
-                    Running(FreeKick(team))
-                }
-            }
             (Stopped(PrepareCornerKick(_)), RefereeCommand::DirectFree(team), _, _) => {
                 if let Some(ball) = &world.ball {
                     self.ball_ref_pos = Some(ball.position_2d());
@@ -215,11 +194,17 @@ impl GameControllerPostFilter {
                     Running(GoalKick(*team))
                 } else {
                     warn!("Ball position not available when switching to running GoalKick.");
-                    Running(GoalKick(*team)) 
+                    Running(GoalKick(*team))
                 }
             }
 
-            (Running(CornerKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _)
+            // KickOff    ┐
+            // FreeKick   ╣ --DirectFree--> Running
+            // CornerKick ╣
+            // GoalKick   ┘
+            (Running(KickOff(_)), RefereeCommand::NormalStart, Some(ball_ref_pos), _)
+            | (Running(FreeKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _)
+            | (Running(CornerKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _)
             | (Running(GoalKick(_)), RefereeCommand::DirectFree(_), Some(ball_ref_pos), _) => {
                 match self.should_change_state(&world, &referee, ball_ref_pos) {
                     false => cur_state,
