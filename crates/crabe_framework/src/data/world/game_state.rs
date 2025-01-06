@@ -1,7 +1,10 @@
 use crate::data::world::TeamColor;
 use serde::Serialize;
 
-/// Defines the possible game states of the match
+/// Defines the possible game states of the match.
+/// Additional states that are not specified in the rulebook
+/// have been added to help take decisions in strategy making.
+/// These additional states are marked with the tag [Enriched]
 #[derive(Serialize, Copy, Clone, Debug, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum GameState {
@@ -41,6 +44,16 @@ pub enum StoppedState {
     /// Generic stop command, issued when robots must slow down after
     /// a foul, for example. Can be issued manually
     Stop,
+    
+    /// [Enriched]
+    /// The ball left the field via a goal line, and will lead to
+    /// a corner kick that will be performed by `TeamColor`
+    PrepareCornerKick(TeamColor),
+    
+    /// [Enriched]
+    /// The ball left the field via a goal line, and will lead to
+    /// a goal kick that will be performed by `TeamColor`
+    PrepareGoalKick(TeamColor)
 }
 
 #[derive(Serialize, Copy, Clone, Debug, Eq, PartialEq)]
@@ -58,7 +71,15 @@ pub enum RunningState {
     /// The team `TeamColor` can freely kick the ball once
     FreeKick(TeamColor),
 
-    /// Generic running command, when no special event has occurred
+    /// Generic running command, when no special event has occurred.
     /// Can be issued manually
     Run,
+    
+    /// [Enriched]
+    /// The team `TeamColor` is performing a corner kick
+    CornerKick(TeamColor),
+    
+    /// [Enriched]
+    /// The team `TeamColor` is performing a goal kick
+    GoalKick(TeamColor)
 }
