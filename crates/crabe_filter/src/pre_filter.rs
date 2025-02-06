@@ -13,11 +13,14 @@ pub mod game_controller;
 /// Common functions used by both modules
 mod common;
 
+/// Used to parse tracker data given by AutoReferees.
+pub mod tracker;
+
 /// Responsible for converting incoming data
 /// from external sources (vision & game controller),
 /// stored in the field `inbound_data`,
 /// into data structures of our implementation
-/// that can be manipulated further, in the field `filter_data`.
+/// that can be manipulated further,q in the field `filter_data`.
 ///
 /// Similar to an outlet adapter
 ///
