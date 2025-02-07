@@ -58,6 +58,16 @@ struct PIDErrCounter {
     err_index: usize
 }
 
+impl Default for PIDErrCounter {
+    fn default() -> Self {
+        PIDErrCounter {
+            errors: vec![PIDErr::default(); PID_NUM_ERRORS],
+            max_size: PID_NUM_ERRORS,
+            err_index: 0,
+        }
+    }
+}
+
 impl PIDErrCounter {
     /// Get the previous error computed, which is older than the current error
     fn previous(&self) -> &PIDErr { &self.errors[self.previous_error_idx()] }
@@ -151,17 +161,24 @@ pub struct MoveToPID {
     error_tracker: PIDErrCounter,
 }
 
+impl From<&mut MoveToPID> for MoveToPID {
+    fn from(other: &mut MoveToPID) -> MoveToPID {
+        MoveToPID {
+            state: other.state,
+            target: other.target,
+            orientation: other.orientation,
+            error_tracker: PIDErrCounter::default(),
+        }
+    }
+}
+
 impl MoveToPID {
     pub fn new(target: Point2<f64>, orientation: f64) -> Self {
         Self {
             state: State::Running,
             target,
             orientation,
-            error_tracker: PIDErrCounter {
-                errors: vec![PIDErr::default(); PID_NUM_ERRORS],
-                max_size: PID_NUM_ERRORS,
-                err_index: 0,
-            },
+            error_tracker: PIDErrCounter::default(),
         }
     }
 
