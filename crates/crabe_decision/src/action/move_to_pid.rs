@@ -21,8 +21,8 @@ const PID_NUM_ERRORS: usize = 100;
 /// Maximum tolerance for error to be non-zero
 /// If the error is inferior to this number, error will be considered 0.
 /// The same constants are used to determine whether this action is finished or not.
-const TARGET_ATTAINED_TOL: f64 = 0.1;
-const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 2.;  // in radian !
+const TARGET_ATTAINED_TOL: f64 = 0.05;
+const THETA_ATTAINED_TOL: f64 = FRAC_PI_8 / 8.;  // in radian !
 
 #[derive(Debug, Clone)]
 struct PIDErr {
@@ -92,7 +92,7 @@ impl PIDErrCounter {
                 }
             }
 
-            // approximation of integral term using trapezoidal rule
+            // approximation of integral term using trapezoidal rule (midpoint)
             error_sum += delta * ((1./2.) * (cur.err + prev.err));
 
             self.err_index = self.previous_error_idx();
@@ -113,7 +113,8 @@ impl PIDErrCounter {
     /// Computes the error sum between the previous and
     /// the current error.
     /// Similar to the derivative term of the movement of the robot.
-    /// This must be called after computing the current position error for the robot
+    /// This must be called after computing the current position error for the robot.
+    /// Uses finite differences method
     fn deriv_prev_curr(&self, prev: &PIDErr, cur: &PIDErr) -> Vector3<f64> {
         let mut time_delta = 0.016;
 
@@ -220,7 +221,7 @@ impl Action for MoveToPID {
             }
 
             // compute in order, the factors of the PID
-            let p =  K_P * self.error_tracker.current().err;
+            let p = K_P * self.error_tracker.current().err;
             let i = K_I * self.error_tracker.sum();
             let d = K_D * self.error_tracker.deriv_prev_curr(self.error_tracker.previous(), self.error_tracker.current());
 
