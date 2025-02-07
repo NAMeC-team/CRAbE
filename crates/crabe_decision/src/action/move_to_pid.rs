@@ -6,6 +6,7 @@ use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
 use crate::action::Action;
 use crate::action::state::State;
+use crate::utils::{obstacle_avoidance, penalty_zone_prevention, KEEPER_ID};
 
 /// Proportional factor of the PID controller
 const K_P: f64 = 2.5;
@@ -239,6 +240,15 @@ impl Action for MoveToPID {
 
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
+            
+            let mut target = self.target;
+            if id != KEEPER_ID{
+                target = penalty_zone_prevention(&robot.pose.position, &self.target, world)
+            }
+            if self.avoidance{
+                target = obstacle_avoidance(&target, robot, world, _tools);
+            }
+            
             // take current error in account for next command
             let current_error = self.error_to_target(robot, self.target, self.orientation);
             self.error_tracker.save(current_error);
@@ -269,9 +279,9 @@ impl Action for MoveToPID {
                 forward_velocity: vec_command.x as f32,
                 left_velocity: vec_command.y as f32,
                 angular_velocity: vec_command.z as f32,
-                charge: false,
-                kick: None,
-                dribbler: 0.0,
+                charge: self.charge,
+                kick: self.kicker,
+                dribbler: self.dribbler,
             }
         } else {
             Command::default()
