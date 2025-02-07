@@ -1,7 +1,7 @@
 use std::f64::consts::{FRAC_PI_8, PI};
 use std::time::{Instant};
 use nalgebra::{Isometry2, Point2, Vector2, Vector3};
-use crabe_framework::data::output::Command;
+use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
 use crate::action::Action;
@@ -157,6 +157,10 @@ pub struct MoveToPID {
     target: Point2<f64>,
     /// The target orientation of the robot.
     orientation: f64,
+    charge: bool,
+    dribbler: f32,
+    kicker: Option<Kick>,
+    avoidance: bool,
     /// Accumulation of the errors computer over time
     error_tracker: PIDErrCounter,
 }
@@ -167,17 +171,25 @@ impl From<&mut MoveToPID> for MoveToPID {
             state: other.state,
             target: other.target,
             orientation: other.orientation,
-            error_tracker: PIDErrCounter::default(),
+            charge: other.charge,
+            dribbler: other.dribbler,
+            kicker: other.kicker,
+            avoidance: other.avoidance,
+            error_tracker: other.error_tracker.clone(),
         }
     }
 }
 
 impl MoveToPID {
-    pub fn new(target: Point2<f64>, orientation: f64) -> Self {
+    pub fn new(target: Point2<f64>, orientation: f64, charge: bool, dribbler: f32, kicker: Option<Kick>, avoidance: bool) -> Self {
         Self {
             state: State::Running,
             target,
             orientation,
+            charge,
+            dribbler,
+            kicker,
+            avoidance,
             error_tracker: PIDErrCounter::default(),
         }
     }
