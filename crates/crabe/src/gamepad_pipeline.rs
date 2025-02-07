@@ -11,7 +11,8 @@ pub struct GamepadPipeline {
     gilrs: Gilrs,
     active_gamepad: Option<GamepadId>,
     is_charging: bool,
-    controlled_id: u8
+    controlled_id: u8,
+    dribbler: f32,
 }
 
 impl GamepadPipeline {
@@ -28,6 +29,7 @@ impl GamepadPipeline {
             active_gamepad: None,
             is_charging: false,
             controlled_id: gamepad_config.robot_id,
+            dribbler: 400.
         }
     }
 }
@@ -57,8 +59,16 @@ impl DecisionComponent for GamepadPipeline {
                 command.angular_velocity = gamepad.value(Axis::RightStickX) * -3.14;
             }
 
+            if gamepad.is_pressed(Button::DPadUp) {
+                let nv = self.dribbler + 1.;
+                if nv < 400. { self.dribbler = nv; }
+            } else if gamepad.is_pressed(Button::DPadDown) {
+                let nv = self.dribbler - 1.;
+                if nv > -400. { self.dribbler = nv; }
+            }
+
             if gamepad.is_pressed(Button::LeftTrigger) {
-                command.dribbler = 1.0;
+                command.dribbler = self.dribbler;
             }
 
             if gamepad.is_pressed(Button::North) {
@@ -73,6 +83,7 @@ impl DecisionComponent for GamepadPipeline {
             } else if gamepad.is_pressed(Button::LeftTrigger2) {
                 command.kick = Some(Kick::ChipKick { power: 1.0 });
             }
+
             let mut command_map = CommandMap::new();
             command_map.insert(self.controlled_id, command);
 
