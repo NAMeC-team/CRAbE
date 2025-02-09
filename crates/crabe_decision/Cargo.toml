@@ -14,6 +14,8 @@ enum_dispatch = "0.3.12"
 crabe_protocol = { path = "../crabe_protocol" }
 crabe_framework = { path = "../crabe_framework" }
 crabe_math = { path = "../crabe_math" }
+csv = "1.3.1"
 
 [dev-dependencies]
-plotters = "0.3.7"
+charming = "0.4.0"
+csv = "1.3.1"
