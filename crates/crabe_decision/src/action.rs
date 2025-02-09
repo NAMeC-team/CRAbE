@@ -16,7 +16,7 @@ pub mod sequencer;
 /// The state module contains the State enum which represents the current state of an action.
 pub mod state;
 
-
+pub mod opt_pass;
 
 use crate::action::move_to::MoveTo;
 use crate::action::orient_to::OrientTo;
