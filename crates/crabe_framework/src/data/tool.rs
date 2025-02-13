@@ -1,14 +1,15 @@
 use crate::data::annotation::AnnotationStore;
 use serde::Serialize;
 
-/// The `ToolData` struct is a container for storing additional data that can be sent to
+/// The `ToolData` struct stores additional data that can be sent to
 /// external tools, such as a viewer or joystick handler.
+/// When adding new content to send to these tools, this struct should be modified, not its wrapper ToolMessage.
+///
 #[derive(Clone, Default, Serialize)]
 pub struct ToolData {
     #[serde(flatten)]
     pub annotations: AnnotationStore,
 }
 
-/// The `ToolCommands` struct is a container for storing commands that are sent to external
-/// tools.
+/// Represents data sent by (our) external tools to the software.
 pub struct ToolCommands;

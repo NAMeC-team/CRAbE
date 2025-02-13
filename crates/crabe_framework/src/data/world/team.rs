@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
+use crate::data::referee::TeamInfo;
 
 /// The `TeamColor` enum represents the color of a team in the SSL game, either blue or yellow.
-#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Eq, PartialEq, Hash)]
 #[serde(rename_all = "camelCase")]
 pub enum TeamColor {
     Blue,
@@ -23,14 +24,19 @@ impl TeamColor {
 #[serde(rename_all = "camelCase")]
 pub struct Team {
     /// The color of the team.
-    color: TeamColor,
-    /// The name of the team, if provided.
-    name: Option<String>,
+    pub color: TeamColor,
+    /// Information about the team, provided by the game controller
+    pub info: Option<TeamInfo>
 }
 
 impl Team {
     /// Creates a new team with the given color.
     pub fn with_color(color: TeamColor) -> Self {
-        Self { color, name: None }
+        Self { color, info: None }
+    }
+
+    /// Updates the stored info about the
+    pub fn update_info(&mut self, infos: &TeamInfo) {
+        self.info = Some(infos.clone());
     }
 }

@@ -30,7 +30,7 @@ pub enum Kick {
 
 #[derive(Copy, Debug, Clone, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Command {
+pub struct  Command {
     /// Velocity forward in m.s-1 (towards the dribbler)
     pub forward_velocity: f32,
     /// Velocity to the left in m.s-1

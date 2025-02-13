@@ -20,5 +20,6 @@ pub mod constant;
 pub mod league;
 
 pub mod pipeline;
+
+/// Encapsulates the data and communication used with external tools.
 pub mod tool;
-// pub mod serial;

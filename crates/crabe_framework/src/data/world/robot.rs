@@ -88,3 +88,9 @@ impl<T: Clone> Clone for Robot<T> {
         }
     }
 }
+
+impl<T> Robot<T> {
+    pub fn distance(&self, point: &Point2<f64>) -> f64 {
+        return (self.pose.position - point).norm();
+    }
+}
