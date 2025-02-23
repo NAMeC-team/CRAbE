@@ -1,0 +1,31 @@
+'SSL state machine
+'Enriched states 'GoalKick' and 'CornerKick' implemented
+hide empty description
+left to right direction
+
+state StopChoice <<choice>>
+[*] --> StopChoice : (from any state)\n\nStop +\nBallLeftGoalLine
+
+note left of StopChoice : Choice depends on\nlast ball touch (LT)\nand the side which\nthe ball left the field
+
+StopChoice --> PrepareCornerKick : LT Enemy\nSide Enemy
+StopChoice --> PrepareCornerKick : LT Ally\nSide Ally
+
+StopChoice --> PrepareGoalKick : LT Enemy\nSide Ally
+StopChoice --> PrepareGoalKick : LT Ally\nSide Enemy
+
+state Stopped {
+    state PrepareCornerKick
+    PrepareCornerKick --> CornerKick : DirectFree
+    state PrepareGoalKick
+    PrepareGoalKick --> GoalKick : DirectFree
+}
+
+state Running {
+    state CornerKick ##aqua
+    CornerKick --> Run : after X seconds\nor if ball moved
+    state GoalKick ##aqua
+    GoalKick --> Run : after X seconds\nor if ball moved
+
+    state Run
+}

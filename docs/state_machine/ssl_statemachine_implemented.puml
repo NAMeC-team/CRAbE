@@ -1,0 +1,54 @@
+@startuml
+hide empty description
+
+'Notes
+' New transitions are interpreted directly
+' from the game controller league software
+'
+' The (human) referee can choose to transition
+' to the Stop state during any state.
+
+
+[*] --> Halt : (from any state) Halt
+[*] --> Stop : (from any state) Stop
+
+state Halted {
+    state Halt : Robots are not allowed to move
+    Halt --> Stop : Stop
+    state Timeout : Both teams can do what ever they want
+    Timeout --> Stop : Stop
+}
+
+state Stopped {
+    state Stop : Both teams have to keep distance to the ball
+    Stop --> PrepareKickoff : PrepareKickoff
+    Stop --> PreparePenalty : PreparePenalty
+    Stop --> BallPlacement : BallPlacement
+    Stop --> Timeout : Timeout
+    Stop --> Run : ForceStart
+    Stop --> FreeKick : DirectFree
+
+    state BallPlacement : One team places the ball, \nthe other keeps distance to ball
+    BallPlacement --> Stop : Stop
+
+    state PrepareKickoff : Teams have to move to their sides
+    PrepareKickoff --> Kickoff : NormalStart
+
+    state PreparePenalty : Keeper on goal line, \nattacker behind ball, \nother robots on legal positions
+    PreparePenalty --> Penalty : NormalStart
+}
+
+state Running {
+    state Kickoff ##aqua : One team may kick the ball \nwithin 5 (A) or 10 (B) seconds
+    Kickoff --> Run : after x seconds OR if ball moved
+
+    state FreeKick ##aqua : One team may kick the ball \nwithin 5 (A) or 10 (B) seconds
+    FreeKick --> Run : after x seconds OR if ball moved
+
+    state Penalty : Execute a penalty kick within 10 seconds
+   
+    state Run : Both teams may manipulate the ball
+    Run --> Stop : Stop
+}
+
+@enduml

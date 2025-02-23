@@ -1,112 +1,255 @@
-use crabe_framework::data::referee::{Referee, RefereeCommand};
-use crabe_framework::data::state_handler::game_state_handler::{ForceStartStateBranch, HaltStateBranch, DeprecatedStateBranch, NormalStartStateBranch, StopStateBranch, PrepareKickoffStateBranch, PreparePenaltyStateBranch, FreekickStateBranch, TimeoutStateBranch, BallPlacementStateBranch};
-use crabe_framework::data::state_handler::{GameStateBranch, GameStateData};
-use crabe_framework::data::world::World;
+use std::error::Error;
+use log::warn;
+use nalgebra::{distance, Point2};
+use crabe_framework::data::referee::{Referee, RefereeCommand as RC};
+use crabe_framework::data::referee::event::{BallLeftField, Event};
+use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
+use crabe_framework::data::world::game_state::GameState::{Halted, Stopped, Running};
+use crabe_framework::data::world::{Ball, TeamColor, World};
+use crabe_framework::data::world::game_state::HaltedState::*;
+use crabe_framework::data::world::game_state::StoppedState::*;
+use crabe_framework::data::world::game_state::RunningState::*;
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 
+// some stuff to be done later
+// Goal scored but invalid : CornerKick
+// => invalidated_goal()
+// => New state : Halted::PossibleGoal
+// PossibleGoal -> (BallPlacement) -> FreeKick
+// PossibleGoal -> Stop -> PrepareKickoff -> Kickoff
+//
+// Ball left outer field line :
+// - Check for BallPlacement ?
+// - PrepareFreekick ?
+// Minimum distance to consider whether the ball has moved
+// from a reference point in the rules
+const MIN_DIST_BALL_MOVED: f64 = 0.05; // see the rulebook, section 5.4
 
-
-/// Translates the received events and referee commands
-/// into specific game state for the game
 pub struct GameControllerPostFilter {
-    /// If true, means we must re-enter the current state branch
-    /// because it depends on a timer provided by the referee
-    time_based_refresh: bool,
-    /// Contains multiple information about the current state of the match
-    state_data: GameStateData,
-}
+    /// Last command sent by the referee
+    /// Whenever a new command is issued, we
+    /// perform a transition in the state machine
+    ref_cmd: RC,
 
-
-
-impl GameControllerPostFilter {
-
-    /// Updates the team scores of both teams in the latest
-    /// saved state (does not update world, only internal)
-    fn update_team_scores(&mut self, referee: &Referee) {
-        self.state_data.ally_score = referee.ally.score;
-        self.state_data.enemy_score = referee.enemy.score;
-    }
-
-    /// Updates most fields concerning the latest valid state data
-    /// we've saved. The only field not modified by this function
-    /// is `kicked_off_once`. State branches are responsible for
-    /// updating this field instead
-    fn update_latest_state_data(&mut self, referee: &Referee) {
-        if referee.command != self.state_data.last_ref_cmd {
-            self.state_data.prev_ref_cmd = self.state_data.last_ref_cmd;
-        }
-        self.state_data.last_ref_cmd = referee.command;
-
-        match self.state_data.prev_ref_cmd {
-            RefereeCommand::PrepareKickoff(_)
-            | RefereeCommand::PreparePenalty(_)
-            | RefereeCommand::DirectFree(_) => {
-                self.state_data.last_designated_pos = None
-            }
-            _ => {
-                if let Some(designated_pos) = referee.designated_position {
-                    self.state_data.last_designated_pos = Some(designated_pos / 1000.);
-                }
-            }
-       }
-    }
+    /// The reference position to use when checking
+    /// whether the ball is in play.
+    ball_ref_pos: Option<Point2<f64>>,
 }
 
 impl Default for GameControllerPostFilter {
     fn default() -> Self {
         Self {
-            time_based_refresh: false,
-            state_data: GameStateData::default(),
+            ref_cmd: RC::Halt,
+            ball_ref_pos: None,
         }
     }
 }
 
-impl GameControllerPostFilter {
-    fn resolve_branch(&mut self, referee_command: &RefereeCommand) -> Box<dyn GameStateBranch> {
-        match referee_command {
-            RefereeCommand::Halt => Box::new(HaltStateBranch),
-            RefereeCommand::Stop => Box::new(StopStateBranch),
-            RefereeCommand::NormalStart => Box::new(NormalStartStateBranch),
-            RefereeCommand::ForceStart => Box::new(ForceStartStateBranch),
-            RefereeCommand::PrepareKickoff(for_team) => Box::new(PrepareKickoffStateBranch::new(*for_team)),
-            RefereeCommand::PreparePenalty(for_team) => Box::new(PreparePenaltyStateBranch::new(*for_team)),
-            RefereeCommand::DirectFree(for_team) => Box::new(FreekickStateBranch::new(*for_team)),
-            RefereeCommand::Timeout(for_team) => Box::new(TimeoutStateBranch::new(*for_team)),
-            RefereeCommand::BallPlacement(by_team) => Box::new(BallPlacementStateBranch::new(*by_team)),
 
-            // Deprecated states (as per the protobuf files)
-            RefereeCommand::Goal(_) // Seems weird, but the protobuf file mentioned
-                                    // we shouldn't base ourselves off this command
-                                    // Tests show this is never sent
-            | RefereeCommand::IndirectFree(_)
-            | RefereeCommand::Deprecated => Box::new(DeprecatedStateBranch)
+/// Returns true if the ball is considered to be "in play",
+/// that is, it has moved from its reference position
+/// by at least a certain delta (specified by the rulebook)
+fn is_ball_in_play(ball_ref_pos: &Point2<f64>, opt_ball: &Option<Ball>) -> bool {
+    if let Some(ball) = &opt_ball {
+        distance(&ball.position_2d(), &ball_ref_pos) > MIN_DIST_BALL_MOVED
+    } else {
+        warn!("No ball detected, considering ball did not move");
+        false
+    }
+}
+
+impl GameControllerPostFilter {
+
+    /// In a given state, returns the reference position to use.
+    /// For example, before a freekick occurs, the ball should be placed at a specific position.
+    /// The human referee is allowed to not place the ball exactly at the specific position
+    /// designated (in other words, a margin of error of about 0.3 is allowed).
+    /// Thus, once we enter a dynamic state (for instance, FreeKick), we should compute
+    /// the distance of the ball position before placement, against its current position.
+    fn get_reference_position(&self, world: &World, referee: &Referee, state: &GameState) -> Option<Point2<f64>> {
+        if matches!(state, Running(FreeKick(_))
+                        | Running(KickOff(_))
+        ) {
+            match &world.ball {
+                Some(ball) => Some(ball.position_2d()),
+                None => None
+            }
+        } else {
+            match referee.designated_position {
+                Some(pos) => Some(pos),
+                None => None,
+            }
         }
     }
 
-    fn update_state(&mut self, world: &mut World, referee: &Referee) {
-        let mut new_state = world.data.ref_orders.state;
+    fn should_change_state(&self, world: &World, referee: &Referee, ball_ref_pos: &Point2<f64>) -> bool {
+        if let Some(time_remaining) = referee.current_action_time_remaining {
+            time_remaining.num_seconds() <= 0
+        } else {
+            is_ball_in_play(ball_ref_pos, &world.ball)
+        }
+    }
 
-        // change state only if a new referee command has been issued,
-        // or if the state is time-dependent
-        if self.state_data.last_ref_cmd != referee.command || self.time_based_refresh {
-            // dbg!(&referee.command);
-            // dbg!(referee.next_command);
-            // dbg!(&referee.designated_position);
-            // dbg!(&referee.current_action_time_remaining);
+    /// Called when the ball goes out of the field.
+    /// Returns on which team's side the ball went out of the field.
+    /// Note: we consider that at x == 0., it's the team on the negative half.
+    fn ball_leave_side(&self, opt_positive_half_team: Option<TeamColor>, event_info: &BallLeftField) -> Option<TeamColor> {
+        match (event_info.location, opt_positive_half_team) {
+            (Some(leave_loc), Some(positive_half_team)) => {
+                if leave_loc.x > 0. {
+                    Some(positive_half_team)
+                } else {
+                    Some(positive_half_team.opposite())
+                }
+            }
+            (..) => None
+        }
+    }
+    
+    /// When the ball leaves the field by crossing a goal line,
+    /// this function can be called to check if the next state should be a CornerKick
+    /// or a GoalKick.
+    /// 
+    /// If the side on which the ball left cannot be computed, returns a default Stop state
+    fn goal_or_corner_kick(&self, opt_positive_half_team: Option<TeamColor>, event_info: &BallLeftField) -> GameState {
+        let last_touch = event_info.by_team;
+        if let Some(side) = self.ball_leave_side(opt_positive_half_team, event_info) {
+            return if side == last_touch {
+                // the faulting team pushes the ball through their side of the field,
+                // CornerKick for the opposite team
+                Stopped(PrepareCornerKick(event_info.by_team.opposite()))
+            } else {
+                // the faulting team pushed the ball towards their enemies' side of the field,
+                // GoalKick for the opposite team
+                Stopped(PrepareGoalKick(event_info.by_team.opposite()))
+            }
+        }
+        Stopped(Stop)
+    }
 
-            self.update_latest_state_data(referee);
+    /// Updates the reference position to use to check whether we should step out
+    /// of the dynamic state or not.
+    fn setup_dynamic_state_precond(&mut self, ball: &Option<Ball>) -> bool {
+       match ball {
+           Some(b) => { self.ball_ref_pos = Some(b.position_2d()); true }
+           None => false
+       }
+    }
 
-            new_state = self.resolve_branch(&referee.command)
-                .process_state(world,
-                               referee,
-                               &mut self.time_based_refresh,
-                               &mut self.state_data);
+    /// Transitions to another state based on the referee's
+    /// last command, the current state and the world
+    fn transition(&mut self, referee: &Referee, world: &World) -> GameState {
+        let cur_state = world.data.ref_orders.state;
+        let last_ge = referee.game_events.last();
+        let last_ge_event = last_ge.map(|e| &e.event);
 
-            dbg!(&new_state);
+        match (cur_state, &referee.command, &self.ball_ref_pos, last_ge_event) {
+            // Halt
+            (Halted(Halt), RC::Stop, ..) => { Stopped(Stop) }
 
-            self.update_team_scores(referee);
-            world.data.ref_orders.update(new_state, referee);
+            // Timeout
+            (Halted(Timeout(_)), RC::Stop, ..) => { Stopped(Stop) }
+
+            // Stop
+            (Stopped(Stop), RC::BallPlacement(team), ..) => { Stopped(BallPlacement(*team)) }
+            (Stopped(Stop), RC::PrepareKickoff(team), ..) => { Stopped(PrepareKickoff(*team)) }
+            (Stopped(Stop), RC::PreparePenalty(team), ..) => { Stopped(PreparePenalty(*team)) }
+            (Stopped(Stop), RC::ForceStart, ..) => { Running(Run) }
+            (Stopped(Stop), RC::Timeout(team), ..) => { Halted(Timeout(*team)) }
+            (Stopped(Stop), RC::DirectFree(team), ..) => {
+                // todo: what happens if there is no ball ?
+                // must add test case
+                if let Some(ball) = &world.ball {
+                    self.ball_ref_pos = Some(ball.position_2d());
+                }
+                Running(FreeKick(*team))
+            }
+            (Stopped(PrepareCornerKick(_)), RC::DirectFree(team), ..) => {
+                if !self.setup_dynamic_state_precond(&world.ball) {
+                    warn!("Ball position not available when switching to Running::CornerKick.")
+                }
+                Running(CornerKick(*team))
+            }
+
+            (Stopped(PrepareGoalKick(_)), RC::DirectFree(team), ..) => {
+                if !self.setup_dynamic_state_precond(&world.ball) {
+                    warn!("Ball position not available when switching to Running::GoalKick.");
+                }
+                Running(GoalKick(*team))
+            }
+
+
+            // Ball placement
+            // is there a command sent when ball placement ends ?
+            // yes, on success, returns to Stop and sends FreeKick
+            (Stopped(BallPlacement(_)), RC::Stop, ..) => { Stopped(Stop) }
+            
+            // Kickoff
+            (Stopped(PrepareKickoff(team)), RC::NormalStart, ..) => {
+                let ball_pos = match &world.ball {
+                    Some(ball) => ball.position_2d(),
+                    None => {
+                        warn!("No ball in world, guess when will the kickoff finish might be incorrect. Taking default (0., 0.) point as reference");
+                        Point2::origin()
+                    }
+                };
+                self.ball_ref_pos = Some(ball_pos);
+                Running(KickOff(team))
+            }
+
+            // PreparePenalty
+            (Stopped(PreparePenalty(team)), RC::NormalStart, ..) => { Running(Penalty(team)) }
+
+            // KickOff    ┐
+            // FreeKick   ╣ --DirectFree--> Running
+            // CornerKick ╣
+            // GoalKick   ┘
+            (Running(KickOff(_)), RC::NormalStart, Some(ball_ref_pos), _)
+            | (Running(FreeKick(_)), RC::DirectFree(_), Some(ball_ref_pos), _)
+            | (Running(CornerKick(_)), RC::DirectFree(_), Some(ball_ref_pos), _)
+            | (Running(GoalKick(_)), RC::DirectFree(_), Some(ball_ref_pos), _) => {
+                match self.should_change_state(&world, &referee, ball_ref_pos) {
+                    false => cur_state,
+                    true => {
+                        self.ball_ref_pos = None;
+                        Running(Run)
+                    },
+                }
+            }
+            
+            // enriched state, we can guess whether
+            (_, RC::Stop, _, Some(Event::BallLeftFieldGoalLine(data))) => {
+                // goal kick or corner kick
+                self.goal_or_corner_kick(referee.positive_half, data)
+            }
+
+            // any running state can lead to a Stop
+            // (this performs the Run -> Stop transition as well)
+            (Running(_), RC::Stop, ..) => {
+                // println!("{:?}", referee.game_events.last());
+                Stopped(Stop)
+            }
+
+            // The human referee can trigger Stop from any state
+            (_, RC::Stop, ..) => {
+                self.ball_ref_pos = None;
+                Stopped(Stop)
+            }
+
+            // any state can lead to Halt
+            (_, RC::Halt, ..) => {
+                self.ball_ref_pos = None;
+                Halted(Halt)
+            }
+
+            // .. means match anything
+            (..) => {
+                warn!("Unknown transition, staying in Halt just in case");
+                println!("({:?}, {:?}, {:?})", &cur_state, &referee.command, &self.ball_ref_pos.is_some());
+                self.ball_ref_pos = None;
+                Halted(Halt) // TODO: maybe this should be Stop instead
+            }
         }
     }
 }
@@ -115,21 +258,304 @@ impl PostFilter for GameControllerPostFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         if let Some(referee) = filter_data.referee.last() {
 
-            self.update_state(world, referee);
+            // apply transition to state machine only if
+            // - a new ref command is received
+            // - the current state must be refreshed with new data (dynamic state)
+            if self.ref_cmd != referee.command || self.ball_ref_pos.is_some() {
+                // some variables are only here for debugging
+                let prev_state = world.data.ref_orders.state;
+                let new_state = self.transition(referee, world);
+                self.ref_cmd = referee.command;
 
-            // update positive half, to see which team resides on the positive
-            // side of the field
-            if let Some(team_on_positive_half) = referee.positive_half {
-                world.data.positive_half = team_on_positive_half
+                world.data.ref_orders.update(new_state, referee, self.get_reference_position(world, referee, &new_state));
+                // println!("{:?} -> {:?}) (ref_pos: {:?}) (des_pos: {:?}) (next_cmd: {:?})", prev_state, &new_state, world.data.ref_orders.designated_position, &referee.designated_position, &referee.next_command);
+                println!("{:?} -> {:?}) (cmd: {:?})", prev_state, &new_state, &referee.command);
+                world.data.ref_orders.state = new_state;
             }
+        }
+    }
+}
 
-            // update stage information
-            world.data.stage_info.stage = referee.stage;
-            world.data.stage_info.time_left = referee.stage_time_left;
+/// ------------------
+///   Testing module
+/// ------------------
+#[cfg(test)]
+mod tests {
+    use nalgebra::Point3;
+    use crabe_framework::config::CommonConfig;
+    use crabe_framework::data::referee::Stage;
+    use crabe_framework::data::world::TeamColor;
+    use super::RC as RC;
+    use super::HaltedState::*;
+    use super::StoppedState::*;
+    use super::RunningState::*;
+    use super::*;
 
-            // update team infos
-            world.data.ally.update_info(&referee.ally);
-            world.data.enemy.update_info(&referee.enemy);
-        };
+    fn all_states() -> Vec<GameState> {
+        let team = TeamColor::Blue;
+        vec![
+            Halted(Halt), Halted(Timeout(team)),
+            Stopped(PrepareKickoff(team)), Stopped(PreparePenalty(team)),
+            Stopped(BallPlacement(team)),
+            Running(KickOff(team)), Running(Penalty(team)), Running(FreeKick(team)),
+            Running(Run)
+        ]
+    }
+
+    /// Provides dummy data configured to the parameters given
+    /// I recommend looking at test kickoff_correct_reference_pos() to see how to use it
+    fn dummy_data(current_ref_cmd: RC, current_state: GameState, next_ref_cmd: RC, point: &Point2<f64>) -> (GameControllerPostFilter, FilterData, World) {
+        let mut gcpf = GameControllerPostFilter::default();
+        gcpf.ref_cmd = current_ref_cmd;
+
+        let mut filter_data = FilterData::default();
+        set_refcmd_to(&mut filter_data, next_ref_cmd);
+
+        let mut world = World::with_config(&CommonConfig {gc: false, real: false, yellow: false});
+        world.ball = Some(Ball {
+            position: Point3::new(point.x, point.y, 0.),
+            ..Default::default()
+        });
+        world.data.ref_orders.state = current_state;
+
+        (gcpf, filter_data, world)
+    }
+
+    fn set_refcmd_to(filter_data: &mut FilterData, command: RC) -> &FilterData {
+        filter_data.referee.clear();
+        filter_data.referee.push(Referee {
+            source_identifier: None,
+            match_type: None,
+            packet_timestamp: Default::default(),
+            stage: Stage::NormalFirstHalfPre,
+            stage_time_left: None,
+            command,
+            command_counter: 0,
+            command_timestamp: Default::default(),
+            ally: Default::default(),
+            enemy: Default::default(),
+            designated_position: None,
+            positive_half: None,
+            next_command: None,
+            game_events: vec![],
+            game_event_proposals: vec![],
+            current_action_time_remaining: None,
+        });
+        filter_data
+    }
+
+    /// Moves the ball in the world, always setting its z at 0
+    fn move_ball(world: &mut World, new_ball_pos: &Point2<f64>) {
+        if let Some(ball) = &mut world.ball {
+            ball.position = Point3::new(new_ball_pos.x, new_ball_pos.y, 0.);
+        }
+    }
+    
+    #[test]
+    fn any_state_to_stop() {
+        // setup parameters
+        let current_ref_cmd = RC::Halt;
+        let current_state = Halted(Halt);
+        let next_ref_cmd = RC::Stop;
+        let ball_pos = Point2::new(0.05, 0.05);
+
+        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_pos);
+
+        all_states().iter().for_each(|state| {
+            let prev_state = world.data.ref_orders.state;
+            world.data.ref_orders.state = *state;
+            gc_postfilter.step(&mut filter_data, &mut world);
+            
+            assert!(
+                matches!(world.data.ref_orders.state, Stopped(_)),
+                "Invalid transition {:?} -> {:?}",
+                prev_state,
+                world.data.ref_orders.state,
+            );
+            world.data.ref_orders.state = Halted(Halt);
+            gc_postfilter.ref_cmd = RC::Halt // actual value doesn't matter, as long as it is different
+        });
+    }
+
+    #[test]
+    fn any_state_to_halt() {
+        // setup parameters
+        let current_ref_cmd = RC::Stop;
+        let current_state = Stopped(Stop);
+        let next_ref_cmd = RC::Halt;
+        let ball_pos = Point2::new(0.05, 0.05);
+
+        let (mut gc_postfilter, mut filter_data, mut world) = dummy_data(current_ref_cmd, current_state, next_ref_cmd, &ball_pos);
+
+        all_states().iter().for_each(|state| {
+            let prev_state = world.data.ref_orders.state;
+            world.data.ref_orders.state = *state;
+            gc_postfilter.step(&mut filter_data, &mut world);
+
+            assert!(
+                matches!(world.data.ref_orders.state, Halted(_)),
+                "Invalid transition {:?} -> {:?}",
+                prev_state,
+                world.data.ref_orders.state,
+            );
+            world.data.ref_orders.state = Stopped(Stop);
+            gc_postfilter.ref_cmd = current_ref_cmd
+        });
+    }
+
+    /// Checks that PrepareKickoff -> Kickoff uses the ball as reference point
+    /// and not the referee's designated position
+    #[test]
+    fn kickoff_correct_reference_pos() {
+        // setup parameters
+        let ball_pos = Point2::new(0.05, 0.05);
+        let (mut gc_postfilter, mut filter_data, mut world) = 
+            dummy_data(
+                // current state
+                RC::PrepareKickoff(TeamColor::Blue), // current ref command saved
+                Stopped(PrepareKickoff(TeamColor::Blue)), // current game state we are in
+                
+                // inbound data
+                RC::NormalStart, // Referee command issued
+                &ball_pos // where to place the ball in the world
+            );
+
+        gc_postfilter.step(&mut filter_data, &mut world);
+
+        let designated_pos= &world.data.ref_orders.designated_position;
+        assert!(designated_pos.is_some());
+        assert_eq!(ball_pos, designated_pos.unwrap())
+    }
+
+    /// Checks that Stop -> FreeKick uses the ball as reference point
+    /// and not the referee's designated position
+    #[test]
+    fn freekick_correct_reference_pos() {
+        // setup parameters
+        let ball_pos = Point2::new(0.05, 0.05);
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &ball_pos);
+
+        gc_postfilter.step(&mut filter_data, &mut world);
+
+        let designated_pos= &world.data.ref_orders.designated_position;
+        assert!(designated_pos.is_some());
+        assert_eq!(ball_pos, designated_pos.unwrap())
+    }
+
+    /// Transition condition function must be Some(_) when entering the FreeKick state,
+    /// and must be None when leaving FreeKick state.
+    /// This test forces to leave the FreeKick state by moving the ball,
+    /// if it does not work, this test will fail
+    #[test]
+    fn freekick_has_ball_reference_position() {
+        let ball_t0 = Point2::new(4.0, 3.0);
+        let (mut gc_postfilter, mut filter_data, mut world) = 
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &ball_t0);
+
+        // Stop -> FreeKick
+        // ball should be saved as reference point
+        gc_postfilter.step(&mut filter_data, &mut world);
+        assert!(
+            gc_postfilter.ball_ref_pos.is_some(),
+            "No updating function even though FreeKick should be updated dynamically"
+        );
+
+        // FreeKick -> Running(Run)
+        // on ball move
+        let ball_t1 = Point3::new(5.0, 4.0, 0.0); // meets conditions for changing state
+        world.ball = Some(Ball {position: ball_t1, ..world.ball.unwrap()});
+        gc_postfilter.step(&mut filter_data, &mut world);
+        assert!(
+            gc_postfilter.ball_ref_pos.is_none(),
+            "Transition condition function was not cleared even though we left state FreeKick"
+        );
+    }
+
+    #[test]
+    fn freekick_exit_if_ball_moved() {
+        let ball_t0 = Point2::new(4.0, 3.0);
+        let next_ref_cmd = RC::DirectFree(TeamColor::Blue);
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), next_ref_cmd, &ball_t0);
+
+        // Stop -> FreeKick
+        // ball should be saved as reference point
+        gc_postfilter.step(&mut filter_data, &mut world);
+        let state_t0 = world.data.ref_orders.state;
+        assert!(
+            matches!(state_t0, Running(FreeKick(_))),
+            "Stop -> FreeKick not occurred properly, with command {:?}", next_ref_cmd
+        );
+
+        // ball moves such that distance > MIN_DIST_BALL_MOVED
+        let ball_t1 = Point2::new(ball_t0.x, ball_t0.y + MIN_DIST_BALL_MOVED * 2.);
+        move_ball(&mut world, &ball_t1);
+
+        // gc postfilter should change the state
+        gc_postfilter.step(&mut filter_data, &mut world);
+        let state_t1 = world.data.ref_orders.state;
+        assert_ne!(
+            state_t0, state_t1,
+            "FreeKick did not change state, even though ball moved by distance {:?} (min dist : {:?})",
+            distance(&ball_t0, &ball_t1), MIN_DIST_BALL_MOVED
+        );
+
+        assert_eq!(
+            state_t1, Running(Run),
+            "Expected FreeKick -> Running(Run), got FreeKick -> {:?}", state_t1
+        );
+    }
+
+    /// Checks that FreeKick -> Running(Run) after 10 seconds as measured by the referee.
+    #[test]
+    fn freekick_exit_if_ten_seconds_elapsed() {
+        // setup
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Stop, Stopped(Stop), RC::DirectFree(TeamColor::Blue), &Point2::origin());
+        gc_postfilter.step(&mut filter_data, &mut world);
+
+        // wait 10 secs
+        let mut referee = filter_data.referee.pop().unwrap();
+        referee.current_action_time_remaining = chrono::Duration::new(-1, 0);
+        
+        filter_data.referee.push(referee);
+        
+        gc_postfilter.step(&mut filter_data, &mut world);
+
+        // heck we changed states // i never wrote that ??? ~wanchai
+        assert_eq!(
+            world.data.ref_orders.state, Running(Run),
+            "FreeKick -> Running(Run) did not occur after 10 seconds"
+        )
+    }
+    
+    /// Checks if this transition (state_t0, ref_cmd) -> expected_state
+    /// occurs correctly in the state machine
+    fn valid_transition(state_t0: GameState, ref_cmd: RC, expected_state: GameState) {
+        let (mut gc_postfilter, mut filter_data, mut world) =
+            dummy_data(RC::Halt, state_t0, ref_cmd, &Point2::origin());
+        
+        gc_postfilter.step(&mut filter_data, &mut world);
+
+        assert_eq!(
+            world.data.ref_orders.state, expected_state,
+            "{:?} -> {:?} transition does not exist in state machine",
+            world.data.ref_orders.state, expected_state
+        );
+    }
+    
+    #[test]
+    fn all_transitions_correct() {
+        valid_transition(Halted(Halt), RC::Stop, Stopped(Stop));
+        
+        // timeout transitions
+        valid_transition(Stopped(Stop), RC::Timeout(TeamColor::Blue), Halted(Timeout(TeamColor::Blue)));
+        valid_transition(Halted(Timeout(TeamColor::Blue)), RC::Stop, Stopped(Stop));
+        
+        valid_transition(Stopped(Stop), RC::Timeout(TeamColor::Yellow), Halted(Timeout(TeamColor::Yellow)));
+        valid_transition(Halted(Timeout(TeamColor::Yellow)), RC::Stop, Stopped(Stop));
+        
+        //todo: all of the other arrows
     }
 }
