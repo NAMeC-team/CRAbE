@@ -128,7 +128,7 @@ impl Strategy for GoalKeeper {
             if let Some(intersection) = self.follow_velocity_trajectory(ball, world){
                 position_target = intersection;
             } else if ball.velocity.norm() < 0.1 && penalty.is_inside(&ball_position) {
-                action_wrapper.push(robot.id, MoveTo::new(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false, false));
+                action_wrapper.push(robot.id, MoveTo::new_all_params(ball_position, vectors::angle_to_point(robot.pose.position, ball_position), 0.0, true, Some(Kick::StraightKick { power: 4. }), false, false));
                 return false;
             } else if let Some(closest_enemy) = closest_bot_to_point(world.enemies_bot.values().collect(), ball_position){
                 if let Some(intersection) = self.follow_enemy_to_ball_trajectory(ball, world, closest_enemy){
@@ -153,7 +153,7 @@ impl Strategy for GoalKeeper {
         }
 
         // Move the robot to the calculated position and orientation
-        action_wrapper.push(self.id, MoveTo::new(position_target, orientation, 0., false, None, true, false));
+        action_wrapper.push(self.id, MoveTo::new_all_params(position_target, orientation, 0., false, None, true, false));
         false
     }
 

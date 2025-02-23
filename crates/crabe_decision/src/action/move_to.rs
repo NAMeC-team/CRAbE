@@ -16,9 +16,10 @@ pub struct MoveTo {
     /// The current state of the action.
     pub state: State,
     /// The target position to move to.
-    pub target: Point2<f64>,
+    pub target_x: Option<f64>,
+    pub target_y: Option<f64>,
     /// The target orientation of the robot.
-    pub orientation: f64,
+    pub orientation: Option<f64>,
     pub charge: bool,
     pub dribbler: f32,
     pub kicker: Option<Kick>,
@@ -30,7 +31,8 @@ impl From<&mut MoveTo> for MoveTo {
     fn from(other: &mut MoveTo) -> MoveTo {
         MoveTo {
             state: other.state,
-            target: other.target,
+            target_x: other.target_x,
+            target_y: other.target_y,
             orientation: other.orientation,
             charge: other.charge,
             dribbler: other.dribbler,
@@ -42,13 +44,29 @@ impl From<&mut MoveTo> for MoveTo {
 }
 
 impl MoveTo {
-    /// Creates a new `MoveTo` instance.
+    /// Creates a new `MoveTo` instance where the default target position and orientation are set to the current position and orientation of the robot.
+    /// You can then use the builder pattern to modify parameters.
+    pub fn new() -> Self {
+        Self {
+            state: State::Running,
+            target_x: None,
+            target_y: None,
+            orientation: None,
+            charge: false,
+            dribbler: 0.,
+            kicker: None,
+            fast: true,
+            avoidance: true
+        }
+    }
+
+    /// Creates a new `MoveTo` instance by specifying all the params manually (DO NOT USE THIS FUNCTION, the only purpose is to handle previously existing code)
     ///
     /// # Arguments
     ///
     /// * `target`: The target position on the field to move the robot to.
     /// * `orientation`: The target orientation of the robot.
-    pub fn new(
+    pub fn new_all_params(
         target: Point2<f64>,
         orientation: f64,
         dribbler: f32,
@@ -59,14 +77,88 @@ impl MoveTo {
     ) -> Self {
         Self {
             state: State::Running,
-            target,
-            orientation,
+            target_x: Some(target.x),
+            target_y: Some(target.y),
+            orientation: Some(orientation),
             charge,
             dribbler,
             kicker,
             fast,
             avoidance
         }
+    }
+
+    /// Desactivate obstacle avoidance.
+    pub fn no_avoidance(mut self) -> Self {
+        self.avoidance = false;
+        self
+    }
+
+    /// Makes the robot move slower towards the target position and orientation.
+    pub fn slowly(mut self) -> Self {
+        self.fast = false;
+        self
+    }
+
+    /// Activate the charging mode of the robot.
+    pub fn charging(mut self) -> Self {
+        self.charge = true;
+        self
+    }
+
+    /// Set the kicker to be used by the robot.
+    /// 
+    /// # Arguments
+    /// * `kicker`: The kicker to be used by the robot.
+    pub fn set_kick(mut self, kicker: Kick) -> Self {
+        self.kicker = Some(kicker);
+        self
+    }
+
+    /// Set the dribbler speed of the robot.
+    /// 
+    /// # Arguments
+    /// * `dribbler`: The dribbler speed of the robot.
+    pub fn set_dribbler(mut self, dribbler: f32) -> Self {
+        self.dribbler = dribbler;
+        self
+    }
+
+    /// Set the x target position of the robot.
+    /// 
+    /// # Arguments
+    /// * `x`: The x target position of the robot.
+    pub fn set_x(mut self, x: f64) -> Self {
+        self.target_x = Some(x);
+        self
+    }
+
+    /// Set the y target position of the robot. 
+    /// 
+    /// # Arguments
+    /// * `y`: The y target position of the robot.
+    pub fn set_y(mut self, y: f64) -> Self {
+        self.target_y = Some(y);
+        self
+    }
+
+    /// Set the target position of the robot.
+    /// 
+    /// # Arguments
+    /// * `target`: A 2d point representing the target position of the robot.
+    pub fn set_target(mut self, target: Point2<f64>) -> Self {
+        self.target_x = Some(target.x);
+        self.target_y = Some(target.y);
+        self
+    }
+
+    /// Set the target orientation of the robot.
+    /// 
+    /// # Arguments
+    /// * `orientation`: The target angle of the robot.
+    pub fn set_orientation(mut self, orientation: f64) -> Self {
+        self.orientation = Some(orientation);
+        self
     }
 }
 
@@ -128,38 +220,43 @@ impl Action for MoveTo {
     /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
-            let mut target = self.target;
+            let mut order = Vector3::new(0., 0., 0.);
+            let ti = frame_inv(robot_frame(robot));
+
+            // set the target position and orientation to the current position and orientation of the robot if they are not set
+            self.target_x.get_or_insert_with(|| robot.pose.position.x);
+            self.target_y.get_or_insert_with(|| robot.pose.position.y);
+            self.orientation.get_or_insert_with(|| robot.pose.orientation);
+
+            // calculate position command 
+            let mut target = Point2::new(self.target_x.unwrap(), self.target_y.unwrap());
             if id != KEEPER_ID{
-                target = penalty_zone_prevention(&robot.pose.position, &self.target, world)
+                target = penalty_zone_prevention(&robot.pose.position, &target, world);
             }
             if self.avoidance{
                 target = obstacle_avoidance(&target, robot, world, _tools);
             }
-            let ti = frame_inv(robot_frame(robot));
-            let target_in_robot = ti * Point2::new(target.x, target.y);
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
-            let error_orientation = angle_difference(self.orientation, robot.pose.orientation);
-            let error_x = target_in_robot[0];
-            let error_y = target_in_robot[1];
-            let arrived = Vector3::new(error_x, error_y, error_orientation).norm() < ERR_TOLERANCE;
+            let target_in_robot = ti * Point2::new(target.x, target.y);
+            order.x = target_in_robot[0];
+            order.y = target_in_robot[1];
+
+            // calculate orientation command
+            let orientation = self.orientation.unwrap();
+            order.z = angle_difference(orientation, robot.pose.orientation);
+
+            // if the robot is close to the target orientation, it will stop this moveto
+            let arrived = order.norm() < ERR_TOLERANCE;
             if arrived {
                 self.state = State::Done;
             }
 
-            let order = 
-            if self.fast {
-                Vector3::new(
-                GOTO_SPEED_FAST * error_x,
-                GOTO_SPEED_FAST * error_y,
-                GOTO_ROTATION_FAST * error_orientation,
-                )
-            } else {
-                Vector3::new(
-                GOTO_SPEED * error_x,
-                GOTO_SPEED * error_y,
-                GOTO_ROTATION * error_orientation,
-                )
-            };
+            // mutliply by the speed factors
+            let speed = if self.fast { GOTO_SPEED_FAST } else { GOTO_SPEED };
+            let rotation = if self.fast { GOTO_ROTATION_FAST } else { GOTO_ROTATION };
+            order.x = speed * order.x;
+            order.y = speed * order.y;
+            order.z = rotation * order.z;
             // Command::default()
 
             Command {

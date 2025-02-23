@@ -20,7 +20,7 @@ pub fn move_away(
     if dist_robot_target < distance{
         if dist_robot_target == 0. {
             return Some(
-                MoveTo::new( 
+                MoveTo::new_all_params( 
                 Point2::new(100.,100.),
                 0., 
                 0., 
@@ -40,7 +40,7 @@ pub fn move_away(
             target = away_point + dir;
         }
         return Some(
-            MoveTo::new(target,
+            MoveTo::new_all_params(target,
              orientation, 
             0., 
             false, 
