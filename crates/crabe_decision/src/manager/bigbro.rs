@@ -322,7 +322,6 @@ impl Manager for BigBro {
     ) {
         match world.data.ref_orders.state {
             GameState::Halted(halted_state) => match halted_state {
-                HaltedState::GameNotStarted => everyone_halt(self, world),
                 HaltedState::Halt => everyone_halt(self, world),
                 HaltedState::Timeout(_team) => everyone_halt(self, world),
             }
@@ -338,18 +337,14 @@ impl Manager for BigBro {
                     }
                 }
                 StoppedState::BallPlacement(_team) =>  everyone_stop(self, world),
-                StoppedState::PrepareForGameStart => prepare_start(self, world),
-                StoppedState::BallLeftFieldTouchLine(_) => everyone_halt(self, world),
-                StoppedState::CornerKick(team) => if team == world.team_color{
+                StoppedState::PrepareCornerKick(team) => if team == world.team_color{
                     run_state(self, world, tools_data);
                 }else{
                     everyone_stop_except_keeper(self, world);
                 },
-                StoppedState::GoalKick(_team) => run_state(self, world, tools_data),
-                StoppedState::AimlessKick(_) => everyone_halt(self, world),
-                StoppedState::NoProgressInGame => run_state(self, world, tools_data),
-                StoppedState::PrepareFreekick(team) => prepare_kick_off(self, world, team),
-                StoppedState::FoulStop => run_state(self, world, tools_data),
+                StoppedState::PrepareGoalKick(_team) => run_state(self, world, tools_data),
+                // TODO: why isn't there a PrepareFreekick stopped state ?
+                // StoppedState::PrepareFreekick(team) => prepare_kick_off(self, world, team),
             },
             GameState::Running(running_state) => match running_state {
                 RunningState::KickOff(team) => if team == world.team_color{
@@ -363,7 +358,9 @@ impl Manager for BigBro {
                 }else{
                     prepare_kick_off(self, world,team);
                 },
-                RunningState::Run => run_state(self, world, tools_data),
+                RunningState::CornerKick(_)
+                | RunningState::GoalKick(_)
+                | RunningState::Run => run_state(self, world, tools_data),
             }
         }
         
