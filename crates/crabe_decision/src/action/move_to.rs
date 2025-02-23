@@ -223,17 +223,13 @@ impl Action for MoveTo {
             let mut order = Vector3::new(0., 0., 0.);
             let ti = frame_inv(robot_frame(robot));
 
-            // if target_x is none, set it to the current x position of the robot
-            if self.target_x.is_none(){
-                self.target_x = Some(robot.pose.position.x);
-            }
-            // if target_y is none, set it to the current y position of the robot
-            if self.target_y.is_none(){
-                self.target_y = Some(robot.pose.position.y);
-            }
+            // set the target position and orientation to the current position and orientation of the robot if they are not set
+            self.target_x.get_or_insert_with(|| robot.pose.position.x);
+            self.target_y.get_or_insert_with(|| robot.pose.position.y);
+            self.orientation.get_or_insert_with(|| robot.pose.orientation);
 
             // calculate position command 
-            let mut target = Point2::new(self.target_x.unwrap_or(robot.pose.position.x), self.target_y.unwrap_or(robot.pose.position.y));
+            let mut target = Point2::new(self.target_x.unwrap(), self.target_y.unwrap());
             if id != KEEPER_ID{
                 target = penalty_zone_prevention(&robot.pose.position, &target, world);
             }
@@ -246,8 +242,7 @@ impl Action for MoveTo {
             order.y = target_in_robot[1];
 
             // calculate orientation command
-            let mut orientation = self.orientation.unwrap_or(robot.pose.orientation);
-            let error_orientation = angle_difference(orientation, robot.pose.orientation);
+            let orientation = self.orientation.unwrap();
             order.z = angle_difference(orientation, robot.pose.orientation);
 
             // if the robot is close to the target orientation, it will stop this moveto
