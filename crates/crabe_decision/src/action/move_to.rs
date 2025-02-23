@@ -107,30 +107,45 @@ impl MoveTo {
     }
 
     /// Set the kicker to be used by the robot.
+    /// 
+    /// # Arguments
+    /// * `kicker`: The kicker to be used by the robot.
     pub fn set_kick(mut self, kicker: Kick) -> Self {
         self.kicker = Some(kicker);
         self
     }
 
     /// Set the dribbler speed of the robot.
+    /// 
+    /// # Arguments
+    /// * `dribbler`: The dribbler speed of the robot.
     pub fn set_dribbler(mut self, dribbler: f32) -> Self {
         self.dribbler = dribbler;
         self
     }
 
     /// Set the x target position of the robot.
+    /// 
+    /// # Arguments
+    /// * `x`: The x target position of the robot.
     pub fn set_x(mut self, x: f64) -> Self {
         self.target_x = Some(x);
         self
     }
 
-    /// Set the y target position of the robot.
+    /// Set the y target position of the robot. 
+    /// 
+    /// # Arguments
+    /// * `y`: The y target position of the robot.
     pub fn set_y(mut self, y: f64) -> Self {
         self.target_y = Some(y);
         self
     }
 
-    /// Set the target position of the robot as a point.
+    /// Set the target position of the robot.
+    /// 
+    /// # Arguments
+    /// * `target`: A 2d point representing the target position of the robot.
     pub fn set_target(mut self, target: Point2<f64>) -> Self {
         self.target_x = Some(target.x);
         self.target_y = Some(target.y);
@@ -138,6 +153,9 @@ impl MoveTo {
     }
 
     /// Set the target orientation of the robot.
+    /// 
+    /// # Arguments
+    /// * `orientation`: The target angle of the robot.
     pub fn set_orientation(mut self, orientation: f64) -> Self {
         self.orientation = Some(orientation);
         self
