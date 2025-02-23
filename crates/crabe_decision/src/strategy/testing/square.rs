@@ -66,15 +66,15 @@ impl Strategy for Square {
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_x(1.0).set_orientation(-3.* PI / 4.),
+            MoveTo::new().set_x(1.0).set_y(1.0).set_orientation(-3.* PI / 4.),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_y(-1.0).set_orientation(3.* PI / 4.),
+            MoveTo::new().set_x(1.0).set_y(-1.0).set_orientation(3.* PI / 4.),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_x(-1.0).set_orientation(PI / 4.),
+            MoveTo::new().set_x(-1.0).set_y(-1.0).set_orientation(PI / 4.),
         );
         true
     }
