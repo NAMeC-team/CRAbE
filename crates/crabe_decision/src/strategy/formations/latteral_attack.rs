@@ -73,14 +73,14 @@ impl Strategy for LateralAttack {
             if object_in_bot_trajectory(world, self.id, passer.pose.position, false, false, true).len() > 0 {
                 target = Point2::new(3.5, 1.5);
             }
-            action_wrapper.push(self.id, MoveTo::new(target, angle_to_point(robot.pose.position, passer.pose.position), 0.0, false, None, true, true));
+            action_wrapper.push(self.id, MoveTo::new_all_params(target, angle_to_point(robot.pose.position, passer.pose.position), 0.0, false, None, true, true));
             return false;
         } else {
             target = Point2::new(3.5, -2.);
             if object_in_bot_trajectory(world, self.id, passer.pose.position, false, false, true).len() > 0 {
                 target = Point2::new(3.5, -1.5);
             }
-            action_wrapper.push(self.id, MoveTo::new(target, angle_to_point(robot.pose.position, passer.pose.position), 0.0, false, None, true, true));
+            action_wrapper.push(self.id, MoveTo::new_all_params(target, angle_to_point(robot.pose.position, passer.pose.position), 0.0, false, None, true, true));
             return false;
         } 
 

@@ -93,7 +93,7 @@ impl Strategy for BotMarking {
         let ball_velocity_trajectory = Line::new(ball_pos, ball_pos + ball.velocity.xy().normalize() * 100.);
         if ball.velocity.norm() > 0.1 && ball_velocity_trajectory.distance_to_point(&enemy_pos.position) < 1. {
             let target = ball_velocity_trajectory.closest_point_on_segment(&robot_pos.position);
-            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribbler , false , Some(StraightKick { power: 0.0 }), true, true));
+            action_wrapper.push(self.id,  MoveTo::new_all_params(Point2::new(target.x, target.y), angle , dribbler , false , Some(StraightKick { power: 0.0 }), true, true));
         } else {
 
             // VECTEUR BALL -> ENEMY
@@ -101,7 +101,7 @@ impl Strategy for BotMarking {
             let enemy_ball_distance = enemy_to_ball.norm();
             let coef_distance_to_enemy: f64 = world.geometry.robot_radius + 0.2/enemy_ball_distance;
             let target = enemy_pos.position -  Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-coef_distance_to_enemy);
-            action_wrapper.push(self.id,  MoveTo::new(Point2::new(target.x, target.y), angle , dribbler , false , Some(StraightKick { power: 0.0 }), false, true));
+            action_wrapper.push(self.id,  MoveTo::new_all_params(Point2::new(target.x, target.y), angle , dribbler , false , Some(StraightKick { power: 0.0 }), false, true));
         }
 
         

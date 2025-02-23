@@ -62,19 +62,19 @@ impl Strategy for Square {
     ) -> bool {
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, 1.0), -PI / 4., 0.0, false, None, true, true),
+            MoveTo::new().set_x(-1.0).set_y(1.0).set_orientation(-PI / 4.),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(1.0, 1.0), -3.* PI / 4., 0.0, false, None, true, true),
+            MoveTo::new().set_x(1.0).set_orientation(-3.* PI / 4.),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(1.0, -1.0), 3.* PI / 4., 0.0, false, None, true, true),
+            MoveTo::new().set_y(-1.0).set_orientation(3.* PI / 4.),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new(Point2::new(-1.0, -1.0), PI / 4., 0.0, false, None, true, true),
+            MoveTo::new().set_x(-1.0).set_orientation(PI / 4.),
         );
         true
     }

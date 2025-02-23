@@ -91,7 +91,7 @@ impl Strategy for TestVisionMoveTo {
             .filter(|(ally_id, _)| self.ids.contains(ally_id))
             .for_each(|(ally_id, ally_info)| {
                 let target = Point2::new(-(*ally_id as f64).div(2.), y_target);
-                action_wrapper.push(*ally_id, MoveTo::new(target, FRAC_PI_6 * (*ally_id as f64), 0.,false , None, false , true));
+                action_wrapper.push(*ally_id, MoveTo::new_all_params(target, FRAC_PI_6 * (*ally_id as f64), 0.,false , None, false , true));
                 change_status = change_status && distance(&target, &ally_info.pose.position) <= DIST_TARGET_REACHED
             });
         if change_status {
