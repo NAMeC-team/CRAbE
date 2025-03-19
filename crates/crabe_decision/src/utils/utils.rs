@@ -132,6 +132,7 @@ pub fn ball_in_trajectory(world: &World, id: u8, target: Point2<f64>) -> bool{
 
 
 const MARGIN_SHOOTING_WINDOW: f64 = 0.01;
+const THIS8CONSTANT: f64 = (0.15 + 0.14 + MARGIN_SHOOTING_WINDOW);
 
 /// Get the obstruct goal zone from an enemy
 /// 
@@ -144,7 +145,7 @@ const MARGIN_SHOOTING_WINDOW: f64 = 0.01;
 /// A `Line` representing the obstruct goal zone
 fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_position: &Point2<f64>, world: &World) -> Option<Line> {
     let start_pos_to_enemy = enemy_position - shoot_start_position;
-    let perp = rotate_vector(start_pos_to_enemy.normalize(), PI/2.) * (world.geometry.robot_radius + world.geometry.ball_radius + MARGIN_SHOOTING_WINDOW);
+    let perp = rotate_vector(start_pos_to_enemy.normalize(), PI/2.) * THIS8CONSTANT;
     let ray_left_side = (enemy_position + perp) - shoot_start_position;
     let ray_right_side = (enemy_position - perp) - shoot_start_position;
     let line_ray_left_side = Line::new(*shoot_start_position, shoot_start_position + ray_left_side * 1000.);
@@ -167,19 +168,36 @@ fn get_obstruct_goal_zone_from_enemy(shoot_start_position: &Point2<f64>, enemy_p
 /// 
 /// # Returns
 /// A vector of `Line` representing the open shoot windows
+// pub fn get_open_shoot_window(shoot_start_position: &Point2<f64>, world: &World) -> Vec<Line> {
+//     let mut available_targets: Vec<Line> = vec![world.geometry.enemy_goal.line];
+//     for enemy in world.enemies_bot.values() {
+//         if let Some(line) = get_obstruct_goal_zone_from_enemy(shoot_start_position, &enemy.pose.position.xy(), world){
+//             let mut new_targets: Vec<Line> = vec![];
+//             for target_line in available_targets {
+//                 let targets = target_line.cut_off_segment(&line);
+//                 new_targets.extend(targets);
+//             }
+//             available_targets = new_targets;
+//         }
+//     }
+//     return available_targets;
+// }
+
 pub fn get_open_shoot_window(shoot_start_position: &Point2<f64>, world: &World) -> Vec<Line> {
     let mut available_targets: Vec<Line> = vec![world.geometry.enemy_goal.line];
-    for enemy in world.enemies_bot.values() {
-        if let Some(line) = get_obstruct_goal_zone_from_enemy(shoot_start_position, &enemy.pose.position.xy(), world){
-            let mut new_targets: Vec<Line> = vec![];
-            for target_line in available_targets {
-                let targets = target_line.cut_off_segment(&line);
-                new_targets.extend(targets);
-            }
-            available_targets = new_targets;
+
+    // Filter enemies that are in the goal side
+    let enemies = world.enemies_bot.values().filter(|enemy| enemy.pose.position.x > shoot_start_position.x).collect::<Vec<&Robot<_>>>();
+
+    for enemy in enemies {
+        if let Some(line) = get_obstruct_goal_zone_from_enemy(shoot_start_position, &enemy.pose.position.xy(), world) {
+            available_targets = available_targets.into_iter()
+                .flat_map(|target| target.cut_off_segment(&line))
+                .collect();
         }
     }
-    return available_targets;
+
+    available_targets
 }
 
 /// Get the robot with the best shooting window (space where the ball can go into the goal)

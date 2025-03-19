@@ -1,4 +1,4 @@
-use nalgebra::Point2;
+use nalgebra::{Point2, Matrix};
 use serde::Serialize;
 
 use super::Circle;
@@ -13,11 +13,12 @@ pub struct Line {
     pub start: Point2<f64>,
     /// The ending point of the line segment.
     pub end: Point2<f64>,
+    pub vector: Matrix<f64, nalgebra::Const<2>, nalgebra::Const<1>, nalgebra::ArrayStorage<f64, 2, 1>>
 }
 
 impl Line {
     pub fn new(start: Point2<f64>, end: Point2<f64>) -> Self {
-        Self { start, end }
+        Self { start, end, vector: end - start }
     }
 
     /// Return the intersection point between two lines
@@ -82,16 +83,10 @@ impl Line {
     /// assert_eq!(intersection, Ok(Point2::new(0.5, 0.5)));
     /// ```
     pub fn intersection_segment_line(&self, line: &Line) -> Result<Point2<f64>, String> {
-        match self.intersection_lines(line) {
-            Ok(intersection) => {
-                match self.orthogonal_projection_point_on_segment(&intersection) {
-                    Ok(_) => return Ok(intersection),
-                    Err(_) => {}
-                }
-            }
-            Err(_) => {}
-        }
-        Err("No intersection point".to_string())
+        let intersection = self.intersection_lines(line)?;
+        self.orthogonal_projection_point_on_segment(&intersection)
+            .map(|_| intersection)
+            .map_err(|_| "No intersection point".to_string())
     }
 
     /// Return the intersection point between two segments
@@ -164,18 +159,17 @@ impl Line {
     /// assert_eq!(closest_point2, Point2::new(0., 2.0));
     /// ```
     pub fn closest_point_on_line(&self, point: &Point2<f64>) -> Point2<f64> {
-        let line_direction = self.end - self.start;
         let point_direction = *point - self.start;
 
-        let line_length_squared = line_direction.norm_squared();
+        let line_length_squared = self.vector.norm_squared();
         if line_length_squared == 0.0 {
             // The line segment has zero length, return the start point.
             return self.start;
         }
-        let t = point_direction.dot(&line_direction) / line_length_squared;
+        let t = point_direction.dot(&self.vector) / line_length_squared;
 
         // The point is closest to a point on the segment.
-        self.start + t * line_direction
+        self.start + t * self.vector
     }
 
     /// Return the closest point on the segment (not a line) from a point
@@ -199,16 +193,15 @@ impl Line {
     /// assert_eq!(closest_point2, Point2::new(0., 1.));
     /// ```
     pub fn closest_point_on_segment(&self, point: &Point2<f64>) -> Point2<f64> {
-        let line_direction = self.end - self.start;
         let point_direction = *point - self.start;
 
-        let line_length_squared = line_direction.norm_squared();
+        let line_length_squared = self.vector.norm_squared();
         if line_length_squared == 0.0 {
             // The line segment has zero length, return the start point.
             return self.start;
         }
 
-        let t = point_direction.dot(&line_direction) / line_length_squared;
+        let t = point_direction.dot(&self.vector) / line_length_squared;
         if t < 0.0 {
             // The point is closest to the start of the segment.
             return self.start;
@@ -218,7 +211,7 @@ impl Line {
         }
 
         // The point is closest to a point on the segment.
-        self.start + t * line_direction
+        self.start + t * self.vector
     }
 
     /// Return the closest point on the segment if it falls on him 
@@ -247,22 +240,21 @@ impl Line {
         &self,
         point: &Point2<f64>,
     ) -> Result<Point2<f64>, String> {
-        let line_direction = self.end - self.start;
         let point_direction = *point - self.start;
 
-        let line_length_squared = line_direction.norm_squared();
+        let line_length_squared = self.vector.norm_squared();
         if line_length_squared == 0.0 {
             // The line segment has zero length, should we return the segment point ?
             return Err("The line segment has zero length".to_string());
         }
 
-        let t = point_direction.dot(&line_direction) / line_length_squared;
+        let t = point_direction.dot(&self.vector) / line_length_squared;
         if t < 0. || t > 1. {
             return Err("The point don't fall on the segment".to_string());
         } // The point don't fall on the segment.
 
         // The point is closest to a point on the segment.
-        Ok(self.start + t * line_direction)
+        Ok(self.start + t * self.vector)
     }
 
     /// Return the distance between a point and the segment
@@ -343,11 +335,10 @@ impl Line {
     pub fn closest_point_as_ratio(&self, point: &Point2<f64>) -> f64 {
         let closest_point = self.closest_point_on_segment(point);
         let delta = closest_point - self.start;
-        let line = self.end - self.start;
-        if line.norm() == 0.{
+        if self.vector.norm() == 0.{
             return 0.;
         }
-        (delta.norm() / line.norm()).min(1.)
+        (delta.norm() / self.vector.norm()).min(1.)
     }
 
 
@@ -382,7 +373,35 @@ impl Line {
         circles_on_segment
     }
 
-
+    /// Check if a point is under the line
+    /// 
+    /// # Arguments
+    /// point : the point to test if it is under the line
+    /// 
+    /// # Returns
+    /// True if the point is under the line, False otherwise
+    /// 
+    /// # Example
+    /// ```
+    /// use nalgebra::Point2;
+    /// use crabe_math::shape::Line;
+    /// let line = Line::new(Point2::new(0., 0.), Point2::new(0., 1.));
+    /// let point = Point2::new(1., 0.5);
+    /// assert!(!line.point_under(&point));
+    /// let point2 = Point2::new(-1., 2.);
+    /// assert!(line.point_under(&point2));
+    /// ```
+    pub fn point_under(&self, point: &Point2<f64>) -> bool {
+        let closest_point = self.closest_point_on_line(point);
+        let delta = closest_point - point;
+        // Cross product of (line) and (delta) to determine if it's under
+        // The sign of the cross product tells us on which side of the line the point is
+        let cross_product = self.vector.x * delta.y - self.vector.y * delta.x;
+        
+        // If the cross product is negative, point is "under" the line (on the left side)
+        // If it's positive, it's "above" the line (on the right side)
+        cross_product < 0.0
+    }
 
     /// Return the center point of the segment
     /// 
@@ -416,8 +435,7 @@ impl Line {
     /// assert_eq!(length, 0.8);
     /// ```
     pub fn norm(&self) -> f64 {
-        let vec = self.end - self.start;
-        vec.norm()
+        self.vector.norm()
     }
 
     /// Split the segment in two segments at a given ratio

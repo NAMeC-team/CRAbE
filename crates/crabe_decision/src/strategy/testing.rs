@@ -14,4 +14,5 @@ mod prembule;
 pub use self::prembule::Prembule;
 mod test_vision_moveto;
 pub use self::test_vision_moveto::TestVisionMoveTo;
-
+mod heat_map_attacker;
+pub use self::heat_map_attacker::HeatMapAttacker;

@@ -182,10 +182,10 @@ mod geometry {
                 line.name.clone(),
                 CamFieldLine {
                     thickness: line.thickness as f64 / 1000.0,
-                    line: Line {
-                        start: Point2::new(line.p1.x as f64 / 1000.0, line.p1.y as f64 / 1000.0),
-                        end: Point2::new(line.p2.x as f64 / 1000.0, line.p2.y as f64 / 1000.0),
-                    },
+                    line: Line::new(
+                        Point2::new(line.p1.x as f64 / 1000.0, line.p1.y as f64 / 1000.0),
+                        Point2::new(line.p2.x as f64 / 1000.0, line.p2.y as f64 / 1000.0)
+                    )
                 },
             );
         });
