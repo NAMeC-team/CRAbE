@@ -8,3 +8,5 @@ mod comeback;
 pub use self::comeback::*;
 mod move_away_from_point;
 pub use self::move_away_from_point::*;
+mod intercept_instant_goal;
+pub use self::intercept_instant_goal::*;
