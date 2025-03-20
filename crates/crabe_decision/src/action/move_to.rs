@@ -110,7 +110,7 @@ impl MoveTo {
     /// 
     /// # Arguments
     /// * `kicker`: The kicker to be used by the robot.
-    pub fn set_kick(mut self, kicker: Kick) -> Self {
+    pub fn set_kick(&mut self, kicker: Kick) -> &mut Self {
         self.kicker = Some(kicker);
         self
     }

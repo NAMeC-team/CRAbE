@@ -26,6 +26,12 @@ pub fn intercept_instant_goal(
     }
     let trajectory = Line::new(ball_position, ball_position + ball.velocity.xy().normalize() * 100.);
     let target = trajectory.closest_point_on_segment(&robot.pose.position);
-    MoveTo::new().set_target(target - to_kicker_pos).set_orientation(angle_to_point(robot.pose.position, middle)).set_kick(Kick::StraightKick { power: 4. })
+     
+    let mut moveto = MoveTo::new().set_target(target - to_kicker_pos).set_orientation(angle_to_point(robot.pose.position, middle)).charging();
+    if (robot.pose.position - ball_position).norm() < 0.01 + world.geometry.robot_radius + world.geometry.ball_radius {
+        moveto.set_kick(Kick::StraightKick { power: 4. });
+    }
+
+    moveto   
 
 }
