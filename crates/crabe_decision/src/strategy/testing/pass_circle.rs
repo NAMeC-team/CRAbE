@@ -1,4 +1,5 @@
 use crate::action::move_to::MoveTo;
+use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
@@ -96,7 +97,7 @@ impl Strategy for PassCircle {
             
             action_wrapper.push(
                 robot.id,
-                MoveTo::new().set_target(target).set_orientation(angle_to_point(robot.pose.position, orientation_target)),
+                MoveToBuilder::new().set_target(target).set_orientation(angle_to_point(robot.pose.position, orientation_target)).build(),
             );
         });
         false

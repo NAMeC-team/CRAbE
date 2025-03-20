@@ -1,4 +1,5 @@
 use crate::action::move_to::MoveTo;
+use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::basics::{intercept_instant_goal, pass};
@@ -86,7 +87,7 @@ impl Strategy for InstantKick {
         }else{
             action_wrapper.push(
                 self.id_receiver,
-                MoveTo::new().set_target(receiver_target_pos).set_orientation(angle_to_point(receiver.pose.position, ball.position_2d()))
+                MoveToBuilder::new().set_target(receiver_target_pos).set_orientation(angle_to_point(receiver.pose.position, ball.position_2d())).build()
             );
         }
 

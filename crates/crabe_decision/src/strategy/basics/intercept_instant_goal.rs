@@ -1,4 +1,5 @@
 use crate::action::move_to::MoveTo;
+use crate::action::move_to_builder::MoveToBuilder;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::world::{AllyInfo, Ball, Robot, World};
 use crabe_math::shape::Line;
@@ -26,6 +27,13 @@ pub fn intercept_instant_goal(
     }
     let trajectory = Line::new(ball_position, ball_position + ball.velocity.xy().normalize() * 100.);
     let target = trajectory.closest_point_on_segment(&robot.pose.position);
-    MoveTo::new().set_target(target - to_kicker_pos).set_orientation(angle_to_point(robot.pose.position, middle)).set_kick(Kick::StraightKick { power: 4. })
+     
+    let mut moveto = MoveToBuilder::new();
+    moveto.set_target(target - to_kicker_pos).set_orientation(angle_to_point(robot.pose.position, middle)).charging();
+    if (robot.pose.position - ball_position).norm() < 0.01 + world.geometry.robot_radius + world.geometry.ball_radius {
+        moveto.set_kick(Kick::StraightKick { power: 4. });
+    }
+
+    moveto.build()   
 
 }
