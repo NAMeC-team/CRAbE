@@ -15,3 +15,8 @@ pub use self::prembule::Prembule;
 mod test_vision_moveto;
 pub use self::test_vision_moveto::TestVisionMoveTo;
 
+mod pass_circle;
+pub use self::pass_circle::PassCircle;
+
+mod instant_kick;
+pub use self::instant_kick::InstantKick;

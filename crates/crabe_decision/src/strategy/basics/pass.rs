@@ -22,7 +22,7 @@ pub fn pass(
     receiver: &Robot<AllyInfo>,
     ball: &Ball,
     world: &World,
-) -> MoveTo {
+) -> MoveTo {    
     let robot_position = robot.pose.position;
     let robot_direction = vectors::vector_from_angle(robot.pose.orientation);
     let ball_position = ball.position_2d();
@@ -38,7 +38,7 @@ pub fn pass(
     let passing_trajectory_will_land = match robot_passing_trajectory.orthogonal_projection_point_on_segment(&receiver.pose.position) {
         Ok(closest_point) => {
             let dist_to_receiver = (receiver.pose.position - closest_point).norm();
-            dist_to_receiver < 0.3
+            dist_to_receiver < 0.1
         },
         Err(_) => false,
     };
