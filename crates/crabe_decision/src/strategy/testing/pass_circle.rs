@@ -3,6 +3,7 @@ use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::message::MessageData;
 use crate::strategy::Strategy;
+use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_math::shape::Circle;
@@ -81,23 +82,26 @@ impl Strategy for PassCircle {
             let robot_dir = vector_from_angle(robot.pose.orientation);
             let dot_to_ball = robot_to_ball.normalize().dot(&robot_dir.normalize());
             let dot_to_ally = robot_dir.normalize().dot(&robot_to_ally.normalize());
+            let mut moveto = MoveToBuilder::new();
             if dist_to_ball < 0.6{
+                moveto.set_dribbler(4.);
                 if dot_to_ball < 0.99 {
                     orientation_target = ball.position_2d();
                 } else{
                     if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.001) {
                         orientation_target = passer.pose.position;
                         if dot_to_ally > 0.99 && robot.velocity.angular.abs() < 0.01 {
+                            moveto.set_kick(Kick::StraightKick { power: 4. });
                         }
                     }else{
                         target = ball.position_2d();
                     }
                 }
             }
-            
+            moveto.set_target(target).set_orientation(angle_to_point(robot.pose.position, orientation_target));
             action_wrapper.push(
                 robot.id,
-                MoveToBuilder::new().set_target(target).set_orientation(angle_to_point(robot.pose.position, orientation_target)).build(),
+                moveto.build(),
             );
         });
         false
