@@ -1,4 +1,5 @@
 use crate::action::move_to::MoveTo;
+use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crate::message::MessageData;
@@ -60,21 +61,23 @@ impl Strategy for Square {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
+        let mut moveto1 = MoveToBuilder::new();
+        moveto1.set_x(-1.0).set_y(1.0).set_orientation(-PI / 4.);
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_x(-1.0).set_y(1.0).set_orientation(-PI / 4.),
+            moveto1.build(),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_x(1.0).set_y(1.0).set_orientation(-3.* PI / 4.),
+            MoveToBuilder::new().set_x(1.0).set_y(1.0).set_orientation(-3.* PI / 4.).build(),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_x(1.0).set_y(-1.0).set_orientation(3.* PI / 4.),
+            MoveToBuilder::new().set_x(1.0).set_y(-1.0).set_orientation(3.* PI / 4.).build(),
         );
         action_wrapper.push(
             self.id,
-            MoveTo::new().set_x(-1.0).set_y(-1.0).set_orientation(PI / 4.),
+            MoveToBuilder::new().set_x(-1.0).set_y(-1.0).set_orientation(PI / 4.).build(),
         );
         true
     }
