@@ -5,8 +5,6 @@ use crate::strategy::formations::MoveAwayFromBall;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use crabe_math::shape::Circle;
-use nalgebra::Point2;
 
 /// The `Manual` struct represents a decision manager that executes strategies manually
 /// added to its list.
