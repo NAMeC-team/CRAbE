@@ -14,6 +14,7 @@ use crate::post_filter::ball::BallFilter;
 use crate::post_filter::game_controller::GameControllerPostFilter;
 use crate::post_filter::geometry::GeometryFilter;
 use crate::post_filter::robot::RobotFilter;
+use crate::post_filter::robot_has_ball::RobotHasBallFilter;
 use crate::post_filter::PostFilter;
 use crate::pre_filter::game_controller::GameControllerPreFilter;
 use crate::pre_filter::vision::VisionFilter;
@@ -68,6 +69,10 @@ impl FilterPipeline {
 
         if let Some(field_mask) = config.field_mask {
             post_filters.push(Box::new(FieldMaskFilter::new(field_mask)))
+        }
+
+        if common_config.no_ir {
+            post_filters.push(Box::new(RobotHasBallFilter));
         }
 
         Self {

@@ -20,3 +20,6 @@ pub use self::pass_circle::PassCircle;
 
 mod instant_kick;
 pub use self::instant_kick::InstantKick;
+
+mod follow_ball;
+pub use self::follow_ball::FollowBall;
