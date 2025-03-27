@@ -12,7 +12,7 @@ pub struct FollowBall {
     messages: Vec<MessageData>,
 }
 
-/// A strategy that commands a robot to follow the ball and kick it when has it.
+/// A strategy that commands a robot to follow the ball
 impl FollowBall {
     /// Creates a new FollowBall instance with the desired robot id.
     pub fn new(id: u8) -> Self {
@@ -50,7 +50,7 @@ impl Strategy for FollowBall {
                 moveto.set_target(ball.position_2d()).set_orientation(robot.angle_to(ball.position_2d()));
                 if robot.has_ball {
                     println!("Robot {} has ball", self.id);
-                    moveto.set_kick(Kick::StraightKick { power: 3. });
+                    // moveto.set_kick(Kick::StraightKick { power: 3. });
                 }else{
                     println!("Robot {} doesn't have ball", self.id);
                 }
