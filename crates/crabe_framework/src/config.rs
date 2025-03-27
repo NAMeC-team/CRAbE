@@ -13,4 +13,7 @@ pub struct CommonConfig {
     /// from the external Game Controller of the Robocup SSL.
     #[arg(long)]
     pub gc: bool,
+    /// Whether the robot should use the IR sensors.
+    #[arg(long)]
+    pub no_ir: bool,
 }

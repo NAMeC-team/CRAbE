@@ -311,7 +311,7 @@ mod tests {
         let mut filter_data = FilterData::default();
         set_refcmd_to(&mut filter_data, next_ref_cmd);
 
-        let mut world = World::with_config(&CommonConfig {gc: false, real: false, yellow: false});
+        let mut world = World::with_config(&CommonConfig {gc: false, real: false, yellow: false, no_ir: false });
         world.ball = Some(Ball {
             position: Point3::new(point.x, point.y, 0.),
             ..Default::default()

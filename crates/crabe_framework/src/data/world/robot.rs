@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+use crabe_math::vectors::angle_to_point;
 use nalgebra::{Point2, Vector2};
 use serde::Serialize;
 use std::collections::HashMap;
@@ -90,7 +91,13 @@ impl<T: Clone> Clone for Robot<T> {
 }
 
 impl<T> Robot<T> {
+    /// Returns the distance from the robot to a given point.
     pub fn distance(&self, point: &Point2<f64>) -> f64 {
         return (self.pose.position - point).norm();
+    }
+
+    /// Returns the angle from the robot to a given point.
+    pub fn angle_to(&self, point: Point2<f64>) -> f64 {
+        return angle_to_point(self.pose.position, point);
     }
 }
