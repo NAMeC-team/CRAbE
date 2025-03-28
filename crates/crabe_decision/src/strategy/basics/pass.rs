@@ -1,4 +1,5 @@
 use crate::action::move_to::MoveTo;
+use crate::action::move_to_builder::MoveToBuilder;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::world::{AllyInfo, Ball, Robot, World};
 use crabe_math::shape::Line;
@@ -22,7 +23,7 @@ pub fn pass(
     receiver: &Robot<AllyInfo>,
     ball: &Ball,
     world: &World,
-) -> MoveTo {    
+) -> MoveToBuilder {    
     let robot_position = robot.pose.position;
     let robot_direction = vectors::vector_from_angle(robot.pose.orientation);
     let ball_position = ball.position_2d();
@@ -43,11 +44,15 @@ pub fn pass(
         Err(_) => false,
     };
 
+    let mut moveto = MoveToBuilder::new();
+    moveto.set_orientation(robot.angle_to(receiver.pose.position));
     if passing_trajectory_will_land && dot_with_ball > 0.95{
-        let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 1.) { 
-            Some(Kick::StraightKick {  power: 4. }) 
-        }else {None};
-        return MoveTo::new_all_params(ball_position, vectors::angle_to_point(robot_position,receiver.pose.position), 400.,  true, kick, true, false);
+        if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 1.) { 
+            moveto.set_kick(Kick::StraightKick {  power: 4. });
+        }
+        moveto.set_target(ball_position).set_dribbler(400.).charging();
+    }else{
+        moveto.set_target(behind_ball_position);
     }
-    MoveTo::new_all_params(behind_ball_position, vectors::angle_to_point(robot_position, receiver.pose.position), 0., false, None, true, true)
+    moveto
 }

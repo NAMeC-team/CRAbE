@@ -77,7 +77,7 @@ impl Strategy for InstantKick {
         let middle_goal_to_attacker = goal_center + goal_to_attacker.normalize() * 0.5;
         action_wrapper.push(
             self.id_attacker,
-            pass(attacker, receiver, ball, world),
+            pass(attacker, receiver, ball, world).build(),
         );
         if ball.velocity.norm() > 0.3{
             action_wrapper.push(

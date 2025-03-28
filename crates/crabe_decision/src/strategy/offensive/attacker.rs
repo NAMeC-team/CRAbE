@@ -1,5 +1,6 @@
 use std::f64::consts::PI;
 use crate::action::move_to::MoveTo;
+use crate::action::move_to_builder::MoveToBuilder;
 use crate::message::AttackerMessage;
 use crate::message::Message;
 use crate::strategy::basics::pass;
@@ -36,7 +37,7 @@ impl Attacker {
     }
 
     /// Find the best ally to pass the ball to
-    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo{
+    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveToBuilder {
         // grab allies in the enemy side
         let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
         if allies_in_positive_x.len() == 0{
@@ -129,10 +130,10 @@ impl Strategy for Attacker {
         if let Some(shoot_window) = biggest_shoot_window{
             let target = shoot_window.center();
             tools_data.annotations.add_point("Target".to_string(), target);
-            action_wrapper.push(self.id, shoot(robot, &ball, &target, world));
+            action_wrapper.push(self.id, shoot(robot, &ball, &target, world).build());
             self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
         }else{
-            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data));
+            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data).build());
         }
         false
     }
