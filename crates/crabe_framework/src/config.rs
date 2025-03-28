@@ -16,4 +16,7 @@ pub struct CommonConfig {
     /// Whether the robot should use the IR sensors.
     #[arg(long)]
     pub no_ir: bool,
+    /// Whether sides should be reversed (ONLY USE DURING TESTING).
+    #[arg(long)]
+    pub change_side: bool,
 }
