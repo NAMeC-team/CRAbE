@@ -1,3 +1,4 @@
+use crate::config::CommonConfig;
 use crate::data::world::{Team, TeamColor};
 use crate::data::referee::referee_orders::RefereeOrders;
 use serde::Serialize;
@@ -22,11 +23,16 @@ pub struct GameData {
 
 impl GameData {
     /// Creates a new `GameData` with the given `team_color` as the team color for the ally team, and the opposite team color for the enemy team.
-    pub fn new(team_color: TeamColor) -> Self {
+    pub fn new(team_color: TeamColor, config: &CommonConfig) -> Self {
+        let positive_half = if config.change_side {
+            team_color
+        } else {
+            team_color.opposite()
+        };
         Self {
             ally: Team::with_color(team_color),
             enemy: Team::with_color(team_color.opposite()),
-            positive_half: team_color.opposite(),
+            positive_half,
             stage_info: Default::default(),
             ref_orders: RefereeOrders::default(),
         }

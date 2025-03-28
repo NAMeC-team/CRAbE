@@ -53,7 +53,7 @@ impl World {
             TeamColor::Blue
         };
         Self {
-            data: GameData::new(team_color),
+            data: GameData::new(team_color, config),
             geometry: Default::default(),
             allies_bot: Default::default(),
             enemies_bot: Default::default(),
