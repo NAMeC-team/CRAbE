@@ -23,3 +23,6 @@ pub use self::instant_kick::InstantKick;
 
 mod follow_ball;
 pub use self::follow_ball::FollowBall;
+
+mod choregraphy;
+pub use self::choregraphy::Choregraphy;
