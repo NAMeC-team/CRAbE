@@ -2,6 +2,7 @@ use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::{self, ActionWrapper};
 use crate::message::MessageData;
 use crate::strategy::Strategy;
+use crabe_framework::data::geometry::Field;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{World, Robot, AllyInfo};
 use crabe_math::shape::Circle;
@@ -13,7 +14,7 @@ pub struct Choregraphy {
     ids: Vec<u8>,
     messages: Vec<MessageData>,
     circle: Circle,
-    itteration: usize,
+    itteration: f64,
 }
 
 impl Choregraphy {
@@ -23,21 +24,21 @@ impl Choregraphy {
             ids,
             messages: vec![],
             circle: Circle::new(Point2::new(0., 0.), 0., ),
-            itteration: 0,
+            itteration: 0.,
         }
     }
 
-    fn lemniscate_pattern(&mut self, bots: &Vec<&Robot<AllyInfo>>, action_wrapper: &mut ActionWrapper) {
-        let (x, y) = lemniscate_position(self.itteration as f64 * 0.005);
+    fn lemniscate_pattern(&mut self, bots: &Vec<&Robot<AllyInfo>>, field: &Field, action_wrapper: &mut ActionWrapper) {
+        let (x, y) = lemniscate_position(self.itteration);
         self.circle.center.x = x*2.;
         self.circle.center.y = y*2.;
-        self.circle.radius = 0.5 + (self.itteration as f64 * 0.005).cos().abs() * 0.2;
+        self.circle.radius = 0.5 + self.itteration.cos().abs() * 0.2;
         bots.iter().enumerate().for_each(|(i, robot)| {
             action_wrapper.clear(robot.id);
-            let a = ((i as f64) / (bots.len() as f64)) * (PI * 2.) + self.itteration as f64 * 0.005;
+            let a = ((i as f64) / (bots.len() as f64)) * (PI * 2.);
             let dir = vector_from_angle(a);
-            let target = self.circle.center + dir * self.circle.radius;
-
+            let mut target = self.circle.center + dir * self.circle.radius;
+            target = full_field_to_half_left_field(target, &field);
             let mut moveto = MoveToBuilder::new();
             moveto.set_target(target).set_orientation(robot.angle_to(self.circle.center));
             action_wrapper.push(
@@ -47,25 +48,14 @@ impl Choregraphy {
         });
     }
 
-    fn snake_pattern(&mut self, bots: &Vec<&Robot<AllyInfo>>, action_wrapper: &mut ActionWrapper) {
-        let (x, y) = lemniscate_position(self.itteration as f64 * 0.005);
-        let mut previous_x = x;
-        let mut previous_y = y;
+    fn snake_pattern(&mut self, bots: &Vec<&Robot<AllyInfo>>, field: &Field, action_wrapper: &mut ActionWrapper) {
         bots.iter().enumerate().for_each(|(i, robot)| {
-            //if first robot, go to x y , else go behind the previous robot
             action_wrapper.clear(robot.id);
+            let (x, y) = lemniscate_position(self.itteration + i as f64 * 0.06);
+            //if first robot, go to x y , else go behind the previous robot
             let mut moveto = MoveToBuilder::new();
-            if i == 0 {
-                moveto.set_target(Point2::new(x, y));
-            } else {
-                let angle = robot.angle_to(Point2::new(previous_x, previous_y));
-                let dir = vector_from_angle(angle);
-                let target = Point2::new(previous_x, previous_y) + dir * 0.5;
-                moveto.set_target(target);
-                previous_x = target.x;
-                previous_y = target.y;
-            }
-
+            let target = full_field_to_half_left_field(Point2::new(x, y), &field);
+            moveto.set_target(target);
             moveto.set_orientation(robot.angle_to(Point2::new(x, y)));
             action_wrapper.push(
                 robot.id,
@@ -73,6 +63,35 @@ impl Choregraphy {
             );
         });
     }
+
+    fn graph_pattern(&mut self, bots: &Vec<&Robot<AllyInfo>>, field: &Field, action_wrapper: &mut ActionWrapper) {
+        let clamped_itteration = (self.itteration * 4.) % 1.;
+        bots.iter().enumerate().for_each(|(i, robot)| {
+            action_wrapper.clear(robot.id);
+            let x = (i as f64) * 0.5; // x position based on index
+            let mut y = 0.;
+            if clamped_itteration<0.2{
+                y = 0.;
+            } else if clamped_itteration<0.4 {
+                y = i as f64 * 0.4; // even index robots go up
+            } else if clamped_itteration<0.6 {
+                y = (bots.len() - 1 - i) as f64 * 0.4; // even index robots go up
+            } else if clamped_itteration<0.8 {
+                y = 0.;
+            } else {
+                y = 1.;
+            }
+            let mut moveto = MoveToBuilder::new();
+            let target = full_field_to_half_left_field(Point2::new(x, y), &field);
+            moveto.set_target(target);
+            moveto.set_orientation(robot.angle_to(Point2::new(x, y)));
+            action_wrapper.push(
+                robot.id,
+                moveto.build(),
+            );
+        });
+    }
+
 }
 
 impl Strategy for Choregraphy {
@@ -106,14 +125,43 @@ impl Strategy for Choregraphy {
                 None => {}
             }
         }
-        self.lemniscate_pattern(&bots, action_wrapper);
-        self.itteration += 1;
+        if self.itteration % 3. < 1. {
+            self.graph_pattern(&bots, &world.geometry.field, action_wrapper);
+        }else if self.itteration % 3. < 2. {
+            self.snake_pattern(&bots, &world.geometry.field, action_wrapper);
+        }else{
+            self.lemniscate_pattern(&bots, &world.geometry.field, action_wrapper);
+        }
+        self.itteration += 0.0005;
         false
     }
 }
 
 fn lemniscate_position(t: f64) -> (f64, f64) {
-    let x = t.sin();
-    let y = t.sin() * t.cos();
+    // return the position along a lemniscate curve (integers values of t return the center of the lemniscate)
+    let scaled_t = t * 2.0 * PI;
+    let x = scaled_t.sin();
+    let y = scaled_t.sin() * scaled_t.cos();
+    let scale_factor = 2.0; // Adjust this value to change the size of the lemniscate
+    let x = x * scale_factor;
+    let y = y * scale_factor;
     (x, y)
+}
+
+fn full_field_to_half_left_field(point: Point2<f64>, field: &Field) -> Point2<f64> {
+    if (field.width == 0.) || (field.length == 0.) {
+        return point;
+    }
+    let x = ((point.y / field.width) - 0.5) * (field.length/2.);
+    let y = (point.x / field.length) * field.width;
+    Point2::new(x, y)
+}
+
+fn full_field_to_half_right_field(point: Point2<f64>, field: &Field) -> Point2<f64> {
+    if (field.width == 0.) || (field.length == 0.) {
+        return point;
+    }
+    let x = ((point.y / field.width) + 0.5) * (field.length/2.);
+    let y = (point.x / field.length) * field.width;
+    Point2::new(x, y)
 }
