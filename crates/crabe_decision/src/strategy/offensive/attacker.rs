@@ -1,12 +1,10 @@
 use std::f64::consts::PI;
 use crate::action::move_to::MoveTo;
-use crate::message::AttackerMessage;
-use crate::message::Message;
 use crate::strategy::basics::pass;
 use crate::strategy::basics::shoot;
 use crate::strategy::basics::intercept;
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
+
 use crate::strategy::Strategy;
 use crate::utils::get_best_shooting_window_bot;
 use crate::utils::get_open_shoot_window;
@@ -26,13 +24,12 @@ use nalgebra::Point2;
 pub struct Attacker {
     /// The id of the robot to move.
     id: u8,
-    messages: Vec<MessageData>,
 }
 
 impl Attacker {
     /// Creates a new Attacker instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id, messages: vec![]}
+        Self { id}
     }
 
     /// Find the best ally to pass the ball to
@@ -50,9 +47,9 @@ impl Attacker {
                 let passing_trajectory = Line::new(robot_position + robot_to_ally, robot_position + robot_to_ally * 10.);
                 let move_to_command = pass(&robot, &ally, &ball, world);
                 if move_to_command.kicker.is_some(){
-                    self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::BallPassed(ally.id)), self.id));
+                   //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::BallPassed(ally.id)), self.id));
                 }else{
-                    self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::WantToPassBallTo(ally.id, passing_trajectory)), self.id));
+                   //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::WantToPassBallTo(ally.id, passing_trajectory)), self.id));
                 }
                 move_to_command
             },
@@ -69,17 +66,6 @@ impl Strategy for Attacker {
         return "Attacker";
     }
 
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     /// # Arguments
     ///
@@ -130,7 +116,7 @@ impl Strategy for Attacker {
             let target = shoot_window.center();
             tools_data.annotations.add_point("Target".to_string(), target);
             action_wrapper.push(self.id, shoot(robot, &ball, &target, world));
-            self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
+           //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
         }else{
             action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data));
         }

@@ -22,6 +22,4 @@ pub mod pipeline;
 /// Strategies are behaviors that one or multiple robots can adopt in order to achieve a certain goal.
 pub mod strategy;
 
-pub mod message;
-
 pub mod utils;

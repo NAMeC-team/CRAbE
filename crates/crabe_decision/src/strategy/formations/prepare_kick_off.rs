@@ -2,7 +2,7 @@ use std::f64::consts::PI;
 
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
+
 use crate::strategy::basics::comeback;
 use crate::strategy::Strategy;
 use crate::utils::closest_bot_to_point;
@@ -15,7 +15,6 @@ use crabe_math::vectors::{angle_to_point, rotate_vector};
 pub struct PrepareKickOff {
     ids: Vec<u8>,
     team: TeamColor,
-    messages: Vec<MessageData>,
 }
 
 impl PrepareKickOff {
@@ -24,7 +23,6 @@ impl PrepareKickOff {
         Self {
             ids,
             team,
-            messages: vec![],
         }
     }
 }
@@ -34,15 +32,6 @@ impl Strategy for PrepareKickOff {
         "PrepareKickOff"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        self.ids.clone()
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.ids = ids;
-    }
     #[allow(unused_variables)]
     fn step(
         &mut self,
@@ -50,7 +39,7 @@ impl Strategy for PrepareKickOff {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        self.messages.clear();
+        //self.messages.clear();
         let ball = match &world.ball {
             Some(ball) => ball,
             None => return false,

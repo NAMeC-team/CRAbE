@@ -1,7 +1,7 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
-use crate::message::MessageData;
+
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crate::strategy::basics::move_away;
@@ -16,13 +16,12 @@ const DISTANCE_TO_BALL:f64 = 0.8;
 pub struct MoveAwayFromBall {
     /// The id of the robot to move.
     ids : Vec<u8>,
-    messages: Vec<MessageData>,
 }
 
 impl MoveAwayFromBall {
     /// Creates a new MoveAwayFromBall instance with the desired robot id.
     pub fn new(ids: Vec<u8>) -> Self {
-        Self {ids, messages: vec![]}
+        Self {ids}
     }
 }
 
@@ -31,15 +30,6 @@ impl Strategy for MoveAwayFromBall {
         "MoveAwayFromBall"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        self.ids.clone()
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.ids = ids;
-    }
 
     fn step(
         &mut self,

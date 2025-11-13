@@ -1,7 +1,6 @@
 use crate::action::move_to::MoveTo;
 use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
 use crate::strategy::basics::{intercept_instant_goal, pass};
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
@@ -13,7 +12,6 @@ use nalgebra::Point2;
 pub struct InstantKick {
     id_attacker: u8,
     id_receiver: u8,
-    messages: Vec<MessageData>,
 }
 
 impl InstantKick {
@@ -22,7 +20,6 @@ impl InstantKick {
         Self {
             id_attacker,
             id_receiver,
-            messages: vec![],
         }
     }
 }
@@ -31,17 +28,6 @@ impl Strategy for InstantKick {
     fn name(&self) -> &'static str {
         "InstantKick"
     }
-
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id_attacker, self.id_receiver]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.id_attacker = ids[0];
-        self.id_receiver = ids[1];
-    }
     #[allow(unused_variables)]
     fn step(
         &mut self,
@@ -49,7 +35,7 @@ impl Strategy for InstantKick {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        self.messages.clear();
+        //self.messages.clear();
         action_wrapper.clear(self.id_attacker);
         action_wrapper.clear(self.id_receiver);
         let ball = if let Some(ball) = &world.ball {

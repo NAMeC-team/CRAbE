@@ -1,7 +1,6 @@
 use crate::action::move_to::MoveTo;
 use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
@@ -13,7 +12,6 @@ use std::f64::consts::PI;
 
 pub struct PassCircle {
     ids: Vec<u8>,
-    messages: Vec<MessageData>,
     circle: Circle
 }
 
@@ -22,7 +20,6 @@ impl PassCircle {
     pub fn new(ids: Vec<u8>, circle: Circle) -> Self {
         Self {
             ids,
-            messages: vec![],
             circle,
         }
     }
@@ -33,15 +30,6 @@ impl Strategy for PassCircle {
         "PassCircle"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        self.ids.clone()
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.ids = ids;
-    }
     #[allow(unused_variables)]
     fn step(
         &mut self,
@@ -49,7 +37,7 @@ impl Strategy for PassCircle {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        self.messages.clear();
+        //self.messages.clear();
         let mut bots = vec![];
         for id in &self.ids {
             match world.allies_bot.get(id) {

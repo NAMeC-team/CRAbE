@@ -2,7 +2,6 @@ use std::backtrace;
 
 use crate::action::move_to::{self, MoveTo};
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
 use crate::strategy::basics::pass;
 use crate::strategy::Strategy;
 use crate::utils::{closest_bot_to_point, closest_bots_to_point, object_in_bot_trajectory};
@@ -21,13 +20,12 @@ pub struct GoalKeeper {
     /// The id of the robot to move.
     id: u8,
     ids_to_not_pass: Vec<u8>,
-    messages: Vec<MessageData>,
 }
 
 impl GoalKeeper {
     /// Creates a new GoalKeeper instance with the desired robot id.
     pub fn new(id: u8, ids_to_not_pass: Vec<u8>) -> Self {
-        Self { id, ids_to_not_pass, messages: vec![]}
+        Self { id, ids_to_not_pass}
     }
 
     /// Calculates the trajectory of the ball based on its velocity.
@@ -76,17 +74,6 @@ impl Strategy for GoalKeeper {
         return "GoalKeeper";
     }
     
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     /// # Arguments
     ///

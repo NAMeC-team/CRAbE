@@ -1,5 +1,5 @@
 use crate::{
-    action::{move_to::MoveTo, ActionWrapper}, message::MessageData, strategy::Strategy
+    action::{move_to::MoveTo, ActionWrapper}, strategy::Strategy
 };
 use crabe_framework::data::{
     output::Kick::StraightKick,
@@ -16,7 +16,6 @@ use crabe_math::{shape::Line, vectors::angle_to_point};
 pub struct BotMarking {
     /// The id of the robot to move.
     id: u8,
-    messages: Vec<MessageData>,
     enemy_id: u8,
 }
 
@@ -25,7 +24,6 @@ impl BotMarking {
     pub fn new(id: u8, enemy_id: u8) -> Self {
         Self { 
             id,
-            messages: vec![],
             enemy_id,
         }
     }
@@ -36,17 +34,6 @@ impl Strategy for BotMarking {
         "BotMarking"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     #[allow(unused_variables)]
     fn step(

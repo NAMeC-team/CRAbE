@@ -1,6 +1,6 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
+
 use crate::strategy::Strategy;
 use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
@@ -12,7 +12,6 @@ use crabe_math::vectors::angle_to_point;
 #[derive(Default)]
 pub struct PrepareStart {
     ids: Vec<u8>,
-    messages: Vec<MessageData>,
 }
 
 impl PrepareStart {
@@ -20,7 +19,6 @@ impl PrepareStart {
     pub fn new(ids: Vec<u8>) -> Self {
         Self {
             ids,
-            messages: vec![],
         }
     }
 }
@@ -30,15 +28,6 @@ impl Strategy for PrepareStart {
         "PrepareStart"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        self.ids.clone()
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.ids = ids;
-    }
     #[allow(unused_variables)]
     fn step(
         &mut self,
@@ -46,7 +35,7 @@ impl Strategy for PrepareStart {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        self.messages.clear();
+        //self.messages.clear();
         let mut i = 0;
         for id in &self.ids {
             action_wrapper.clear(*id);

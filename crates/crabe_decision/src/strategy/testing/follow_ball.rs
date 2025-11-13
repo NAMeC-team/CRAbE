@@ -1,7 +1,6 @@
 use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
-use crate::message::MessageData;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -9,14 +8,13 @@ use crabe_framework::data::world::World;
 #[derive(Default)]
 pub struct FollowBall {
     id: u8,
-    messages: Vec<MessageData>,
 }
 
 /// A strategy that commands a robot to follow the ball
 impl FollowBall {
     /// Creates a new FollowBall instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id, messages: vec![]}
+        Self { id}
     }
 }
 
@@ -25,18 +23,7 @@ impl Strategy for FollowBall {
         "FollowBall"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }   
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
-    #[allow(unused_variables)]
+            #[allow(unused_variables)]
     fn step(
         &mut self,
         world: &World,

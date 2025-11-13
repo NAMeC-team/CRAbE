@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::f64::consts::PI;
 use crate::utils::{closest_bot_to_point, object_in_bot_trajectory, KEEPER_ID};
-use crate::{action::move_to::MoveTo, message::MessageData};
+use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
@@ -19,13 +19,12 @@ const KICK_RANGE: f64 = 0.4;
 pub struct DefenseWall {
     /// The id of the robot to move.
     ids: Vec<u8>,
-    messages: Vec<MessageData>,
 }
 
 impl DefenseWall {
     /// Creates a new DefenseWall instance with the desired robot id.
     pub fn new(ids: Vec<u8>) -> Self {
-        Self { ids, messages: vec![], }
+        Self { ids, }
     }
 
     /// Move around the penalty zone
@@ -57,15 +56,6 @@ impl DefenseWall {
 impl Strategy for DefenseWall {
     fn name(&self) -> &'static str {
         "DefenseWall"
-    }
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        self.ids.clone()
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.ids = ids;
     }
 
     /// Executes the DefenseWall strategy.

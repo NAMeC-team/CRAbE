@@ -1,6 +1,6 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::message::MessageData;
+
 use crate::strategy::basics::intercept;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
@@ -12,13 +12,12 @@ pub struct Receiver {
     id: u8,
     passer_id: u8,
     passing_trajectory: Line,
-    messages: Vec<MessageData>,
 }
 
 impl Receiver {
     /// Creates a new Receiver instance with the desired robot id.
     pub fn new(id: u8, passer_id: u8, passing_trajectory: Line) -> Self {
-        Self { id, passer_id, passing_trajectory, messages: vec![]}
+        Self { id, passer_id, passing_trajectory}
     }
 }
 
@@ -28,17 +27,6 @@ impl Strategy for Receiver {
         return "Receiver";
     }
     
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     /// # Arguments
     ///

@@ -1,7 +1,7 @@
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
-use crate::message::MessageData;
+
 use crate::utils::object_in_bot_trajectory;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -18,13 +18,12 @@ pub struct LateralAttack {
     /// The id of the robot to move.
     id : u8,
     passer_id: u8,
-    messages: Vec<MessageData>,
 }
 
 impl LateralAttack {
     /// Creates a new LateralAttack instance with the desired robot id.
     pub fn new(id: u8, passer_id: u8) -> Self {
-        Self {id, passer_id, messages: vec![]}
+        Self {id, passer_id}
     }
 }
 
@@ -33,17 +32,6 @@ impl Strategy for LateralAttack {
         "LateralAttack"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     fn step(
         &mut self,

@@ -1,5 +1,5 @@
 use crate::{
-    action::{ self, orient_to::OrientTo, order_raw::RawOrder, ActionWrapper}, message::MessageData, strategy::Strategy
+    action::{ self, orient_to::OrientTo, order_raw::RawOrder, ActionWrapper}, strategy::Strategy
 };
 
 use crabe_framework::data::{
@@ -16,7 +16,6 @@ use std::time::Instant;
 pub struct Prembule {
     /// The id of the robot to move.
     id: u8,
-    messages: Vec<MessageData>,
     state: States,
     start_time: Instant,
     start_orientation: Option<f64>,
@@ -37,7 +36,6 @@ impl Prembule {
     pub fn new(id: u8) -> Self {
         Self {
             id,
-            messages: vec![],
             state: States::FIRST,
             start_time: Instant::now(),
             start_orientation: None,
@@ -51,17 +49,6 @@ impl Strategy for Prembule {
         "Prembule"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     #[allow(unused_variables)]
     fn step(

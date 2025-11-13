@@ -1,5 +1,5 @@
 use crate::{
-    action::{move_to::MoveTo, ActionWrapper}, message::MessageData, strategy::Strategy, utils::closest_bot_to_point
+    action::{move_to::MoveTo, ActionWrapper}, strategy::Strategy, utils::closest_bot_to_point
 };
 use crabe_framework::data::{
     output::{Kick::StraightKick},
@@ -18,7 +18,6 @@ const ANGULAR_DIFFERENCE:f64 = 2.0;
 pub struct BotContesting {
     /// The id of the robot to move.
     id: u8,
-    messages: Vec<MessageData>,
     time: Instant,
 }
 
@@ -28,7 +27,6 @@ impl BotContesting {
     pub fn new(id: u8) -> Self {
         Self { 
             id,
-            messages: vec![],
             time: Instant::now(),    
         }
     }
@@ -39,17 +37,6 @@ impl Strategy for BotContesting {
         "BotContesting"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData>  {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        vec![self.id]
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        if ids.len() == 1{
-            self.id = ids[0];
-        }
-    }
 
     #[allow(unused_variables)]
     fn step(

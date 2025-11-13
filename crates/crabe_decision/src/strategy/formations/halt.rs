@@ -1,7 +1,6 @@
 use crate::action::order_raw::RawOrder;
 use crate::action::ActionWrapper;
-use crate::message::Message;
-use crate::message::MessageData;
+
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
@@ -13,7 +12,6 @@ use crabe_framework::data::output::Command;
 #[derive(Default)]
 pub struct Halt {
     ids: Vec<u8>,
-    messages: Vec<MessageData>,
 }
 
 impl Halt {
@@ -21,7 +19,6 @@ impl Halt {
     pub fn new(ids: Vec<u8>) -> Self {
         Self {
             ids,
-            messages: vec![],
         }
     }
 }
@@ -31,15 +28,6 @@ impl Strategy for Halt {
         "Halt"
     }
 
-    fn get_messages(&self) -> &Vec<MessageData> {
-        &self.messages
-    }
-    fn get_ids(&self) -> Vec<u8> {
-        self.ids.clone()
-    }
-    fn put_ids(&mut self, ids: Vec<u8>) {
-        self.ids = ids;
-    }
     #[allow(unused_variables)]
     fn step(
         &mut self,
@@ -47,7 +35,7 @@ impl Strategy for Halt {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        self.messages.clear();
+        //self.messages.clear();
         self.ids.iter().enumerate().for_each(|(_, id)| {
             action_wrapper.clear(*id);
             action_wrapper.push(*id, RawOrder::new(
