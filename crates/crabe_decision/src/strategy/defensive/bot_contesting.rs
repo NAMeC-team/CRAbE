@@ -97,7 +97,7 @@ impl Strategy for BotContesting {
             target = enemy_pos.position - Point2::new(enemy_to_ball.x, enemy_to_ball.y)*(-distance_to_robot);    
         }
         
-        let mut angle = 0.;
+        let mut angle;
         if robot.distance(&ball_pos) < 0.3 {
             angle = angle_to_point(robot_pos.position, *ball_pos);
             if self.time.elapsed().as_millis()%2 == 0{
