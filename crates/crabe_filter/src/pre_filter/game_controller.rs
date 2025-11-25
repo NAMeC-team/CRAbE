@@ -6,6 +6,7 @@ use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::TeamColor;
 use crabe_protocol::protobuf::game_controller_packet;
 use nalgebra::Point2;
+use std::convert::TryFrom;
 
 use crabe_protocol::protobuf::game_controller_packet::game_event as protocol_event;
 use crabe_protocol::protobuf::game_controller_packet::game_event::{Event as ProtocolEventData, Goal as ProtocolGoal};
@@ -99,7 +100,8 @@ fn map_team_color(team: ProtocolTeam) -> TeamColor {
 }
 
 fn map_team_color_i32(value: i32) -> TeamColor {
-    map_team_color(ProtocolTeam::from_i32(value).unwrap_or(ProtocolTeam::Unknown))
+    let team = ProtocolTeam::try_from(value).unwrap_or(ProtocolTeam::Unknown);
+    map_team_color(team)
 }
 
 fn map_point(point: ProtocolPoint) -> Point2<f64> {
@@ -193,14 +195,13 @@ fn map_game_event(game_event: ProtocolEvent) -> Option<GameEvent> {
     */
     if let Some(event) = event {
         Some(GameEvent{
-            type_event: match game_event.r#type{
-                Some(r#type) => ProtocolType::from_i32(r#type)
-                    .map(map_type),
-                None => None
-            },
             created_timestamp,
             event,
-            origin: Vec::from([EventOrigin::Autorefs(game_event.origin)])
+            origin: Vec::from([EventOrigin::Autorefs(game_event.origin)]),
+            type_event: match game_event.r#type {
+                Some(r#type) => ProtocolType::try_from(r#type).ok().map(map_type),
+                None => None,
+            }
         })
     }else{
         None
@@ -458,22 +459,37 @@ fn map_protobuf_referee(
     };
     Ok(Referee {
         source_identifier: packet.source_identifier,
-        match_type: packet.match_type.map(|match_type|ProtocolMatchType::from_i32(match_type).map(map_match_type)).flatten(), // TODO: Handle error
+        
+        match_type: packet
+            .match_type
+            .and_then(|m| ProtocolMatchType::try_from(m).ok())
+            .map(map_match_type), // TODO: Handle error
+
         packet_timestamp: create_date_time((packet.packet_timestamp / 1_000_000) as i64),
-        stage: ProtocolStage::from_i32(packet.stage)
+
+        stage: ProtocolStage::try_from(packet.stage)
             .map(map_stage)
-            .ok_or(RefereeDeserializationError)?,
+            .map_err(|_| RefereeDeserializationError)?,
+
         stage_time_left: packet
             .stage_time_left
             .map(|d| Duration::microseconds(d as i64)),
-        command: ProtocolCommand::from_i32(packet.command)
+
+
+        command: ProtocolCommand::try_from(packet.command)
             .map(map_command)
-            .ok_or(RefereeDeserializationError)?,
+            .map_err(|_| RefereeDeserializationError)?,
+
         command_counter: packet.command_counter,
+
         command_timestamp: create_date_time((packet.command_timestamp / 1_000_000) as i64),
+
         ally: to_team_infos(ally),   // TODO : Rename and check
+
         enemy: to_team_infos(enemy), // TODO : Rename and check
+
         designated_position: packet.designated_position.map(map_point),
+
         positive_half: packet.blue_team_on_positive_half.map(|b| {
             if b {
                 TeamColor::Blue
@@ -483,14 +499,16 @@ fn map_protobuf_referee(
         }),
         next_command: packet
             .next_command
-            .map(|c| ProtocolCommand::from_i32(c))
-            .flatten()
+            .and_then(|c| ProtocolCommand::try_from(c).ok())
             .map(map_command),
+
         game_events: packet.game_events.drain(..).filter_map(map_game_event).collect(),
+
         game_event_proposals: packet.game_event_proposals.drain(..).map(|mut p| GameEventProposalGroup {
             game_event: p.game_event.drain(..).filter_map(map_game_event).collect(),
             accepted: p.accepted,
         }).collect(),
+        
         current_action_time_remaining: packet
             .current_action_time_remaining
             .map(|d| Duration::microseconds(d as i64)),
