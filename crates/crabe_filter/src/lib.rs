@@ -50,7 +50,7 @@ pub struct FilterPipeline {
 impl FilterPipeline {
     pub fn with_config(config: FilterConfig, common_config: &CommonConfig) -> Self {
         let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
-        let mut filters: Vec<Box<dyn Filter>> = vec![
+        let filters: Vec<Box<dyn Filter>> = vec![
             Box::new(PassthroughFilter),
             Box::new(TeamSideFilter),
             Box::new(VelocityAccelerationFilter),

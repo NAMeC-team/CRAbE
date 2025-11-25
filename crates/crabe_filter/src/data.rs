@@ -7,7 +7,6 @@ use constant::PACKET_BUFFER_SIZE;
 use crabe_framework::data::world::{AllyInfo, Ball, EnemyInfo, Robot};
 use ringbuffer::ConstGenericRingBuffer;
 use std::collections::HashMap;
-use std::time::Instant;
 use crabe_framework::data::referee::Referee;
 
 #[derive(Clone, Debug)]
