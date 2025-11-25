@@ -1,10 +1,8 @@
-use crate::action::move_to::MoveTo;
 use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use nalgebra::Point2;
 use std::f64::consts::PI;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape

@@ -1,9 +1,8 @@
 use crate::action::move_to::MoveTo;
-use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{AllyInfo, Ball, Robot, World};
-use crabe_math::shape::{Circle, Line, Rectangle};
+use crabe_framework::data::world::World;
+use crabe_math::shape::Rectangle;
 use crabe_math::vectors::{self, rotate_vector};
-use nalgebra::{distance, Point2};
+use nalgebra::Point2;
 
 const INNACURACY: f64 = 0.2; // Using to avoid bugs when robot is already in the target position and turn around the point
 

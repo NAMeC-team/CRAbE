@@ -4,15 +4,14 @@ use crabe_framework::data::output::Kick;
 use crabe_framework::data::world::{AllyInfo, Ball, Robot, World};
 use crabe_math::shape::Line;
 use crabe_math::vectors::{self, angle_to_point, vector_from_angle};
-use crabe_protocol::protobuf::game_controller_packet::Vector2;
 
 pub fn intercept_instant_goal(
     world: &World,
     robot: &Robot<AllyInfo>,
     ball: &Ball,
 ) -> MoveTo {
-    let reverse_ball_velocity = -ball.velocity.normalize().xy();
-    let robot_to_goal = (world.geometry.enemy_goal.line.center() - robot.pose.position).normalize();
+    let _reverse_ball_velocity = -ball.velocity.normalize().xy();
+    let _robot_to_goal = (world.geometry.enemy_goal.line.center() - robot.pose.position).normalize();
     // vector in the middle of the reverse ball velocity and the vector from the robot to the goal
     // let middle = (reverse_ball_velocity + robot_to_goal).normalize();
     let middle = world.geometry.enemy_goal.line.center() - ball.velocity.xy() / 2.;

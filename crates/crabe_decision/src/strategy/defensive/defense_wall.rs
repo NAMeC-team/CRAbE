@@ -1,13 +1,13 @@
 use std::cmp::Ordering;
 use std::f64::consts::PI;
-use crate::utils::{closest_bot_to_point, object_in_bot_trajectory, KEEPER_ID};
+use crate::utils::{closest_bot_to_point, KEEPER_ID};
 use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
-use crabe_math::shape::{Circle, Line};
+use crabe_math::shape::Line;
 use crabe_math::vectors;
 use std::time::{SystemTime, UNIX_EPOCH};
 

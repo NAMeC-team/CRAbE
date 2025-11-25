@@ -4,7 +4,7 @@ use crate::utils::{obstacle_avoidance, penalty_zone_prevention, KEEPER_ID};
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
-use nalgebra::{Isometry2, Point2, Vector2, Vector3};
+use nalgebra::{Isometry2, Point2, Vector2};
 
 /// The `GoTo` struct represents an action that moves the robot to a specific location on the field without moving orientation.
 #[derive(Clone)]

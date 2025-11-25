@@ -1,7 +1,6 @@
 use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
-use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 

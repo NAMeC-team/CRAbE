@@ -1,4 +1,3 @@
-use crate::action::move_to::MoveTo;
 use crate::action::move_to_builder::MoveToBuilder;
 use crate::action::ActionWrapper;
 use crate::strategy::basics::{intercept_instant_goal, pass};
@@ -6,7 +5,6 @@ use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_math::vectors::angle_to_point;
-use crabe_protocol::protobuf::game_controller_packet::referee::Point;
 use nalgebra::Point2;
 
 pub struct InstantKick {

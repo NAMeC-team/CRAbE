@@ -4,7 +4,6 @@ use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use nalgebra::Point2;
 use crabe_framework::data::output::Command;
 
 

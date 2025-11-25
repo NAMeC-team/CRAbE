@@ -1,4 +1,3 @@
-use std::f64::consts::PI;
 use crate::action::move_to::MoveTo;
 use crate::strategy::basics::pass;
 use crate::strategy::basics::shoot;
@@ -8,16 +7,13 @@ use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crate::utils::get_best_shooting_window_bot;
 use crate::utils::get_open_shoot_window;
-use crate::utils::object_in_bot_trajectory;
 use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::AllyInfo;
 use crabe_framework::data::world::Ball;
 use crabe_framework::data::world::Robot;
 use crabe_framework::data::world::World;
-use crabe_math::vectors::vector_from_angle;
-use crabe_math::{shape::Line, vectors::rotate_vector};
-use nalgebra::Point2;
+use crabe_math::shape::Line;
 
 
 /// The Attacker strategy is responsible for moving the robot to the ball and then try scoring a goal
@@ -29,11 +25,11 @@ pub struct Attacker {
 impl Attacker {
     /// Creates a new Attacker instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id}
+        Self {id}
     }
 
     /// Find the best ally to pass the ball to
-    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, tools : &mut ToolData) -> MoveTo{
+    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, _tools : &mut ToolData) -> MoveTo{
         // grab allies in the enemy side
         let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
         if allies_in_positive_x.len() == 0{
@@ -43,8 +39,7 @@ impl Attacker {
         let closest_ally: Option<&Robot<AllyInfo>> = get_best_shooting_window_bot(&allies_in_positive_x, world);
         match closest_ally {
             Some(ally) => {
-                let robot_to_ally = (ally.pose.position - robot_position).normalize();
-                let passing_trajectory = Line::new(robot_position + robot_to_ally, robot_position + robot_to_ally * 10.);
+                let _robot_to_ally = (ally.pose.position - robot_position).normalize();
                 let move_to_command = pass(&robot, &ally, &ball, world);
                 if move_to_command.kicker.is_some(){
                    //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::BallPassed(ally.id)), self.id));

@@ -5,8 +5,7 @@ use crate::utils::{penalty_zone_prevention, KEEPER_ID};
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
-use crabe_math::shape::{Circle, Line};
-use crabe_math::vectors::{rotate_vector, vector_from_angle};
+use crabe_math::shape::Circle;
 use nalgebra::{Isometry2, Point2, Vector2, Vector3};
 use std::f64::consts::{PI, TAU};
 

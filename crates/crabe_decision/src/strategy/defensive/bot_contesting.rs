@@ -2,12 +2,11 @@ use crate::{
     action::{move_to::MoveTo, ActionWrapper}, strategy::Strategy, utils::closest_bot_to_point
 };
 use crabe_framework::data::{
-    output::{Kick::StraightKick},
     tool::ToolData,
     world::World,
 };
 use nalgebra::Point2;
-use std::{time::Instant, vec};
+use std::time::Instant;
 use crabe_math::vectors::angle_to_point;
 
 const DISTANCE_TO_BALL:f64 = 0.06;

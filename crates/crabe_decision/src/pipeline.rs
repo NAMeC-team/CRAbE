@@ -1,6 +1,5 @@
 use crate::action::ActionWrapper;
 use crate::manager::manual::Manual;
-use crate::manager::test_manager::TestManager;
 use crate::manager::Manager;
 use clap::Args;
 use crabe_framework::component::{Component, DecisionComponent};
