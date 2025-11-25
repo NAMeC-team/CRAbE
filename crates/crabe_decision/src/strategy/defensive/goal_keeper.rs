@@ -14,13 +14,13 @@ use nalgebra::Point2;
 pub struct GoalKeeper {
     /// The id of the robot to move.
     id: u8,
-    ids_to_not_pass: Vec<u8>,
+    _ids_to_not_pass: Vec<u8>,
 }
 
 impl GoalKeeper {
     /// Creates a new GoalKeeper instance with the desired robot id.
-    pub fn new(id: u8, ids_to_not_pass: Vec<u8>) -> Self {
-        Self { id, ids_to_not_pass}
+    pub fn new(id: u8, _ids_to_not_pass: Vec<u8>) -> Self {
+        Self { id, _ids_to_not_pass}
     }
 
     /// Calculates the trajectory of the ball based on its velocity.
