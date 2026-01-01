@@ -10,10 +10,6 @@ pub struct InactiveFilter {
 }
 
 impl InactiveFilter {
-    pub fn new(timeout: Duration) -> Self {
-        Self { timeout }
-    }
-
     fn purge_inactive<T>(&self, tracked_robots: &mut TrackedRobotMap<T>, now: DateTime<Utc>) {
         tracked_robots.retain(|_id, robot| {
             // Use std duration as chrono does not support const fn yet
