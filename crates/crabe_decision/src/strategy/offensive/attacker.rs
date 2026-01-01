@@ -29,7 +29,7 @@ impl Attacker {
     }
 
     /// Find the best ally to pass the ball to
-    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball, _tools : &mut ToolData) -> MoveTo{
+    fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball) -> MoveTo{
         // grab allies in the enemy side
         let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
         if allies_in_positive_x.len() == 0{
@@ -113,7 +113,7 @@ impl Strategy for Attacker {
             action_wrapper.push(self.id, shoot(robot, &ball, &target, world));
            //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::NoNeedReceiver), self.id));
         }else{
-            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball, tools_data));
+            action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball));
         }
         false
     }
