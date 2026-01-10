@@ -201,7 +201,9 @@ impl Action for MoveTo {
                 dribbler: self.dribbler,
             }
         } else {
+            println!("FEUR");
             Command::default()
+            
         }
     }
 }

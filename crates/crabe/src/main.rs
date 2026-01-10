@@ -145,6 +145,7 @@ impl System {
                 .step(&self.world, &mut tool_data, &mut command_map);
             self.guard_component
                 .step(&self.world, &mut command_map, &mut ToolCommands);
+            dbg!(&command_map);
             feedback = self.output_component.step(command_map, ToolCommands);
             // info!("Execution time : {} μs", &timer.elapsed().as_micros());
             let elapsed = timer.elapsed();
