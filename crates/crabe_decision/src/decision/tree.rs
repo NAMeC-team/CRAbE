@@ -2,7 +2,7 @@ use crate::tactical_action::TacticalAction;
 
 /// Arbre de décision = liste ordonnée d'actions tactiques
 pub struct DecisionTree {
-    pub actions: Vec<Box<dyn TacticalAction>>,
+    pub actions: Vec<TacticalAction>,
 }
 
 impl DecisionTree {
@@ -14,7 +14,7 @@ impl DecisionTree {
     }
     
     /// Ajoute une action à l'arbre (ordre = priorité)
-    pub fn add_action(&mut self, action: Box<dyn TacticalAction>) {
+    pub fn add_action(&mut self, action: TacticalAction) {
         self.actions.push(action);
     }
 }

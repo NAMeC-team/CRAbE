@@ -4,6 +4,7 @@ pub mod metrics;
 pub mod tree;
 
 pub use conflict_resolver::ConflictResolver;
+pub use conflict_resolver::RobotDecisionState;
 pub use formation::{Formation, RoleId};
 pub use metrics::{ActionMetric, OrderedFloat};
 pub use tree::DecisionTree;

@@ -7,9 +7,9 @@ pub struct DefenseStrategy;
 impl DefenseStrategy {
     pub fn build() -> GlobalStrategy {
         let mut tree_lambda = DecisionTree::new();
-        tree_lambda.add_action(Box::new(MarkBallCarrierAction));
-        tree_lambda.add_action(Box::new(MarkDangerousOpponentAction));
-        tree_lambda.add_action(Box::new(DefensiveWallAction)); // Action par défaut
+        tree_lambda.add_action(create_mark_ball_carrier_action());
+        tree_lambda.add_action(create_mark_dangerous_opponent_action());
+        tree_lambda.add_action(create_defensive_wall_action()); // Action par défaut
         
         GlobalStrategy {
             id: GlobalStrategyId::Defense,

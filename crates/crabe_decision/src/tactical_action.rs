@@ -1,10 +1,10 @@
 pub mod defensive;
-//pub mod offensive;
+
 
 use crate::action::ActionWrapper;
 use crate::decision::{ActionMetric, RoleId};
 use crabe_framework::data::tool::ToolData;
-use crabe_framework::data::world::{AllyInfo, Robot, World};
+use crabe_framework::data::world::{Robot, AllyInfo, World};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ActionId {
@@ -37,26 +37,52 @@ impl ActionId {
     }
 }
 
-/// Trait pour les actions tactiques (logique de décision)
-pub trait TacticalAction: Send + Sync {
-    /// Évalue si l'action est possible et retourne la métrique
-    fn evaluate(&self, robot: &Robot<AllyInfo>, world: &World) -> Option<ActionMetric>;
+use crate::action::move_to::MoveTo;
+
+/// Action tactique = logique de décision + stockage du résultat
+pub struct TacticalAction {
+    id: ActionId,
+    role: Option<RoleId>,
+    evaluate_fn: Box<dyn FnMut(&Robot<AllyInfo>, &World) -> Option<(ActionMetric, MoveTo)> + Send + Sync>,
+    cached_move: Option<MoveTo>,
+}
+
+impl TacticalAction {
+    pub fn new<F>(id: ActionId, role: Option<RoleId>, evaluate_fn: F) -> Self
+    where
+        F: FnMut(&Robot<AllyInfo>, &World) -> Option<(ActionMetric, MoveTo)> + Send + Sync + 'static,
+    {
+        Self {
+            id,
+            role,
+            evaluate_fn: Box::new(evaluate_fn),
+            cached_move: None,
+        }
+    }
     
-    /// Exécute l'action en ajoutant des commandes atomiques à l'ActionWrapper
-    fn execute(
-        &self,
-        robot_id: u8,
-        robot: &Robot<AllyInfo>,
-        world: &World,
-        action_wrapper: &mut ActionWrapper,
-        tools_data: &mut ToolData,
-    );
+    /// Évalue l'action et stocke le MoveTo calculé
+    pub fn evaluate(&mut self, robot: &Robot<AllyInfo>, world: &World) -> Option<ActionMetric> {
+        if let Some((metric, move_to)) = (self.evaluate_fn)(robot, world) {
+            self.cached_move = Some(move_to);
+            Some(metric)
+        } else {
+            self.cached_move = None;
+            None
+        }
+    }
     
-    /// Identifiant unique de l'action
-    fn action_id(&self) -> ActionId;
+    /// Exécute l'action en utilisant le MoveTo précédemment calculé
+    pub fn execute(&self, robot_id: u8, action_wrapper: &mut ActionWrapper) {
+        if let Some(move_to) = &self.cached_move {
+            action_wrapper.push(robot_id, move_to.clone());
+        }
+    }
     
-    /// Rôle correspondant dans la formation (optionnel)
-    fn corresponding_role(&self) -> Option<RoleId> {
-        None
+    pub fn action_id(&self) -> ActionId {
+        self.id
+    }
+    
+    pub fn corresponding_role(&self) -> Option<RoleId> {
+        self.role
     }
 }

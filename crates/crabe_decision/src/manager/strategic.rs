@@ -1,6 +1,5 @@
 use crate::action::ActionWrapper;
-use crate::decision::ConflictResolver;
-use crate::decision::conflict_resolver::RobotDecisionState;
+use crate::decision::{ConflictResolver, RobotDecisionState};
 use crate::manager::Manager;
 use crate::strategy::global::{DefenseStrategy, GlobalStrategy, GlobalStrategyId};
 use crabe_framework::data::tool::ToolData;
@@ -54,14 +53,14 @@ impl StrategicManager {
     
     fn assign_initial_actions(
         robot_states: &mut HashMap<u8, RobotDecisionState>,
-        strategy: &GlobalStrategy,
+        strategy: &mut GlobalStrategy,
         world: &World,
     ) {
         for (robot_id, robot) in &world.allies_bot {
-            let tree = strategy.get_tree(*robot_id, world);
+            let tree = strategy.get_tree_mut(*robot_id, world);
             let robot_state = robot_states.get_mut(robot_id).unwrap();
             
-            for action in &tree.actions {
+            for action in &mut tree.actions {
                 if robot_state.banned_actions.contains(&action.action_id()) {
                     continue;
                 }
@@ -76,7 +75,7 @@ impl StrategicManager {
     
     fn resolve_conflicts(
         robot_states: &mut HashMap<u8, RobotDecisionState>,
-        strategy: &GlobalStrategy,
+        strategy: &mut GlobalStrategy,
         world: &World,
     ) {
         let max_iterations = 20;
@@ -101,9 +100,9 @@ impl StrategicManager {
                     
                     // Réassigner
                     if let Some(robot) = world.allies_bot.get(&loser_id) {
-                        let tree = strategy.get_tree(loser_id, world);
+                        let tree = strategy.get_tree_mut(loser_id, world);
                         
-                        for action in &tree.actions {
+                        for action in &mut tree.actions {
                             if robot_state.banned_actions.contains(&action.action_id()) {
                                 continue;
                             }
@@ -122,19 +121,16 @@ impl StrategicManager {
     fn execute_actions(
         &self,
         strategy: &GlobalStrategy,
-        world: &World,
         action_wrapper: &mut ActionWrapper,
-        tools_data: &mut ToolData,
+        world: &World,
     ) {
-        for (robot_id, robot) in &world.allies_bot {
-            let robot_state = self.robot_states.get(robot_id).unwrap();
-            
+        for (robot_id, robot_state) in &self.robot_states {
             if let Some((action_id, _)) = &robot_state.current_action {
                 let tree = strategy.get_tree(*robot_id, world);
                 
                 for action in &tree.actions {
                     if action.action_id() == *action_id {
-                        action.execute(*robot_id, robot, world, action_wrapper, tools_data);
+                        action.execute(*robot_id, action_wrapper);
                         break;
                     }
                 }
@@ -150,7 +146,6 @@ impl Manager for StrategicManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
-        println!("AH");
         // 0. Initialiser les robots si nécessaire
         self.initialize_robots(world);
         
@@ -162,7 +157,7 @@ impl Manager for StrategicManager {
         // 2. Sélection stratégie globale
         self.select_global_strategy(world);
         let strategy_id = self.current_strategy_id;
-        let strategy = self.strategies.get(&strategy_id).unwrap();
+        let strategy = self.strategies.get_mut(&strategy_id).unwrap();
         
         // 3. Attribution initiale des actions
         Self::assign_initial_actions(&mut self.robot_states, strategy, world);
@@ -172,6 +167,7 @@ impl Manager for StrategicManager {
         
         // 5. Exécution des actions
         action_wrapper.clear_all();
-        self.execute_actions(strategy, world, action_wrapper, tools_data);
+        let strategy = self.strategies.get(&strategy_id).unwrap();
+        self.execute_actions(strategy, action_wrapper,world);
     }
 }
