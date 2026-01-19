@@ -3,8 +3,8 @@ use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use nalgebra::{Point2, Vector2};
-use log::{error, info, warn};
-use osqp::{CscMatrix, Status};
+use log::{error};
+use quadprog::solve_qp;
 
 pub struct RoulxsGuard {
     alpha: f64
@@ -29,57 +29,21 @@ impl RoulxsGuard {
     
     fn zeroing_cbf(&self, robot_location: &Point2<f64>, v_nom: &Vector2<f64>) -> Vector2<f64>{
         let alpha = self.alpha;
-        
+
         // OSQP solver parameters
-        let P= &[[2., 0.], [0., 2.]];
+        let mut Q= [2., 0., 0., 2.];
         let q_vec = -2. * v_nom;
-        let q = &[q_vec.x, q_vec.y];
+        let c = [q_vec.x, q_vec.y];
 
         let vec_diff = FIXED_OBSTACLE - robot_location;
-        let A = &[
-            [vec_diff.x, vec_diff.y],
-        ];
-        let u = &[(alpha / 2.) * vec_diff.norm_squared() - FIXED_OBS_RADIUS];
-        let l = &[0.];
-
-        let P = CscMatrix::from(P).into_upper_tri();
-
-        let settings = osqp::Settings::default().verbose(false);
-
-        let mut prob = osqp::Problem::new(P, q, A, l, u, &settings).expect("Failed to setup problem");
-        let result = prob.solve();
-
-        let mut v_optimal = v_nom.clone(); // optimal speed computed
-        match result {
-            Status::Solved(sol) => {
-                let s = sol.x();
-                let cmd_diff = (v_nom.x - s[0]) + (v_nom.y - s[1]);
-                if s.len() == 2 {
-                    if cmd_diff > 1e-3 {
-                        info!("Optimal value computed");
-                        v_optimal = Vector2::new(s[0], s[1]);
-                        dbg!(&v_optimal);
-                    }
-                } else {
-                    warn!("Not enough values for solution?")
-                }
-            }
-            Status::SolvedInaccurate(_) |
-            Status::MaxIterationsReached(_) |
-            Status::TimeLimitReached(_) |
-            Status::PrimalInfeasible(_) |
-            Status::PrimalInfeasibleInaccurate(_) |
-            Status::DualInfeasible(_) |
-            Status::DualInfeasibleInaccurate(_) |
-            Status::__Nonexhaustive => {
-                warn!("Could not resolve problem :(");
-            }
-            Status::NonConvex(_) => {
-                error!("Problem is non convex");
-            }
+        let A = [vec_diff.x, vec_diff.y];
+        let bvec = [(alpha / 2.) * vec_diff.norm_squared() - FIXED_OBS_RADIUS];
+        
+        if let Ok(solution) = solve_qp(&mut Q, &c, &A, &bvec, 0, false) {
+            Vector2::new(solution.sol[0], solution.sol[1])
+        } else {
+            v_nom.clone()
         }
-
-        v_optimal
     }
 }
 
