@@ -5,6 +5,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
+use crate::RoulxsGuard;
 
 #[derive(Args)]
 pub struct GuardConfig {}
@@ -25,7 +26,10 @@ pub struct GuardPipeline {
 impl GuardPipeline {
     pub fn with_config(_guard_cfg: GuardConfig, _common_cfg: &CommonConfig) -> Self {
         Self {
-            guards: vec![Box::<SpeedGuard>::default()],
+            guards: vec![
+                Box::<SpeedGuard>::default(),
+                Box::<RoulxsGuard>::default()
+            ],
         }
     }
 }
