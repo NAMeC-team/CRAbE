@@ -48,24 +48,14 @@ impl Strategy for Square {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        let mut moveto1 = MoveToBuilder::new();
-        moveto1.set_x(-1.0).set_y(1.0).set_orientation(-PI / 4.);
         action_wrapper.push(
             self.id,
-            moveto1.build(),
+            MoveToBuilder::new()
+                .set_x(1.0)
+                .set_y(-1.0)
+                .no_avoidance()
+                .build(),
         );
-        action_wrapper.push(
-            self.id,
-            MoveToBuilder::new().set_x(1.0).set_y(1.0).set_orientation(-3.* PI / 4.).build(),
-        );
-        action_wrapper.push(
-            self.id,
-            MoveToBuilder::new().set_x(1.0).set_y(-1.0).set_orientation(3.* PI / 4.).build(),
-        );
-        action_wrapper.push(
-            self.id,
-            MoveToBuilder::new().set_x(-1.0).set_y(-1.0).set_orientation(PI / 4.).build(),
-        );
-        true
+        false
     }
 }
