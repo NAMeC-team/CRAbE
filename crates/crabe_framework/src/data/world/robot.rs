@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use chrono::{DateTime, Utc};
 use crabe_math::vectors::angle_to_point;
 use nalgebra::{Point2, Vector2};
@@ -74,6 +75,26 @@ pub struct Robot<T> {
     pub acceleration: RobotAcceleration,
     /// The timestamp indicating when this information was last updated.
     pub timestamp: DateTime<Utc>,
+}
+
+impl Eq for Robot<AllyInfo> {}
+
+impl PartialEq<Self> for Robot<AllyInfo> {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl PartialOrd<Self> for Robot<AllyInfo> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.id.partial_cmp(&other.id)
+    }
+}
+
+impl Ord for Robot<AllyInfo> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.id.cmp(&other.id)
+    }
 }
 
 impl<T: Clone> Clone for Robot<T> {
