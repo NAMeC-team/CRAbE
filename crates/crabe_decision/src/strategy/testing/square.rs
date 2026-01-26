@@ -6,6 +6,8 @@ use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use nalgebra::Point2;
 use std::f64::consts::PI;
+use crabe_framework::data::output::Command;
+use crate::action::order_raw::RawOrder;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
@@ -48,14 +50,20 @@ impl Strategy for Square {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        action_wrapper.push(
-            self.id,
-            MoveToBuilder::new()
-                .set_x(1.0)
-                .set_y(-1.0)
-                .no_avoidance()
-                .build(),
-        );
+        if let Some(ball) = &world.ball {
+            if let Some(rob_info) = world.allies_bot.get(&self.id) {
+                // let target = Point2::new(-4., 0.5) - rob_info.pose.position;
+                let target = ball.position.xy() - rob_info.pose.position;
+                action_wrapper.push(
+                    self.id,
+                    RawOrder::new(Command {
+                        forward_velocity: target.x as f32,
+                        left_velocity: target.y as f32,
+                        ..Command::default()
+                    }),
+                );
+            }
+        }
         false
     }
 }
