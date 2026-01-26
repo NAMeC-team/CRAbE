@@ -1,8 +1,9 @@
+use std::f64::consts::PI;
 use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
-use nalgebra::{Point2, Vector2};
+use nalgebra::{LpNorm, Norm, Point2, Vector2};
 use log::{error};
 use quadprog::solve_qp;
 
@@ -19,6 +20,9 @@ impl Default for RoulxsGuard {
 const FIXED_OBSTACLE: Point2<f64> = Point2::new(0., 0.);
 const FIXED_OBS_RADIUS: f64 = 0.3;
 
+const SQ_POSITIVE_CENTER: Point2<f64> = Point2::new(-4., 0.5);
+const SQ_NEGATIVE_CENTER: Point2<f64> = Point2::new(-4., -0.5);
+
 impl RoulxsGuard {
     fn new(alpha: f64) -> Self {
         if alpha < 0.0 {
@@ -26,7 +30,7 @@ impl RoulxsGuard {
         }
         Self { alpha }
     }
-    
+
     fn zeroing_cbf(&self, robot_location: &Point2<f64>, v_nom: &Vector2<f64>) -> Vector2<f64>{
         let alpha = self.alpha;
 
@@ -35,9 +39,17 @@ impl RoulxsGuard {
         let q_vec = -2. * v_nom;
         let c = [q_vec.x, q_vec.y];
 
-        let vec_diff = FIXED_OBSTACLE - robot_location;
-        let A = [vec_diff.x, vec_diff.y];
-        let bvec = [(alpha / 2.) * vec_diff.norm_squared() - FIXED_OBS_RADIUS];
+        let sq_pos = (SQ_POSITIVE_CENTER - robot_location);
+        let sq_neg = (SQ_NEGATIVE_CENTER - robot_location);
+        let A = [sq_pos.x, sq_pos.y, sq_neg.x, sq_neg.y];
+        let bvec = [
+            alpha/2. * sq_pos.norm_squared() - (PI / 4.),
+            alpha/2. * sq_neg.norm_squared() - (PI / 4.),
+        ];
+        
+        // let vec_diff = FIXED_OBSTACLE - robot_location;
+        // let A = [vec_diff.x, vec_diff.y];
+        // let bvec = [(alpha / 2.) * vec_diff.norm_squared() - FIXED_OBS_RADIUS];
         
         if let Ok(solution) = solve_qp(&mut Q, &c, &A, &bvec, 0, false) {
             Vector2::new(solution.sol[0], solution.sol[1])
