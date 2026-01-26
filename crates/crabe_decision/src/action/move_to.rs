@@ -120,7 +120,7 @@ fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
 }
 
 /// The default factor speed for the robot to move towards the target position.
-const GOTO_SPEED: f64 = 1.5;
+const GOTO_SPEED: f64 = 1.0;
 /// The overshooting factor to make the robot get faster to the real target.
 const GOTO_SPEED_FAST: f64 = 3.;
 /// The default factor speed for the robot to rotate towards the target orientation.
@@ -162,14 +162,14 @@ impl Action for MoveTo {
 
             // calculate position command 
             let mut target = Point2::new(self.target_x.unwrap(), self.target_y.unwrap());
-            if id != KEEPER_ID{
-                target = penalty_zone_prevention(&robot.pose.position, &target, world);
-            }
+            // if id != KEEPER_ID{
+            //     target = penalty_zone_prevention(&robot.pose.position, &target, world);
+            // }
             if self.avoidance{
                 target = obstacle_avoidance(&target, robot, world, _tools);
             }
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
-            let target_in_robot = ti * Point2::new(target.x, target.y);
+            let target_in_robot = Point2::new(target.x, target.y);
             order.x = target_in_robot[0];
             order.y = target_in_robot[1];
 

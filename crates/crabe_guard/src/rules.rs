@@ -2,8 +2,8 @@ use std::f64::consts::PI;
 use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
-use crabe_framework::data::world::World;
-use nalgebra::{LpNorm, Norm, Point2, Vector2};
+use crabe_framework::data::world::{AllyInfo, Robot, World};
+use nalgebra::{matrix, Isometry2, LpNorm, Matrix2, Norm, Point2, Rotation2, Vector2};
 use log::{error};
 use quadprog::solve_qp;
 
@@ -18,7 +18,7 @@ impl Default for RoulxsGuard {
 }
 
 const FIXED_OBSTACLE: Point2<f64> = Point2::new(0., 0.);
-const FIXED_OBS_RADIUS: f64 = 0.3;
+const FIXED_OBS_RADIUS: f64 = 0.5;
 
 const SQ_POSITIVE_CENTER: Point2<f64> = Point2::new(-4., 0.5);
 const SQ_NEGATIVE_CENTER: Point2<f64> = Point2::new(-4., -0.5);
@@ -43,8 +43,8 @@ impl RoulxsGuard {
         let sq_neg = (SQ_NEGATIVE_CENTER - robot_location);
         let A = [sq_pos.x, sq_pos.y, sq_neg.x, sq_neg.y];
         let bvec = [
-            alpha/2. * sq_pos.norm_squared() - (PI / 4.),
-            alpha/2. * sq_neg.norm_squared() - (PI / 4.),
+            (alpha/2.) * (sq_pos.norm_squared() - (PI / 6.)),
+            (alpha/2.) * (sq_neg.norm_squared() - (PI / 6.)),
         ];
         
         // let vec_diff = FIXED_OBSTACLE - robot_location;
@@ -59,6 +59,13 @@ impl RoulxsGuard {
     }
 }
 
+fn speed_to_rob_frame(v: Vector2<f64>, rob_info: &Robot<AllyInfo>) -> Vector2<f64> {
+    // let ti = Isometry2::new(Vector2::zeros(), rob_info.pose.orientation);
+    let o = rob_info.pose.orientation;
+    let rot = matrix![o.cos(), -o.sin();
+                                 o.sin(), o.cos()];
+    rot.transpose() * v
+}
 
 impl Guard for RoulxsGuard {
     fn guard(
@@ -70,9 +77,14 @@ impl Guard for RoulxsGuard {
         commands.iter_mut().for_each(|(key, cmd)| {
             if let Some(rob_info) = world.allies_bot.get(key) {
                 let v_nom: Vector2<f64> = Vector2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64);
-                let v_optimal = self.zeroing_cbf(&rob_info.pose.position, &v_nom);
-                cmd.forward_velocity = v_optimal.x as f32;
-                cmd.left_velocity = v_optimal.y as f32;
+                let v_optimal= self.zeroing_cbf(&rob_info.pose.position, &v_nom);
+                let rob_v_optimal = speed_to_rob_frame(v_optimal, rob_info);
+                // dbg!(&v_nom);
+                // dbg!(&v_optimal);
+                // dbg!(&rob_v_optimal);
+                // panic!();
+                cmd.forward_velocity = rob_v_optimal.x as f32;
+                cmd.left_velocity = rob_v_optimal.y as f32;
             }
         })
     }
