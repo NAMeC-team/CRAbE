@@ -130,7 +130,7 @@ impl Strategy for ConsensusFormation {
             ids.iter().zip(speeds.iter())
                 .for_each(|(id, speed)| {
                     if let Some(rob) = world.allies_bot.get(id) {
-                        let ti = Isometry2::new(Vector2::zeros(), rob.pose.orientation);
+                        let ti = Isometry2::new(Vector2::zeros(), rob.pose.orientation).inverse();
                         let speed_ti = ti * speed;
                         action_wrapper.push(*id, RawOrder::new(Command {
                             forward_velocity: speed_ti.x as f32,
