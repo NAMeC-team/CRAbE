@@ -1,12 +1,12 @@
-use std::cmp::Ordering;
-use log::error;
-use nalgebra::{Isometry2, Point2, Vector2};
+use crate::action::order_raw::RawOrder;
+use crate::action::ActionWrapper;
+use crate::strategy::Strategy;
 use crabe_framework::data::output::Command;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
-use crate::action::ActionWrapper;
-use crate::action::order_raw::RawOrder;
-use crate::strategy::Strategy;
+use log::{error, warn};
+use nalgebra::{Isometry2, Point2, Vector2};
+use std::cmp::Ordering;
 
 pub struct ConsensusFormation {
     epsilon: f32,
@@ -15,31 +15,29 @@ pub struct ConsensusFormation {
     out_degree_graph: Vec<Vec<i32>>,
     max_in_degree: usize,
     offsets_x: Vec<f64>,
-    offsets_y: Vec<f64>
+    offsets_y: Vec<f64>,
 }
 
 impl ConsensusFormation {
     pub fn new() -> Self {
         Self {
-            epsilon: 0.9,
+            epsilon: 0.99,
             adj_graph: Vec::from([
-                vec![0, 1, 0, 0],
-                vec![0, 0, 1, 0],
-                vec![0, 0, 0, 1],
-                vec![1, 0, 0, 0],
+                vec![0, 1, 0],
+                vec![0, 0, 1],
+                vec![1, 0, 0],
             ]),
             out_degree_graph: Vec::from([
-                vec![1, 0, 0, 0],
-                vec![0, 1, 0, 0],
-                vec![0, 0, 1, 0],
-                vec![0, 0, 0, 1],
+                vec![1, 0, 0],
+                vec![0, 1, 0],
+                vec![0, 0, 1],
             ]),
             max_in_degree: 1,
-            offsets_x: vec![1., 1., -1., -1.],
-            offsets_y: vec![1., -1., -1., 1.],
+            offsets_x: vec![0.5, -1., 0.5,],
+            offsets_y: vec![-1., 0., 1.],
         }
     }
-    
+
     // fn laplacian(&self) -> Vec<Vec<i32>> {
     //     let mut res: Vec<Vec<i32>> = Vec::from([Vec::new(), Vec::new(), Vec::new()]);
     //     for i in 0..self.adj_graph.len() {
@@ -47,19 +45,19 @@ impl ConsensusFormation {
     //             res[i][j] = self.out_degree_graph[i][j] - self.adj_graph[i][j];
     //         }
     //     }
-    //     
+    //
     //     res
     // }
-    
+
     fn is_neighbour(&self, node_i: usize, neighbour_j: usize) -> bool {
         self.adj_graph[node_i][neighbour_j] == 1
     }
-    
+
     fn discrete_consensus_cfunc(&self, X0: Vec<f64>, offsets: &Vec<f64>) -> Vec<f64> {
         if !(self.epsilon * (self.max_in_degree as f32) < 1.) {
             panic!("epsilon * delta value superior to 1, change epsilon")
         }
-        
+
         let mut res: Vec<f64> = Vec::new();
         for node_i in 0..self.adj_graph.len() {
             let mut s = 0.;
@@ -71,7 +69,7 @@ impl ConsensusFormation {
             }
             res.push((self.epsilon as f64) * s);
         }
-        
+
         res
     }
 }
@@ -93,11 +91,19 @@ fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
 }
 
 impl Strategy for ConsensusFormation {
-    fn name(&self) -> &'static str { "ConsensusFormation" }
+    fn name(&self) -> &'static str {
+        "ConsensusFormation"
+    }
 
-    fn step(&mut self, world: &World, _tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) -> bool {
-        let ids = vec![0, 1, 2, 3];
-        let mut robots: Vec<&Robot<AllyInfo>> = world.allies_bot
+    fn step(
+        &mut self,
+        world: &World,
+        _tools_data: &mut ToolData,
+        action_wrapper: &mut ActionWrapper,
+    ) -> bool {
+        let ids = vec![1, 3, 5];
+        let mut robots: Vec<&Robot<AllyInfo>> = world
+            .allies_bot
             .iter()
             .filter_map(|(id, ally_info)| {
                 if ids.contains(id) {
@@ -105,8 +111,9 @@ impl Strategy for ConsensusFormation {
                 } else {
                     None
                 }
-            }).collect();
-        
+            })
+            .collect();
+
         robots.sort();
         if robots.len() == ids.len() {
             action_wrapper.clear_all();
@@ -115,32 +122,41 @@ impl Strategy for ConsensusFormation {
                 .iter()
                 .map(|ally_info| &ally_info.pose.position)
                 .collect();
-            
+
             let x_pos: Vec<f64> = positions.iter().map(|&p| p.x).collect();
             let y_pos: Vec<f64> = positions.iter().map(|&p| p.y).collect();
-            
+
             let speeds_x = self.discrete_consensus_cfunc(x_pos, &self.offsets_x);
             let speeds_y = self.discrete_consensus_cfunc(y_pos, &self.offsets_y);
-            
+
             let speeds: Vec<Point2<f64>> = speeds_x
-                .iter().zip(speeds_y.iter())
+                .iter()
+                .zip(speeds_y.iter())
                 .map(|(x, y)| Point2::new(*x, *y))
                 .collect();
-            
-            ids.iter().zip(speeds.iter())
-                .for_each(|(id, speed)| {
-                    if let Some(rob) = world.allies_bot.get(id) {
-                        let ti = Isometry2::new(Vector2::zeros(), rob.pose.orientation).inverse();
-                        let speed_ti = ti * speed;
-                        action_wrapper.push(*id, RawOrder::new(Command {
-                            forward_velocity: speed_ti.x as f32,
-                            left_velocity: speed_ti.y as f32,
+
+            ids.iter().zip(speeds.iter()).for_each(|(id, speed)| {
+                if *id == 1 {
+                    return;
+                }
+                if let Some(rob) = world.allies_bot.get(id) {
+                    let ti = Isometry2::new(Vector2::zeros(), rob.pose.orientation).inverse();
+                    let speed_ti = ti * speed;
+                    action_wrapper.push(
+                        *id,
+                        RawOrder::new(Command {
+                            forward_velocity: (speed_ti.x as f32) * 2.,
+                            left_velocity: (speed_ti.y as f32) * 2.,
                             ..Command::default()
-                    }))                                            
+                        }),
+                    )
                 }
             });
+        } else {
+            warn!("Not all robots detected !");
+            dbg!(robots.iter().map(|r| r.id).collect::<Vec<_>>());
         }
-        
+
         false
     }
 }
