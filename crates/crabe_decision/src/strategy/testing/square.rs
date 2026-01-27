@@ -3,7 +3,7 @@ use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
 use crabe_framework::data::output::Command;
 use crate::action::order_raw::RawOrder;
 
@@ -21,7 +21,14 @@ impl Square {
         Self { id}
     }
 }
-
+fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
+    let diff = alpha1 - alpha2;
+    match diff {
+        d if d > PI => d - TAU,
+        d if d < -PI => d + TAU,
+        d => d,
+    }
+}
 impl Strategy for Square {
     fn name(&self) -> &'static str {
         "Square"
@@ -35,7 +42,7 @@ impl Strategy for Square {
     /// # Arguments
     ///
     /// * world: The current state of the game world.
-    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.    
+    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.
     /// * action_wrapper: An `ActionWrapper` instance used to issue actions to the robot.
     ///
     /// # Returns
@@ -51,12 +58,15 @@ impl Strategy for Square {
         if let Some(ball) = &world.ball {
             if let Some(rob_info) = world.allies_bot.get(&self.id) {
                 // let target = Point2::new(-4., 0.5) - rob_info.pose.position;
-                let target = ball.position.xy() - rob_info.pose.position;
+                let target = (ball.position.xy() - rob_info.pose.position) * 2.;
+                let orientation = rob_info.angle_to(ball.position_2d());
+                let z = angle_difference(orientation, rob_info.pose.orientation) * 3.;
                 action_wrapper.push(
                     self.id,
                     RawOrder::new(Command {
                         forward_velocity: target.x as f32,
                         left_velocity: target.y as f32,
+                        angular_velocity: z as f32,
                         ..Command::default()
                     }),
                 );
