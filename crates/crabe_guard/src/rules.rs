@@ -31,22 +31,32 @@ impl RoulxsGuard {
         Self { alpha }
     }
 
-    fn zeroing_cbf(&self, robot_location: &Point2<f64>, v_nom: &Vector2<f64>) -> Vector2<f64>{
-        let alpha = self.alpha;
-
+    /// Generate pair of A and bvec items to avoid a single obstacle
+    fn avoid(&self, moving_bot_pos: &Point2<f64>, obs_pos: &Point2<f64>) -> (Vec<f64>, f64) {
+        let to_obs = obs_pos - moving_bot_pos;
+        (
+            vec![obs_pos.x, obs_pos.y],
+            (self.alpha / 2.) * (to_obs.norm_squared() - (PI / 6.))
+        )
+    }
+    
+    fn zeroing_cbf(&self, robot_location: &Point2<f64>, v_nom: &Vector2<f64>, obstacles: Vec<&Point2<f64>>) -> Vector2<f64>{
         // OSQP solver parameters
         let mut Q= [2., 0., 0., 2.];
         let q_vec = -2. * v_nom;
         let c = [q_vec.x, q_vec.y];
-
-        let sq_pos = (SQ_POSITIVE_CENTER - robot_location);
-        let sq_neg = (SQ_NEGATIVE_CENTER - robot_location);
-        let A = [sq_pos.x, sq_pos.y, sq_neg.x, sq_neg.y];
-        let bvec = [
-            (alpha/2.) * (sq_pos.norm_squared() - (PI / 6.)),
-            (alpha/2.) * (sq_neg.norm_squared() - (PI / 6.)),
-        ];
         
+        let mut A: Vec<f64> = Vec::new();
+        let mut bvec: Vec<f64> = Vec::new();
+        
+        // generate one for each obstacle
+        obstacles.iter().for_each(|obs| {
+            let (A_items, b_item) = self.avoid(robot_location, obs);
+            A.extend(A_items);
+            bvec.push(b_item);
+        });
+        
+        // for a single obstacle
         // let vec_diff = FIXED_OBSTACLE - robot_location;
         // let A = [vec_diff.x, vec_diff.y];
         // let bvec = [(alpha / 2.) * vec_diff.norm_squared() - FIXED_OBS_RADIUS];
@@ -60,7 +70,7 @@ impl RoulxsGuard {
 }
 
 fn speed_to_rob_frame(v: Vector2<f64>, rob_info: &Robot<AllyInfo>) -> Vector2<f64> {
-    // let ti = Isometry2::new(Vector2::zeros(), rob_info.pose.orientation);
+    // let ti = Isometry2::new(Vector2::zeros(), rob_info.pose.<orientation);
     let o = rob_info.pose.orientation;
     let rot = matrix![o.cos(), -o.sin();
                                  o.sin(), o.cos()];
@@ -77,7 +87,7 @@ impl Guard for RoulxsGuard {
         commands.iter_mut().for_each(|(key, cmd)| {
             if let Some(rob_info) = world.allies_bot.get(key) {
                 let v_nom: Vector2<f64> = Vector2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64);
-                let v_optimal= self.zeroing_cbf(&rob_info.pose.position, &v_nom);
+                let v_optimal= self.zeroing_cbf(&rob_info.pose.position, &v_nom, vec![&SQ_POSITIVE_CENTER, &SQ_NEGATIVE_CENTER]);
                 let rob_v_optimal = speed_to_rob_frame(v_optimal, rob_info);
                 // dbg!(&v_nom);
                 // dbg!(&v_optimal);
