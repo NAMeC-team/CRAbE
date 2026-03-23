@@ -69,7 +69,7 @@ impl RoulxsGuard {
     }
 }
 
-fn speed_to_rob_frame(v: Vector2<f64>, rob_info: &Robot<AllyInfo>) -> Vector2<f64> {
+pub fn speed_to_rob_frame(v: Vector2<f64>, rob_info: &Robot<AllyInfo>) -> Vector2<f64> {
     // let ti = Isometry2::new(Vector2::zeros(), rob_info.pose.<orientation);
     let o = rob_info.pose.orientation;
     let rot = matrix![o.cos(), -o.sin();
@@ -88,7 +88,7 @@ impl Guard for RoulxsGuard {
             if let Some(rob_info) = world.allies_bot.get(key) {
                 let v_nom: Vector2<f64> = Vector2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64);
                 let v_optimal= self.zeroing_cbf(&rob_info.pose.position, &v_nom, vec![&SQ_POSITIVE_CENTER, &SQ_NEGATIVE_CENTER]);
-                let rob_v_optimal = speed_to_rob_frame(v_optimal, rob_info);
+                let rob_v_optimal= speed_to_rob_frame(v_optimal, rob_info);
                 // dbg!(&v_nom);
                 // dbg!(&v_optimal);
                 // dbg!(&rob_v_optimal);

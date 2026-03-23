@@ -6,6 +6,7 @@ use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use crate::RoulxsGuard;
+use crate::rules_py::PyRoulxsGuard;
 
 #[derive(Args)]
 pub struct GuardConfig {}
@@ -28,7 +29,8 @@ impl GuardPipeline {
         Self {
             guards: vec![
                 Box::<SpeedGuard>::default(),
-                Box::<RoulxsGuard>::default()
+                Box::<PyRoulxsGuard>::default()
+                // Box::<RoulxsGuard>::default()
             ],
         }
     }

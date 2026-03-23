@@ -170,8 +170,8 @@ impl Action for MoveTo {
             }
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
             let target_in_robot = Point2::new(target.x, target.y);
-            order.x = target_in_robot[0];
-            order.y = target_in_robot[1];
+            order.x = target.x - robot.pose.position.x;
+            order.y = target.y - robot.pose.position.y;
 
             // calculate orientation command
             let orientation = self.orientation.unwrap();

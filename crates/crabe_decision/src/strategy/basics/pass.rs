@@ -1,3 +1,4 @@
+use log::info;
 use crate::action::move_to::MoveTo;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::world::{AllyInfo, Ball, Robot, World};
@@ -44,10 +45,12 @@ pub fn pass(
     };
 
     if passing_trajectory_will_land && dot_with_ball > 0.95{
+        info!("Passing ball");
         let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 1.) { 
             Some(Kick::StraightKick {  power: 4. }) 
         }else {None};
         return MoveTo::new_all_params(ball_position, vectors::angle_to_point(robot_position,receiver.pose.position), 400.,  true, kick, true, false);
     }
-    MoveTo::new_all_params(behind_ball_position, vectors::angle_to_point(robot_position, receiver.pose.position), 0., false, None, true, true)
+    info!("Going to ball");
+    MoveTo::new_all_params(behind_ball_position, vectors::angle_to_point(robot_position, receiver.pose.position), 0., false, None, true, false)
 }
