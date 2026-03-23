@@ -1,6 +1,6 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
-use crate::strategy::testing::{FollowBall, Square, TestVisionMoveTo};
+use crate::strategy::testing::{FollowBall, PassTwo, Square, TestVisionMoveTo};
 use crate::strategy::formations::MoveAwayFromBall;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
@@ -21,7 +21,8 @@ impl Manual {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Square::new(0))],
+            // strategies: vec![Box::new(PassTwo::new(0, 1))],
+            strategies: vec![Box::new(TestVisionMoveTo::new(vec![4]))],
         }
     }
 }
