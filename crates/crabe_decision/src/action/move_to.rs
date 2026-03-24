@@ -24,6 +24,7 @@ pub struct MoveTo {
     pub kicker: Option<Kick>,
     pub fast: bool,
     pub avoidance: bool,
+    pub avoid_ball: bool,
 }
 
 impl From<&mut MoveTo> for MoveTo {
@@ -37,7 +38,8 @@ impl From<&mut MoveTo> for MoveTo {
             dribbler: other.dribbler,
             kicker: other.kicker,
             fast: other.fast,
-            avoidance: other.avoidance
+            avoidance: other.avoidance,
+            avoid_ball: other.avoid_ball,
         }
     }
 }
@@ -53,7 +55,8 @@ impl Default for MoveTo {
             dribbler: 0.,
             kicker: None,
             fast: true,
-            avoidance: true
+            avoidance: true,
+            avoid_ball: false,
         }
     }
 }
@@ -89,7 +92,8 @@ impl MoveTo {
             dribbler,
             kicker,
             fast,
-            avoidance
+            avoidance,
+            avoid_ball: false,
         }
     }
 }
@@ -198,6 +202,7 @@ impl Action for MoveTo {
                 charge: self.charge,
                 kick: self.kicker,
                 dribbler: self.dribbler,
+                avoid_ball: self.avoid_ball,
             }
         } else {
             Command::default()

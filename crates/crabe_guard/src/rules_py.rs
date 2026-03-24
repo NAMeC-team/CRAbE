@@ -48,11 +48,17 @@ impl Guard for PyRoulxsGuard {
         commands.iter_mut().for_each(|(id, cmd)| {
             // info!("Robot {:?} | Preparing data to send", id);
             let rob_info = world.allies_bot.get(&id).unwrap(); // safe unwrap here
+            let mut obstacles: Vec<Point2<f64>> = world.allies_bot.iter()
+                .filter(|(other_id, _)| *id != **other_id)
+                .map(|(_, r)| r.pose.position)
+                .collect();
+            if let Some(ball) = &world.ball {
+                if cmd.avoid_ball {
+                    obstacles.push(ball.position_2d())
+                }
+            }
             let req = SolverRequest {
-                obstacles: world.allies_bot.iter()
-                    .filter(|(other_id, r)| *id != **other_id)
-                    .map(|(_, r)| r.pose.position)
-                    .collect(),
+                obstacles,
                 rob_pos: rob_info.pose.position,
                 alpha: 9.,
                 v_nom: Point2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64),
@@ -64,12 +70,12 @@ impl Guard for PyRoulxsGuard {
                     if let Ok(solver_resp) = serde_json::from_str::<SolverResponse>(resp.as_str()) {
                         // trust me, safe unwrap
                         // you send a cmd so the robot exists lol
-                        
-                        // let speed_robot = speed_to_rob_frame(solver_resp.optimal_v, rob_info);
-                        let speed_robot = speed_to_rob_frame(Vector2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64), rob_info);
+
+                        let speed_robot = speed_to_rob_frame(solver_resp.optimal_v, rob_info);
+                        // let speed_robot = speed_to_rob_frame(Vector2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64), rob_info);
                         cmd.forward_velocity = speed_robot.x as f32;
                         cmd.left_velocity = speed_robot.y as f32;
-                        
+
                         // info!("Robot {:?} | Time : {:?} | Parsed solver response and updated speed", id, Instant::now() - start);
                     }
                 } else {
