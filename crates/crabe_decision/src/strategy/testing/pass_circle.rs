@@ -79,7 +79,7 @@ impl Strategy for PassCircle {
                     if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius + 0.001) {
                         orientation_target = passer.pose.position;
                         if dot_to_ally > 0.99 && robot.velocity.angular.abs() < 0.01 {
-                            moveto.set_kick(Kick::StraightKick { power: 4. });
+                            moveto.set_kick(Some(Kick::StraightKick { power: 4. }));
                         }
                     }else{
                         target = ball.position_2d();
