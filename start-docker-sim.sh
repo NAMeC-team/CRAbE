@@ -3,11 +3,6 @@ set -euo pipefail
 
 CRABE_HOME=$(realpath "$(dirname "$0")")
 
-source "$CRABE_HOME/.env"
-if [ -f "$CRABE_HOME/.env.local" ]; then
-  source "$CRABE_HOME/.env.local"
-fi
-
 declare -r MULTICAST_ADDR="${CRB_MULTICAST_ADDR:-224.5.23.2}"
 declare -r MULTICAST_PORT="${CRB_MULTICAST_PORT:-10020}"
 declare -r CMD_LISTEN_PORT="${CRB_CMD_LISTEN_PORT:-20011}"

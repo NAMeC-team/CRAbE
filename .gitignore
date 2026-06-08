@@ -5,6 +5,4 @@ target/
 .idea/
 .vscode/
 
-#env
-.env.local
 .grsim
