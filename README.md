@@ -8,5 +8,4 @@ Modules :
 - crabe_guard
 - crabe_io
 - crabe_math
-- crabe_navigation
 - crabe_protocol
