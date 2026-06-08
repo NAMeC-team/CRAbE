@@ -4,3 +4,7 @@ target/
 # Code editors
 .idea/
 .vscode/
+
+#env
+.env.local
+.grsim
