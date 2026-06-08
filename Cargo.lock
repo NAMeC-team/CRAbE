@@ -426,10 +426,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "crabe_navigation"
-version = "0.1.0"
-
-[[package]]
 name = "crabe_protocol"
 version = "0.1.0"
 dependencies = [
