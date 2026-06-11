@@ -76,6 +76,16 @@ pub struct Robot<T> {
     pub timestamp: DateTime<Utc>,
 }
 
+impl<T> Robot<T> {
+    pub fn position(&self) -> Point2<f64> {
+        self.pose.position
+    }
+    
+    pub fn orientation(&self) -> f64 {
+        self.pose.orientation
+    }
+}
+
 impl<T: Clone> Clone for Robot<T> {
     fn clone(&self) -> Self {
         Self {

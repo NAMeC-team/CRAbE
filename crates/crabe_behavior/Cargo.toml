@@ -1,0 +1,13 @@
+[package]
+name = "crabe_behavior"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crabe_framework = { path = "../crabe_framework" }
+nalgebra = { version = "0.32.3", features = ["serde-serialize"] }
+crabe_math = { path = "../crabe_math" }
+strum = "0.27.2"
+crabe_behavior_derive = { path = "../crabe_behavior_derive" }
+tracing = "0.1.44"
+bimap = "0.6.3"
