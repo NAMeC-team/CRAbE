@@ -1,7 +1,6 @@
 use crate::behaviors::blackboard::{InputPort, IntentWriter, OutputPort};
 use crate::behaviors::{Behavior, Context, Node, Status, cond, seq};
 use crate::utils::pose_to_frame;
-use crabe_framework::data::output::CommandPatch;
 use crabe_framework::data::world::{AllyInfo, Pose, Robot, RobotVelocity};
 use crabe_math::angles::angle_difference;
 use crabe_math::geometry::{frame, frame_inv};

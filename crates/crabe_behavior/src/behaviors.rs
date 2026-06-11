@@ -9,7 +9,7 @@ use crate::behaviors::composites::flow::Flow;
 use crate::behaviors::composites::parallel::Parallel;
 use crate::behaviors::conditions::Condition;
 use crabe_framework::data::annotation::{Annotation, AnnotationStore};
-use crabe_framework::data::output::{Command, CommandPatch};
+use crabe_framework::data::output::{Command};
 use crabe_framework::data::world::{AllyInfo, Robot, World};
 use nalgebra::Point2;
 use std::borrow::Cow;

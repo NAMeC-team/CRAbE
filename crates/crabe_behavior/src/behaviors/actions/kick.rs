@@ -1,6 +1,6 @@
 use crate::behaviors::blackboard::{ActionIntent, IntentWriter, OutputPort};
 use crate::behaviors::{Behavior, Context, Status};
-use crabe_framework::data::output::{CommandPatch, Kick};
+use crabe_framework::data::output::Kick;
 use std::time::Duration;
 
 const CHARGE_DURATION: Duration = Duration::from_millis(200); // TODO

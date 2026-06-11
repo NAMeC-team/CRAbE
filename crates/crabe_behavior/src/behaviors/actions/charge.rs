@@ -1,6 +1,5 @@
 use crate::behaviors::blackboard::{ActionIntent, IntentWriter, OutputPort};
 use crate::behaviors::{Behavior, Context, Status};
-use crabe_framework::data::output::{CommandPatch, Kick};
 
 #[derive(Debug)]
 pub struct ChargeAction {
