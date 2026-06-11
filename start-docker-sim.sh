@@ -52,5 +52,10 @@ if [ ! -f "$CRABE_HOME/.grsim/.grsim.xml" ]; then
 EOF
 fi
 
-echo -e "executing cmd\ndocker run --net=host -v $CRABE_HOME/.grsim:/home/default --rm --name=grsim-docker -eVNC_PASSWORD=vnc -eVNC_GEOMETRY=1920x1080 robocupssl/grsim vnc &> $CRABE_HOME/.grsim/log"
-docker run --net=host -v $CRABE_HOME/.grsim:/home/default --rm --name=grsim-docker -eVNC_PASSWORD=vnc -eVNC_GEOMETRY=1920x1080 robocupssl/grsim vnc &> $CRABE_HOME/.grsim/log
+declare ROOTLESS=""
+if [[ -n "$(docker info -f "{{println .SecurityOptions}}" | grep rootless)" ]]; then
+	ROOTLESS="--user 0:0"
+fi
+
+echo -e "executing cmd\ndocker run $ROOTLESS --net=host -v $CRABE_HOME/.grsim:/home/default --rm --name=grsim-docker -eVNC_PASSWORD=vnc -eVNC_GEOMETRY=1920x1080 robocupssl/grsim vnc &> $CRABE_HOME/.grsim/log"
+docker run --net=host $ROOTLESS -v $CRABE_HOME/.grsim:/home/default --rm --name=grsim-docker -eVNC_PASSWORD=vnc -eVNC_GEOMETRY=1920x1080 robocupssl/grsim vnc &> $CRABE_HOME/.grsim/log
