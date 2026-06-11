@@ -19,4 +19,6 @@ pub struct CommonConfig {
     /// Whether sides should be reversed (ONLY USE DURING TESTING).
     #[arg(long)]
     pub change_side: bool,
+    #[arg(long)]
+    pub bt: bool
 }

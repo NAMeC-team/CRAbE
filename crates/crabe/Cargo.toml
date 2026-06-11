@@ -19,3 +19,4 @@ crabe_io = { path = "../crabe_io" }
 crabe_filter = { path = "../crabe_filter" }
 crabe_decision = { path = "../crabe_decision" }
 crabe_guard = { path = "../crabe_guard" }
+crabe_behavior = { path = "../crabe_behavior" }

@@ -312,6 +312,7 @@ name = "crabe"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "crabe_behavior",
  "crabe_decision",
  "crabe_filter",
  "crabe_framework",
