@@ -2,7 +2,7 @@ use nalgebra::Point2;
 use serde::Serialize;
 use crate::data::referee::event::GameEvent;
 use crate::data::referee::Referee;
-use crate::data::world::game_state::{GameState, HaltedState, StoppedState};
+use crate::data::world::game_state::{GameState, StoppedState};
 
 /// Retains information sent by the game controller
 /// to both teams, about the current game state,

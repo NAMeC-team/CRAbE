@@ -19,7 +19,6 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-use log::info;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]

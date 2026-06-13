@@ -2,7 +2,6 @@ use nalgebra::Point2;
 use serde::Serialize;
 use crabe_math::shape::Line;
 
-use crate::data::world::World;
 
 /// Represents a penalty area on a soccer field. (all distances are in meters)
 #[derive(Serialize, Clone, Debug)]

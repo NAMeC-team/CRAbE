@@ -6,7 +6,7 @@ use crabe_framework::data::{
     tool::ToolData,
     world::World,
 };
-use nalgebra::{Matrix, Point2};
+use nalgebra::Point2;
 
 use crabe_math::{shape::Line, vectors::angle_to_point};
 

@@ -1,17 +1,12 @@
-use std::backtrace;
-
-use crate::action::move_to::{self, MoveTo};
+use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
-use crate::strategy::basics::pass;
 use crate::strategy::Strategy;
-use crate::utils::{closest_bot_to_point, closest_bots_to_point, object_in_bot_trajectory};
-use crabe_framework::data::geometry::Penalty;
+use crate::utils::closest_bot_to_point;
 use crabe_framework::data::output::Kick;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{Ball, EnemyInfo, Robot, World};
 use crabe_math::{shape::Line, vectors};
 use crabe_math::vectors::vector_from_angle;
-use crabe_protocol::protobuf::simulation_packet::MoveGlobalVelocity;
 use nalgebra::Point2;
 
 /// The GoalKeeper strategy is responsible for keeping the goal safe by moving the robot to the best position to block the ball.
@@ -19,13 +14,12 @@ use nalgebra::Point2;
 pub struct GoalKeeper {
     /// The id of the robot to move.
     id: u8,
-    ids_to_not_pass: Vec<u8>,
 }
 
 impl GoalKeeper {
     /// Creates a new GoalKeeper instance with the desired robot id.
-    pub fn new(id: u8, ids_to_not_pass: Vec<u8>) -> Self {
-        Self { id, ids_to_not_pass}
+    pub fn new(id: u8) -> Self {
+        Self { id }
     }
 
     /// Calculates the trajectory of the ball based on its velocity.

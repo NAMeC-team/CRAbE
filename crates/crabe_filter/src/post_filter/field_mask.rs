@@ -1,5 +1,5 @@
-use crabe_framework::data::world::{Ball, Robot, RobotMap, World};
-use crate::data::{FilterData, TrackedBall, TrackedRobotMap};
+use crabe_framework::data::world::{Ball, RobotMap, World};
+use crate::data::FilterData;
 use crate::FieldMask;
 use crate::post_filter::PostFilter;
 
@@ -40,7 +40,7 @@ impl FieldMaskFilter {
 }
 
 impl PostFilter for FieldMaskFilter {
-    fn step(&mut self, filter_data: &FilterData, world: &mut World) {
+    fn step(&mut self, _filter_data: &FilterData, world: &mut World) {
         Self::filter_robots_by_side(&mut world.allies_bot, &self.field_side);
         Self::filter_robots_by_side(&mut world.enemies_bot, &self.field_side);
         Self::filter_ball_by_side(&mut world.ball, &self.field_side);

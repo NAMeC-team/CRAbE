@@ -5,7 +5,7 @@ use std::time::Duration;
 
 pub struct UsbTransceiver {
     port: Box<dyn SerialPort>,
-    buffer: [u8; BUFFER_SIZE],
+    _buffer: [u8; BUFFER_SIZE],
 }
 
 impl UsbTransceiver {
@@ -14,9 +14,9 @@ impl UsbTransceiver {
             .timeout(Duration::from_millis(1))
             .open()?;
 
-        let buffer = [0u8; BUFFER_SIZE];
+        let _buffer = [0u8; BUFFER_SIZE];
 
-        Ok(Self { port, buffer })
+        Ok(Self { port, _buffer })
     }
 
     pub fn send<T: prost::Message + Default>(&mut self, packet: T) {

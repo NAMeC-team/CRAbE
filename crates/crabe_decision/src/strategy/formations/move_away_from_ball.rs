@@ -1,12 +1,9 @@
-use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crate::strategy::basics::move_away;
-use nalgebra::Point2;
-use std::f64::consts::PI;
 
 const DISTANCE_TO_BALL:f64 = 0.8;
 
@@ -34,7 +31,7 @@ impl Strategy for MoveAwayFromBall {
     fn step(
         &mut self,
         world: &World,
-        tools_data: &mut ToolData,
+        _tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
         

@@ -6,7 +6,7 @@ use crabe_framework::data::world::TeamColor;
 
 mod detection {
     use crate::data::{FilterData, FrameInfo};
-    use chrono::{TimeZone, Utc};
+    use chrono::Utc;
     use crabe_framework::data::world::TeamColor;
     use crabe_protocol::protobuf::vision_packet::SslDetectionFrame;
     use crate::pre_filter::common::create_date_time;

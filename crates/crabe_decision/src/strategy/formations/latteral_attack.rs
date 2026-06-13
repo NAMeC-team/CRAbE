@@ -6,9 +6,7 @@ use crate::utils::object_in_bot_trajectory;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_math::vectors::angle_to_point;
-use crate::strategy::basics::move_away;
 use nalgebra::Point2;
-use std::f64::consts::PI;
 
 
 /// The LateralAttack struct represents a strategy that commands a robot to move in a LateralAttack shape

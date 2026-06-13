@@ -1,9 +1,8 @@
-use std::error::Error;
 use log::warn;
 use nalgebra::{distance, Point2};
 use crabe_framework::data::referee::{Referee, RefereeCommand as RC};
 use crabe_framework::data::referee::event::{BallLeftField, Event};
-use crabe_framework::data::world::game_state::{GameState, HaltedState, RunningState, StoppedState};
+use crabe_framework::data::world::game_state::GameState;
 use crabe_framework::data::world::game_state::GameState::{Halted, Stopped, Running};
 use crabe_framework::data::world::{Ball, TeamColor, World};
 use crabe_framework::data::world::game_state::HaltedState::*;

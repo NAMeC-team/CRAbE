@@ -219,7 +219,7 @@ pub fn penalty_zone_prevention(current_position: &Point2<f64>, original_target: 
         &world.geometry.enemy_penalty
     };
     let penalty_x = penalty.front_line.start.x.abs();
-    let penalty_y = penalty.front_line.start.y.abs();
+    let _penalty_y = penalty.front_line.start.y.abs();
     let enlarged_penalty = penalty.enlarged_penalty(world.geometry.robot_radius);
 
     //first check if the target is in the penalty zone
