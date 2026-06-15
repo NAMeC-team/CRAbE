@@ -2,7 +2,7 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use crate::league::real::RealConfig;
-use log::error;
+use log::{error, info};
 
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
@@ -20,7 +20,7 @@ impl Real {
     pub fn with_config(usb_config: RealConfig) -> Self {
         let usb = UsbTransceiver::new(&usb_config.usb_port, usb_config.usb_baud)
             .expect("Failed to create usb transceiver");
-
+        info!("Init real with config {:#?}", usb_config);
         Self { usb }
     }
 

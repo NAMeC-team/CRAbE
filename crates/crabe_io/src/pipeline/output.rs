@@ -3,6 +3,7 @@ use crabe_framework::config::CommonConfig;
 
 use crabe_framework::data::output::{CommandMap, FeedbackMap};
 use crabe_framework::data::tool::ToolCommands;
+use log::info;
 
 use crate::league::real::{Real, RealConfig};
 use crate::league::simulator::config::SimulatorConfig;

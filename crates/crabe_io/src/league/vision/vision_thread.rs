@@ -31,11 +31,13 @@ impl Vision {
             VISION_PORT_SIM
         };
 
+
         let (tx_vision, rx_vision) = mpsc::channel::<SslWrapperPacket>();
         let ipv4 = Ipv4Addr::from_str(vision_cfg.vision_ip.as_str())
             .expect("Failed to create an ipv4 address with the ip");
         let mut vision =
             MulticastUDPReceiver::new(ipv4, port).expect("Failed to create vision receiver");
+        info!("Init vision with ip {},port {}", ipv4, port);
 
         let running = Arc::new(AtomicBool::new(true));
         let running_clone = Arc::clone(&running);

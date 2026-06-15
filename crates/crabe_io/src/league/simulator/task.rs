@@ -8,7 +8,7 @@ use crabe_protocol::protobuf::simulation_packet::{
     robot_move_command, MoveLocalVelocity, RobotCommand, RobotControl, RobotControlResponse,
     RobotMoveCommand,
 };
-use log::debug;
+use log::{debug, info};
 
 use std::net::Ipv4Addr;
 
@@ -33,6 +33,7 @@ impl Simulator {
             port = SIM_PORT_BLUE;
         }
 
+        info!("Init simulator with port {}", port);
         let socket =
             UDPTransceiver::new(Ipv4Addr::LOCALHOST, port).expect("Failed to setup simulator");
 

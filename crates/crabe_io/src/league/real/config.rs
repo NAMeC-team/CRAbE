@@ -1,5 +1,6 @@
 use clap::Args;
 #[derive(Args)]
+#[derive(Debug)]
 pub struct RealConfig {
     #[arg(long, default_value = "/dev/ttyUSB0")]
     pub usb_port: String,

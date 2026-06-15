@@ -5,6 +5,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::{ToolCommands, ToolData};
 use crabe_framework::data::world::World;
+use log::info;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::net::{Ipv4Addr, SocketAddrV4};
@@ -31,7 +32,7 @@ struct ToolMessage {
 ///
 /// The keyword `tag` in the serde attribute changes the format
 /// of the packet.
-/// 
+///
 /// See [serde's docs](https://serde.rs/enum-representations.html) for more details
 #[serde_as]
 #[derive(Deserialize)]
@@ -52,6 +53,7 @@ impl ToolServer {
     /// Creates a new instance, spawning a separate websocket thread
     /// once created.
     pub fn with_config(tool_config: ToolConfig, _common_config: &CommonConfig) -> Self {
+      info!("Init toolserver with port {}", tool_config.tool_port);
         Self {
             websocket: WebSocketTransceiver::spawn(
                 // SocketAddrV4 can be converted .into() a SocketAddr struct
