@@ -1,23 +1,25 @@
-use crate::communication::MulticastUDPReceiver;
 use crate::constant::{VISION_PORT_REAL, VISION_PORT_SIM};
 use crate::league::vision::VisionConfig;
 use crate::pipeline::input::ReceiverTask;
 use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
-use log::{error, info};
-use std::net::Ipv4Addr;
-use std::str::FromStr;
+use log::info;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::mpsc::Receiver;
 use std::sync::{mpsc, Arc};
-use std::thread;
 use std::thread::JoinHandle;
+use crate::league::utils::threaded_receiver;
 
-// TODO: Document
+/// Thread-based vision data receiver.
+/// Data can be fetched from the rx_vision Receiver,
+/// while the thread fetches data from the external vision system.
 pub struct Vision {
+    /// Used for retrieval of packets
     rx_vision: Receiver<SslWrapperPacket>,
+    /// Handle on the vision thread launched
     handle: Option<JoinHandle<()>>,
+    /// Atomic reference to halt work of the vision thread
     running: Arc<AtomicBool>,
 }
 
@@ -31,24 +33,8 @@ impl Vision {
             VISION_PORT_SIM
         };
 
-        let (tx_vision, rx_vision) = mpsc::channel::<SslWrapperPacket>();
-        let ipv4 = Ipv4Addr::from_str(vision_cfg.vision_ip.as_str())
-            .expect("Failed to create an ipv4 address with the ip");
-        let mut vision =
-            MulticastUDPReceiver::new(ipv4, port).expect("Failed to create vision receiver");
-
-        let running = Arc::new(AtomicBool::new(true));
-        let running_clone = Arc::clone(&running);
-
-        let handle = thread::spawn(move || {
-            while running_clone.load(Ordering::Relaxed) {
-                if let Some(packet) = vision.receive() {
-                    if let Err(e) = tx_vision.send(packet) {
-                        error!("Error sending Vision packet: {:?}", e);
-                    }
-                }
-            }
-        });
+        let (rx_vision, handle, running) = 
+            threaded_receiver::<SslWrapperPacket>(vision_cfg.vision_ip.as_str(), port);
 
         Self {
             rx_vision,

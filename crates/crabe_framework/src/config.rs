@@ -13,10 +13,18 @@ pub struct CommonConfig {
     /// from the external Game Controller of the Robocup SSL.
     #[arg(long)]
     pub gc: bool,
+
     /// Whether the robot should use the IR sensors.
     #[arg(long)]
     pub no_ir: bool,
     /// Whether sides should be reversed (ONLY USE DURING TESTING).
     #[arg(long)]
     pub change_side: bool,
+
+    /// If true, receives filtered vision data from the tracker implementations
+    /// that gives proper speed values for ball and robots.
+    /// When disabled, velocities and acceleration are computed from vision data.
+    /// Note that this computation does not occur when this argument is set
+    #[arg(long)]
+    pub tracker: bool
 }
