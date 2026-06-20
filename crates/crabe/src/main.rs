@@ -14,11 +14,11 @@ use crabe_io::pipeline::input::{InputConfig, InputPipeline};
 use crabe_io::pipeline::output::{OutputConfig, OutputPipeline};
 use crabe_io::tool::ToolConfig;
 use crabe_io::tool::ToolServer;
-use env_logger::Env;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
+use tracing::{info, info_span};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -131,20 +131,74 @@ pub struct System {
     world: World,
 }
 
+pub enum TimePrecision {
+  Nano,
+  Micro,
+  Milli
+}
+
+
+macro_rules! _time {
+( $fct: expr; $name: expr; $precision: expr) => {{
+    let now = Instant::now();
+    let tmp = $fct;
+    let elapsed = now.elapsed();
+    let (value, prec) = match $precision {
+      TimePrecision::Nano => {(elapsed.as_nanos(), "nanoseconds")}
+      TimePrecision::Micro => {(elapsed.as_micros(), "microseconds")}
+      TimePrecision::Milli => {(elapsed.as_millis(), "milliseconds")}
+    };
+
+    info!("{} time: {:?} {}", $name, value, prec);
+
+    tmp
+  }};
+}
+
+#[macro_export]
+macro_rules! time {
+  ( $name: literal; $expr: expr $(; $precision: expr)?) => {
+    {
+    let now = Instant::now();
+    let result = $expr;
+    let elapsed = now.elapsed();
+
+    #[allow(unused)]
+    let precision = TimePrecision::Milli;
+    $(let precision = $precision;)?
+    let (value, format) = match precision {
+      TimePrecision::Nano => {(elapsed.as_nanos(), "nanoseconds")}
+      TimePrecision::Micro => {(elapsed.as_micros(), "microseconds")}
+      TimePrecision::Milli => {(elapsed.as_millis(), "milliseconds")}
+    };
+
+    info!("{} time: {:?} {}", $name, value, format);
+
+    result
+    }
+  };
+}
+
 impl System {
     pub fn run(&mut self, _refresh_rate: Duration) {
         let mut feedback: FeedbackMap = Default::default();
-
         while self.running.load(Ordering::SeqCst) {
             let timer = Instant::now();
-            let receive_data = self.input_component.step(&mut feedback);
-            self.filter_component.step(receive_data, &mut self.world);
-            let (mut command_map, mut tool_data) = self.decision_component.step(&self.world);
-            self.tool_component
-                .step(&self.world, &mut tool_data, &mut command_map);
-            self.guard_component
-                .step(&self.world, &mut command_map, &mut ToolCommands);
-            feedback = self.output_component.step(command_map, ToolCommands);
+
+            let receive_data = time!("input component"; self.input_component.step(&mut feedback); TimePrecision::Milli);
+
+            time!("filter component"; self.filter_component.step(receive_data, &mut self.world));
+
+            let (mut command_map, mut tool_data) = time!("decision component"; self.decision_component.step(&self.world); TimePrecision::Milli);
+
+            time!("tool component"; self.tool_component
+                .step(&self.world, &mut tool_data, &mut command_map); TimePrecision::Milli);
+
+            time!("guard compoennt"; self.guard_component
+                .step(&self.world, &mut command_map, &mut ToolCommands); TimePrecision::Milli);
+
+            feedback = time!("output component"; self.output_component.step(command_map, ToolCommands); TimePrecision::Milli);
+
             // info!("Execution time : {} μs", &timer.elapsed().as_micros());
             let elapsed = timer.elapsed();
             if elapsed < _refresh_rate {
@@ -167,10 +221,7 @@ impl System {
 
 fn main() {
     let cli = Cli::parse();
-    let env = Env::default()
-        .filter_or("CRABE_LOG_LEVEL", "info")
-        .write_style_or("CRABE_LOG_STYLE", "always");
-    env_logger::init_from_env(env);
+    tracing_subscriber::fmt::init();
 
     let mut system = SystemBuilder::default()
         .world(World::with_config(&cli.common))

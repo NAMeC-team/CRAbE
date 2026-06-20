@@ -1,5 +1,6 @@
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
+use crate::strategy::offensive::Attacker;
 use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
@@ -19,8 +20,13 @@ pub struct Manual {
 impl Manual {
     /// Creates a new `Manual` instance with the desired strategies to test.
     pub fn new() -> Self {
-        Self {
-            strategies: vec![Box::new(Square::new(0))],
+      let mut strategies: Vec<Box<dyn Strategy>> = vec![];
+      for i in 0..6 {
+        strategies.push(Box::new(Square::new(i)));
+      }
+
+      Self {
+        strategies: strategies,
         }
     }
 }
