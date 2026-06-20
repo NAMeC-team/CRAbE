@@ -4,7 +4,7 @@ use crate::league::real::RealConfig;
 use crabe_framework::constant::MAX_ID_ROBOTS;
 use crabe_framework::data::output::{Command, CommandMap, FeedbackMap, Kick};
 
-use crabe_protocol::protobuf::robot_packet::{BaseCommand, Kicker, PcToBase};
+use crabe_protocol::protobuf::robot_packet::{BaseCommand, Kicker, PcToBase, RadioCommand};
 
 use crate::communication::UsbTransceiver;
 use crate::pipeline::output::CommandSenderTask;
@@ -21,8 +21,8 @@ impl Real {
         Self { usb }
     }
 
-    fn prepare_packet(&mut self, commands: impl Iterator<Item = (u8, Command)>) -> PcToBase {
-        let mut packet = PcToBase::default();
+    fn prepare_packet(&mut self, commands: impl Iterator<Item = (u8, Command)>) -> RadioCommand {
+        let mut packet = RadioCommand::default();
         for (id, command) in commands {
             let (kicker_cmd, kick_power) = match command.kick {
                 None => {
@@ -31,20 +31,16 @@ impl Real {
                 Some(Kick::StraightKick { power }) => (Kicker::Flat, power),
                 Some(Kick::ChipKick { power }) => (Kicker::Chip, power),
             };
-
-
-            packet.commands.push(
-                BaseCommand {
-                    robot_id: id as u32,
-                    normal_velocity: command.forward_velocity,
-                    tangential_velocity: command.left_velocity,
-                    angular_velocity: command.angular_velocity,
-                    kick: kicker_cmd.into(),
-                    kick_power,
-                    charge: command.charge,
-                    dribbler: command.dribbler,
-                });
+            packet.robot_id = id as u32;
+            packet.normal_velocity = command.forward_velocity;
+            packet.tangential_velocity = command.left_velocity;
+            packet.angular_velocity = command.angular_velocity;
+            packet.kick = kicker_cmd.into();
+            packet.kick_power = kick_power.into();
+            packet.charge = command.charge;
+            packet.dribbler = command.dribbler;
         }
+
         packet
     }
 }

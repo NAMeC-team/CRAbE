@@ -37,7 +37,7 @@ fn main() {
 
     compile_packet(
         "robot_packet",
-        &["protobuf/robot/base_wrapper.proto"],
+        &["protobuf/robot/base_wrapper.proto", "protobuf/robot/radio_command.proto"],
         &["protobuf/robot"],
     );
 }
