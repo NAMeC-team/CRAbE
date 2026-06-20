@@ -199,13 +199,13 @@ impl System {
 
             feedback = time!("output component"; self.output_component.step(command_map, ToolCommands); TimePrecision::Milli);
 
-            // info!("Execution time : {} μs", &timer.elapsed().as_micros());
+            info!("Execution time : {} μs", &timer.elapsed().as_micros());
             let elapsed = timer.elapsed();
             if elapsed < _refresh_rate {
                 let sleep_time = Duration::from(_refresh_rate - elapsed);
                 thread::sleep(sleep_time);
             }
-            // info!("Actual refresh time : {} μs", &timer.elapsed().as_micros());
+            info!("Actual refresh time : {} μs", &timer.elapsed().as_micros());
         }
     }
 
