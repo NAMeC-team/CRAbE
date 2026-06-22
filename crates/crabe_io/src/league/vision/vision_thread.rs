@@ -6,6 +6,7 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use log::{error, info};
+use serialport::Parity::None;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -60,7 +61,18 @@ impl Vision {
 
 impl ReceiverTask for Vision {
     fn fetch(&mut self, input: &mut InboundData) {
-        input.vision_packet.extend(self.rx_vision.try_iter());
+      let mut packets = self.rx_vision.try_iter().collect::<Vec<SslWrapperPacket>>();
+
+      if packets.is_empty() {
+        info!("packet list was empty");
+        let Ok(value) = self.rx_vision.recv() else {
+          error!("Vision has disconnected while waiting for recv"); return;
+        };
+
+        packets.push(value);
+      }
+
+        input.vision_packet.append(&mut packets);
     }
 
     fn close(&mut self) {
