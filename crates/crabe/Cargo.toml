@@ -9,8 +9,6 @@ default-run="crabe"
 
 [dependencies]
 clap = { version = "4.4.7", features = ["derive"] }
-tracing = "0.1.44"
-tracing-subscriber = "0.3.23"
 ctrlc = "3.4.1"
 
 crabe_framework = { path = "../crabe_framework" }
@@ -19,3 +17,5 @@ crabe_io = { path = "../crabe_io" }
 crabe_filter = { path = "../crabe_filter" }
 crabe_decision = { path = "../crabe_decision" }
 crabe_guard = { path = "../crabe_guard" }
+log = "0.4.32"
+env_logger = "0.11.10"

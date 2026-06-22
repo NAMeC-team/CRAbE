@@ -18,7 +18,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
-use tracing::{info, info_span};
+use log::{info};
+use env_logger::Env;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -221,7 +222,10 @@ impl System {
 
 fn main() {
     let cli = Cli::parse();
-    tracing_subscriber::fmt::init();
+    let env = Env::default()
+        .filter_or("CRABE_LOG_LEVEL", "info")
+        .write_style_or("CRABE_LOG_STYLE", "always");
+    env_logger::init_from_env(env);
 
     let mut system = SystemBuilder::default()
         .world(World::with_config(&cli.common))
