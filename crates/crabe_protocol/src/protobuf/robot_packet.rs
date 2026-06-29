@@ -82,3 +82,29 @@ pub struct BaseToPc {
     #[prost(message, repeated, tag = "1")]
     pub feedbacks: ::prost::alloc::vec::Vec<BaseFeedback>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct RadioCommand {
+    /// The unique ID of the robot, as identified by SSL-Vision.
+    #[prost(uint32, tag = "1")]
+    pub robot_id: u32,
+    /// Desired forward drive velocity in meters / second.
+    #[prost(float, tag = "2")]
+    pub normal_velocity: f32,
+    /// Desired sideways left drive velocity in meters / second.
+    #[prost(float, tag = "3")]
+    pub tangential_velocity: f32,
+    /// Desired counter-clockwise angular velocity in radians / second.
+    #[prost(float, tag = "4")]
+    pub angular_velocity: f32,
+    #[prost(enumeration = "Kicker", tag = "5")]
+    pub kick: i32,
+    #[prost(float, tag = "6")]
+    pub kick_power: f32,
+    #[prost(bool, tag = "8")]
+    pub charge: bool,
+    #[prost(float, tag = "9")]
+    pub dribbler: f32,
+    #[prost(bool, tag = "10")]
+    pub dev: bool,
+}
