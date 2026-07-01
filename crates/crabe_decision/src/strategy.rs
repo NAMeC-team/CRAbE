@@ -1,6 +1,7 @@
 use crate::action::ActionWrapper;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
+use log::error;
 
 /// The `testing` module contains different strategies used for testing purposes. These strategies
 /// are not meant to be used in an actual game but rather to test specific functionalities or to
@@ -15,9 +16,17 @@ pub mod basics;
 /// A strategy receives information about the state of the world and its own state, and issues commands to the robot
 /// through an `ActionWrapper` instance. A strategy can run for multiple time steps, until it decides to
 /// terminate by returning `true` from the `step` method.
+
+
 pub trait Strategy {
     /// Name of the strategy, that we use as simple reference
     fn name(&self) -> &'static str;
+
+    fn robots(&self) -> Vec<u8> {
+        error!("Call to unimplemented robots function in strategy {:?}", self.name());
+        vec![]
+    }
+
     /// Executes one step of the strategy, updating the state of the robot and issuing commands
     /// to it through the given `ActionWrapper`.
     ///

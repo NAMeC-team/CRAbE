@@ -40,7 +40,7 @@ impl CardException{
 
     fn robot_at_slot(&self, slot: &Point2<f64>, world: &World) -> Option<u8>{
         for (id, robot) in &world.allies_bot {
-            if robot.distance(slot) < self.slot_size {
+            if robot.distance(slot) < 0.09 {
                 return Some(*id)
             }
         }
@@ -57,7 +57,8 @@ impl CardException{
     }
 
     fn compute_free_substitute_slot(&self, world: &World, current_robot: u8) -> Option<Point2<f64>> {
-        for slot_id in 0..self.slots_per_zone {
+        info!("{:?}", self.slots_per_zone);
+        for slot_id in 0..self.slots_per_zone * 2 {
             let Some(slot) = self.slot_from_id(slot_id) else {
                 info!("Incorrect slot found when computing free slot");
                 continue;
