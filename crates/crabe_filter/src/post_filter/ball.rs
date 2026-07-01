@@ -192,9 +192,8 @@ impl PostFilter for BallFilter {
                 (Some(pos), Some(instant)) => {
                     // it has been more than x seconds since we have seen the ball, so it is not on field anymore
                     if instant.elapsed() > Duration::from_secs(OLD_BALL_POS_DURATION) {
-                        warn!("Ball has disappeared from vision, considering it is not on field anymore");
+                        println!("Ball has disappeared from vision, considering it is not on field anymore");
                         self.vanish_timer = None;
-                        world.ball = None;
                     }
                     // Otherwise, maybe robots are hiding the ball. Suppose that it's still at the same location
                     else if let Some(w_ball) = &mut world.ball {
