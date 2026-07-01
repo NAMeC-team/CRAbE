@@ -186,7 +186,7 @@ impl PostFilter for BallFilter {
             // ball disappeared from vision, consider it is still at its last location
             match (self.last_ball_pos, self.vanish_timer) {
                 // No ball ever registered on field, so there is no ball
-                (None, _) => { world.ball = None }
+                (None, _) => { world.ball = Ball::default(); }
                 
                 // Ball had disappeared, check if we use last saved position or not
                 (Some(pos), Some(instant)) => {
