@@ -1,4 +1,6 @@
 
+use std::thread::current;
+
 use crabe_framework::data::{geometry::Field, referee::TeamInfo, world::{Robot, World}};
 use log::info;
 use nalgebra::{Point2, Vector2};
@@ -54,15 +56,17 @@ impl CardException{
         }
     }
 
-    fn compute_free_substitute_slot(&self, world: &World) -> Option<Point2<f64>> {
+    fn compute_free_substitute_slot(&self, world: &World, current_robot: u8) -> Option<Point2<f64>> {
         for slot_id in 0..self.slots_per_zone {
             let Some(slot) = self.slot_from_id(slot_id) else {
                 info!("Incorrect slot found when computing free slot");
                 continue;
             };
 
-            if let Some(_) = self.robot_at_slot(&slot, world) {
-                continue;
+            if let Some(id) = self.robot_at_slot(&slot, world) {
+                if current_robot != id {
+                    continue;
+                }
             }
 
             return Some(slot);
@@ -72,7 +76,7 @@ impl CardException{
     }
 
     pub fn go_to_shadow_realm(&mut self, action_wrapper: &mut crate::action::ActionWrapper, world: &World, id: u8) {
-        let Some(slot) = self.compute_free_substitute_slot(world) else {
+        let Some(slot) = self.compute_free_substitute_slot(world, id) else {
             info!("No empty slot found !!");
             return;
         };
