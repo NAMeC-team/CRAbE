@@ -113,10 +113,10 @@ impl Exception for CardException {
                         return;
                     };
 
-                    self.go_to_shadow_realm(action_wrapper, world, id);
                     id
                 },
             };
+            self.go_to_shadow_realm(action_wrapper, world, robot_id);
 
             substituted.push(robot_id);
         }
