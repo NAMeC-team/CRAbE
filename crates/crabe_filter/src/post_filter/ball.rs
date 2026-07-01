@@ -22,12 +22,6 @@ impl Default for BallFilter {
     }
 }
 
-impl BallFilter {
-    fn use_last_saved_ballpos(&mut self, world: &mut World) {
-        
-    }
-}
-
 const MIN_ACCELERATION_TO_SWITCH_POSSESSION: f64 = 1.;
 const MIN_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.1;
 const MAX_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.3;
