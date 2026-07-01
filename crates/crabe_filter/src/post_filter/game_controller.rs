@@ -271,6 +271,9 @@ impl PostFilter for GameControllerPostFilter {
                 println!("{:?} -> {:?}) (cmd: {:?})", prev_state, &new_state, &referee.command);
                 world.data.ref_orders.state = new_state;
             }
+
+            world.data.ally.update_info(&referee.ally);
+            world.data.enemy.update_info(&referee.enemy);
         }
     }
 }
