@@ -1,7 +1,7 @@
 use std::time::Instant;
 use log::{error, info, warn};
 use nalgebra::{Point2, Vector2};
-use crabe_framework::data::output::CommandMap;
+use crabe_framework::data::output::{Command, CommandMap};
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use serde::{Deserialize, Serialize};
@@ -43,23 +43,33 @@ impl PyRoulxsGuard {
     }
 }
 
+fn avoid_allies_and_enemies(world: &World, obstacles: &mut Vec<Point2<f64>>, id: u8) {
+    let mut obstacles: Vec<Point2<f64>> = world.allies_bot.iter()
+        .filter(|(other_id, _)| id != **other_id)
+        .map(|(_, r)| r.pose.position)
+        .collect();
+    let enemy_poses: Vec<Point2<f64>> = world.enemies_bot.iter().map(|(_, r)| r.pose.position).collect();
+    obstacles.extend(enemy_poses);
+}
+
+fn avoid_ball(world: &World, obstacles: &mut Vec<Point2<f64>>, cmd: &Command) {
+    if let Some(ball) = &world.ball {
+        if cmd.avoid_ball {
+            obstacles.push(ball.position_2d())
+        }
+    }
+}
+
 impl Guard for PyRoulxsGuard {
     fn guard(&mut self, world: &World, commands: &mut CommandMap, _tools_commands: &mut ToolCommands) {
         commands.iter_mut().for_each(|(id, cmd)| {
             // info!("Robot {:?} | Preparing data to send", id);
-            let rob_info = world.allies_bot.get(&id).unwrap(); // safe unwrap here
-            let mut obstacles: Vec<Point2<f64>> = world.allies_bot.iter()
-                .filter(|(other_id, _)| *id != **other_id)
-                .map(|(_, r)| r.pose.position)
-                .collect();
-            let enemy_poses: Vec<Point2<f64>> = world.enemies_bot.iter().map(|(_, r)| r.pose.position).collect();
-            obstacles.extend(enemy_poses);
 
-            if let Some(ball) = &world.ball {
-                if cmd.avoid_ball {
-                    obstacles.push(ball.position_2d())
-                }
-            }
+            let mut obstacles: Vec<Point2<f64>> = vec![];
+            avoid_allies_and_enemies(world, &mut obstacles, *id);
+            avoid_ball(&world, &mut obstacles, &cmd);
+            
+            let rob_info = world.allies_bot.get(&id).unwrap(); // safe unwrap here
             let req = SolverRequest {
                 obstacles,
                 rob_pos: rob_info.pose.position,
