@@ -40,26 +40,34 @@ impl StateBasedManager {
             RunningState::FreeKick(team_color) => info!("FreeKick todo"),
             RunningState::Run =>  {
                 let mut robots_left = 6 - self.benched.len();
+                let mut chosen_bots = vec![];
 
                 if !self.benched.contains(&KEEPER_ID) {
                     self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
                     robots_left -= 1;
+                    chosen_bots.push(KEEPER_ID);
                 }
 
                 if !self.benched.contains(&ATTACKER_ID) {
                     self.strategies.push(Box::new(Attacker::new(ATTACKER_ID)));
                     robots_left -= 1;
+                    chosen_bots.push(ATTACKER_ID);
                 }
 
                 if (robots_left > 0) {
                     let mut wall_ids: Vec<u8> = vec![];
                     let mut id: u8 = 1;
                     while robots_left > 0 {
-                        if !self.benched.contains(&id) {
+                        //id not in chosen bots or benched
+                        if !(self.benched.contains(&id) || chosen_bots.contains(&id)){
                             robots_left -= 1;
                             wall_ids.push(id);
                         }
 
+                        if id > 6 {
+                            info!("Maximum id achieved in running state");
+                            break;
+                        }
                         id += 1;
                     }
 

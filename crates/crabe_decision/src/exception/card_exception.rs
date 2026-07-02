@@ -110,7 +110,7 @@ impl Exception for CardException {
                 None => {
                     let mut res = None;
                     //get free robot
-                    for robot in 1..7 {
+                    for robot in (1..=6).rev() {
                         if !(substituted.contains(&robot)) { res = Some(robot); break; }
                     }
 
