@@ -22,4 +22,8 @@ pub mod pipeline;
 /// Strategies are behaviors that one or multiple robots can adopt in order to achieve a certain goal.
 pub mod strategy;
 
+/// The exception module can be called by managers before behaviour handling to generate a list of robots to exclude from
+/// the behaviours, such robots may be excluded due to penalties such as yellow cards handling
+pub mod exception;
+
 pub mod utils;
