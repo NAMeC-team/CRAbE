@@ -10,7 +10,7 @@ use crate::strategy::offensive::Attacker;
 use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
 use crate::utils::{ATTACKER_ID, KEEPER_ID};
-use crate::strategy::rule_actions::{Halt,PrepareStart,PrepareKickOff,StrategyPenalty};
+use crate::strategy::rule_actions::{Halt,PrepareStart,PrepareKickOff,PreparePenalty, ExcecutePenalty};
 use crate::strategy::formations::{MoveAwayFromBall, };
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{
@@ -84,7 +84,7 @@ impl StateBasedManager {
             },
             RunningState::Penalty(team_color) => {info!("Penalty");
                 if team_color == world.team_color {
-                    self.strategies.push(Box::new(StrategyPenalty::new(KEEPER_ID, true)));
+                    self.strategies.push(Box::new(ExcecutePenalty::new(KEEPER_ID)));
                 }else {
                     let mut ids = vec![];
                     world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
@@ -126,7 +126,7 @@ impl StateBasedManager {
                 self.strategies.push(Box::new(PrepareKickOff::new(world.allies_bot.iter().map(|a| *a.0).collect(), team_color)));},
             StoppedState::PreparePenalty(team_color) => {
             if (team_color == world.team_color){
-                self.strategies.push(Box::new(StrategyPenalty::new(ATTACKER_ID, false)));
+                self.strategies.push(Box::new(PreparePenalty::new(ATTACKER_ID)));
             }else {
                 self.strategies.push(Box::new(MoveAwayFromBall::new(world.allies_bot.iter().map(|a| *a.0).collect())))
             }

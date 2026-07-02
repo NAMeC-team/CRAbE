@@ -288,9 +288,9 @@ mod tests {
     use crabe_framework::data::referee::Stage;
     use crabe_framework::data::world::TeamColor;
     use super::RC as RC;
-    use super::HaltedState::*;
-    use super::StoppedState::*;
-    use super::RunningState::*;
+    //use super::HaltedState::*;
+    //use super::StoppedState::*;
+    //use super::RunningState::*;
     use super::*;
 
     fn all_states() -> Vec<GameState> {
