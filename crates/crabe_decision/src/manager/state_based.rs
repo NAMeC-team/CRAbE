@@ -10,15 +10,14 @@ use crabe_framework::data::world::game_state::{
 use crabe_framework::data::world::{self, World};
 
 /// Manager handling game states, unnamed atm
-pub struct UnnamedManager {
+pub struct StateBasedManager {
     strategies: HashMap<Gam, Vec<Box<dyn Strategy>>>,
 }
 
-impl UnnamedManager {
-    /// Creates a new `Manual` instance with the desired strategies to test.
+impl StateBasedManager {
     pub fn new() -> Self {
         Self {
-            strategies: vec![Box::new(Square::new(0))],
+            strategies: vec![],
         }
     }
 
@@ -53,7 +52,7 @@ impl UnnamedManager {
     }
 }
 
-impl Manager for UnnamedManager {
+impl Manager for StateBasedManager {
     /// Executes the list of strategies on the given `World` data, `ToolData`, and `ActionWrapper`.
     fn step(
         &mut self,
