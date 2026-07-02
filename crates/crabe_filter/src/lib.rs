@@ -30,15 +30,34 @@ use post_filter::field_mask::FieldMaskFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {
+    #[arg(long, default_value_t = 0)]
+    field_mask: FieldMask,
+
     #[arg(long)]
-    field_mask: Option<FieldMask>
+    field_kind: Option<FieldKind>
 }
 
+type FieldMask = u8;
+
 #[derive(Debug, ValueEnum, Clone)]
-pub enum FieldMask {
-    Positive,
-    Negative
+pub enum FieldKind {
+    Half,
+    Quarter
 }
+
+impl ToString for FieldKind {
+    fn to_string(&self) -> String {
+        let str = match self {
+            Full => "Full",
+            FieldKind::Half => "Half",
+            FieldKind::Quarter => "Quarter",
+        };
+
+        str.to_string()
+    }
+}
+
+
 pub struct FilterPipeline {
     pub pre_filters: Vec<Box<dyn PreFilter>>,
     pub filters: Vec<Box<dyn Filter>>,
@@ -67,9 +86,9 @@ impl FilterPipeline {
             post_filters.push(Box::new(GameControllerPostFilter::default()));
         }
 
-        if let Some(field_mask) = config.field_mask {
-            post_filters.push(Box::new(FieldMaskFilter::new(field_mask)))
-        }
+        if let Some(field_kind) = config.field_kind {
+            post_filters.push(Box::new(FieldMaskFilter::new(config.field_mask, field_kind)));
+        };
 
         if common_config.no_ir {
             post_filters.push(Box::new(RobotHasBallFilter));
