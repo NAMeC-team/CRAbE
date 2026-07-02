@@ -274,6 +274,10 @@ impl PostFilter for GameControllerPostFilter {
 
             world.data.ally.update_info(&referee.ally);
             world.data.enemy.update_info(&referee.enemy);
+
+            if let Some(positive_half) = referee.positive_half {
+                world.data.positive_half = positive_half;
+            }
         }
     }
 }
