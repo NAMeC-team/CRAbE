@@ -43,25 +43,25 @@ impl Strategy for ExcecutePenalty {
         action_wrapper.clear(self.id);
         action_wrapper.clear_all();
 
-        
+
         // if self.shoot_state == 0 {
         //     let stage = world.data.stage_info.stage.clone();
-            
+
         //     if matches!(stage, Stage::PenaltyShootout) {
         //        self.autorised_shoot = true;
         //     }
-            
+
         //     if self.autorised_shoot {
         //         self.shoot_state = 3;
-        //     }   
+        //     }
         // }
-    
+
         let ball = if let Some(ball) = &world.ball {
             ball
         } else {
             return false;
         };
-        
+
         let chosed = if let Some(chosed) = world.allies_bot.get(&self.id) {
             chosed
         } else {
@@ -70,12 +70,12 @@ impl Strategy for ExcecutePenalty {
 
         let ball_position = ball.position_2d();
         let orientation = vectors::angle_to_point(chosed.pose.position,Point2::new(ball_position.x, ball_position.y + self.decide_direction));
-                    
+
         let mut delta_x = chosed.pose.position.x - ball.position.x;
         let mut delta_y = chosed.pose.position.y - ball.position.y;
 
         if self.shoot_state == 0 {
- 
+
             action_wrapper.push(
                 self.id,
                 MoveTo::new_all_params(ball.position_2d(), orientation, 0., false, None, true, true),
@@ -91,15 +91,15 @@ impl Strategy for ExcecutePenalty {
 
             if delta_x < 0.11 && delta_y < 0.11{
                 if (chosed.pose.position - ball_position).norm() < 0.01 + world.geometry.robot_radius + world.geometry.ball_radius {
-                    
+
                     if chosed.pose.position.x > 0.0 {
-                        self.shoot_state = 1;                                     
+                        self.shoot_state = 1;
                     }
                 }
             }
 
         }
-        
+
         if self.shoot_state == 1 {
 
             let ball_position = ball.position_2d();
@@ -109,11 +109,11 @@ impl Strategy for ExcecutePenalty {
             let target = trajectory.closest_point_on_segment(&chosed.pose.position);
             let mut moveto = MoveToBuilder::new();
             moveto.set_target(target - to_kicker_pos).set_orientation(angle_to_point(chosed.pose.position, Point2::new(4.5, self.decide_direction))).charging();
-            
-            action_wrapper.push(self.id, 
-                moveto.set_kick(Kick::StraightKick { power: 5. }).build(),
+
+            action_wrapper.push(self.id,
+                moveto.set_kick(Some(Kick::StraightKick { power: 5. })).build(),
             );
-            
+
         }
 
         false
