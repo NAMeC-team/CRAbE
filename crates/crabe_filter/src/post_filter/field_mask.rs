@@ -4,7 +4,6 @@ use crabe_framework::data::geometry::Field;
 use crabe_framework::data::world::{Ball, RobotMap, World};
 use log::{error, info};
 use nalgebra::Point2;
-use crate::post_filter::field_mask::FieldSide::Negative;
 use crate::{FieldKind, FieldMask};
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
