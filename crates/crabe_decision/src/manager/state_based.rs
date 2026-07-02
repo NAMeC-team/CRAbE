@@ -98,14 +98,8 @@ impl StateBasedManager {
                 }
 
             },
-            RunningState::FreeKick(team_color) =>
-            if team_color == world.team_color {
+            RunningState::FreeKick(team_color) => {
                 self.run(world, tools_data, action_wrapper);
-            } else {
-                let mut ids = vec![];
-                world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
-                self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
-                // self.strategies.push(Box::new(DefenseWall::new(ids)));
             },
             RunningState::Run =>  { self.run(world, tools_data, action_wrapper); },
             RunningState::CornerKick(_) => {self.run(world, tools_data, action_wrapper); },
