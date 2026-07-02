@@ -6,7 +6,6 @@ use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use serde::{Deserialize, Serialize};
 use crate::pipeline::Guard;
-use crate::rules::speed_to_rob_frame;
 use serde_json;
 
 pub struct PyRoulxsGuard {
@@ -84,10 +83,8 @@ impl Guard for PyRoulxsGuard {
                         // trust me, safe unwrap
                         // you send a cmd so the robot exists lol
 
-                        let speed_robot = speed_to_rob_frame(solver_resp.optimal_v, rob_info);
-                        // let speed_robot = speed_to_rob_frame(Vector2::new(cmd.forward_velocity as f64, cmd.left_velocity as f64), rob_info);
-                        cmd.forward_velocity = speed_robot.x as f32;
-                        cmd.left_velocity = speed_robot.y as f32;
+                        cmd.forward_velocity = solver_resp.optimal_v.x as f32;
+                        cmd.left_velocity = solver_resp.optimal_v.y as f32;
 
                         // info!("Robot {:?} | Time : {:?} | Parsed solver response and updated speed", id, Instant::now() - start);
                     }
