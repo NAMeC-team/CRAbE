@@ -14,6 +14,7 @@ use crabe_framework::data::world::game_state::{
     GameState, HaltedState, RunningState, StoppedState,
 };
 use crabe_framework::data::world::{self, World};
+use log::info;
 
 /// Manager handling game states, unnamed atm
 pub struct StateBasedManager {
@@ -33,21 +34,18 @@ impl StateBasedManager {
 
     fn manage_running(&mut self, state: RunningState, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
-            RunningState::KickOff(team_color) => todo!(),
-            RunningState::Penalty(team_color) => todo!(),
-            RunningState::FreeKick(team_color) => todo!(),
+            RunningState::KickOff(team_color) => info!("Kickoff todo"),
+            RunningState::Penalty(team_color) => info!("Penalty todo"),
+            RunningState::FreeKick(team_color) => info!("FreeKick todo"),
             RunningState::Run =>  {
-                self.exceptions.iter_mut().for_each(|x| x.step(world, tools_data, action_wrapper, &mut self.benched));
-                let mut strategies: Vec<Box<dyn Strategy>> = vec![];
-
                 let robots_left = 6 - self.benched.len();
 
                 if robots_left > 0 {
-                    strategies.push(Box::new(GoalKeeper::new(0)));
+                    self.strategies.push(Box::new(Attacker::new(6)));
                 }
 
                 if robots_left > 1 {
-                    strategies.push(Box::new(Attacker::new(1)));
+                    self.strategies.push(Box::new(GoalKeeper::new(5)));
                 }
 
                 if robots_left > 2 {
@@ -55,37 +53,30 @@ impl StateBasedManager {
                     for id in 2..(robots_left + 1) {
                         wall_ids.push(id as u8);
                     }
-                    strategies.push(Box::new(DefenseWall::new(wall_ids)));
+                    self.strategies.push(Box::new(DefenseWall::new(wall_ids)));
                 }
-
-                for free_robot in 0..(7 - self.benched.len()) {
-                    let s = &mut self.strategies[free_robot];
-                    if s.robots().iter().all(|r| !self.benched.contains(r))  {
-                        s.step(world, tools_data, action_wrapper);
-                    }
-                };
             },
-            RunningState::CornerKick(team_color) => todo!(),
-            RunningState::GoalKick(team_color) => todo!(),
+            RunningState::CornerKick(team_color) => info!("CornerKick todo"),
+            RunningState::GoalKick(team_color) => info!("GoalKick todo"),
         }
     }
 
     fn manage_halted(&mut self, state: HaltedState, world: &World, tool_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
-            HaltedState::Halt => todo!(),
-            HaltedState::Timeout(team_color) => todo!(),
+            HaltedState::Halt => info!("Halt todo"),
+            HaltedState::Timeout(team_color) => info!("Timeout todo"),
         }
     }
 
 
     fn manage_stopped(&mut self, state: StoppedState, world: &World, tool_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
-            StoppedState::PrepareKickoff(team_color) => todo!(),
-            StoppedState::PreparePenalty(team_color) => todo!(),
-            StoppedState::BallPlacement(team_color) => todo!(),
-            StoppedState::Stop => todo!(),
-            StoppedState::PrepareCornerKick(team_color) => todo!(),
-            StoppedState::PrepareGoalKick(team_color) => todo!(),
+            StoppedState::PrepareKickoff(team_color) => info!("PrepareKickoff todo"),
+            StoppedState::PreparePenalty(team_color) => info!("PreparePenalty todo"),
+            StoppedState::BallPlacement(team_color) => info!("BallPlacement todo"),
+            StoppedState::Stop => info!("Stop todo"),
+            StoppedState::PrepareCornerKick(team_color) => info!("PrepareCornerKick todo"),
+            StoppedState::PrepareGoalKick(team_color) => info!("PrepareGoalKick todo"),
         }
     }
 }
@@ -98,10 +89,16 @@ impl Manager for StateBasedManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
+        self.strategies.clear();
+        self.exceptions.iter_mut().for_each(|x| x.step(world, tools_data, action_wrapper, &mut self.benched));
         match world.data.ref_orders.state {
             GameState::Halted(state) => self.manage_halted(state, world, tools_data, action_wrapper),
             GameState::Stopped(state) => self.manage_stopped(state, world, tools_data, action_wrapper),
             GameState::Running(state) => self.manage_running(state, world, tools_data, action_wrapper),
         }
+
+        for s in &mut self.strategies {
+            s.step(world, tools_data, action_wrapper);
+        };
     }
 }

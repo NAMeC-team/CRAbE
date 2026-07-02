@@ -57,7 +57,6 @@ impl CardException{
     }
 
     fn compute_free_substitute_slot(&self, world: &World, current_robot: u8) -> Option<Point2<f64>> {
-        info!("{:?}", self.slots_per_zone);
         for slot_id in 0..self.slots_per_zone * 2 {
             let Some(slot) = self.slot_from_id(slot_id) else {
                 info!("Incorrect slot found when computing free slot");
@@ -109,8 +108,8 @@ impl Exception for CardException {
                 Some(id) => *id,
                 None => {
                     let mut res = None;
-                    for robot in 0..7 {
-                        if !(substituted.contains(&robot) || robot == KEEPER_ID) { res = Some(robot); break; }
+                    for robot in 1..7 {
+                        if !(substituted.contains(&robot)) { res = Some(robot); break; }
                     }
 
                     let Some(id) = res else {
