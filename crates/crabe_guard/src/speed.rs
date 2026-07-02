@@ -4,7 +4,7 @@ use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
 use crabe_framework::data::world::World;
 use nalgebra::Vector2;
-use log::warn;
+use log::{info, warn};
 use crabe_framework::data::world::game_state::GameState;
 
 pub struct SpeedGuard {
@@ -81,14 +81,15 @@ impl Guard for SpeedGuard {
 
             if command.angular_velocity.is_nan() {
                 warn!("An attempt was made to send NaN instead of a valid value in angular_velocity. It has been adjusted to 0.");
+                command.angular_velocity = 0.;
+
+            } else if command.angular_velocity > self.max_angular || command.angular_velocity < -self.max_angular {
+                warn!("Angular speed out of range. It has been clamped from {:?} to {:?}", -self.max_angular, self.max_angular);
                 command.angular_velocity = command
                     .angular_velocity
                     .clamp(-self.max_angular, self.max_angular);
-
-                if command.angular_velocity != 0.0 && command.angular_velocity.abs() < self.min_angular {
-                    command.angular_velocity = self.min_angular * command.angular_velocity.signum();
-                }
-
+            } else if command.angular_velocity != 0.0 && command.angular_velocity.abs() < self.min_angular {
+                command.angular_velocity = self.min_angular * command.angular_velocity.signum();
             }
 
 
