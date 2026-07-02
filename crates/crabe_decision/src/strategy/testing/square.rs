@@ -56,32 +56,24 @@ impl Strategy for Square {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) -> bool {
-        if let Some(ball) = &world.ball {
-            if let Some(passer_info) = world.allies_bot.get(&self.id) {
-                if let Some(recv_info) = world.allies_bot.get(&1) {
-                    // passer
-                    let behind_ball_position = ball.position_2d() + (ball.position_2d() - recv_info.pose.position).normalize() * 0.2;
-                    let cmd = behind_ball_position - passer_info.pose.position;
-                    action_wrapper.push(
-                        self.id,
-                        RawOrder::new(Command {
-                            forward_velocity: cmd.x as f32,
-                            left_velocity: cmd.y as f32,
-                            angular_velocity: 0_f32,
-                            ..Command::default()
-                        }),
-                    );
-                    
-                    // receiver
-                    if let Some(ball) = &world.ball {
-                        action_wrapper.push(
-                            1,
-                            intercept(recv_info, ball)
-                        )
-                    }
-                }
-            }
-        }
+        let mut moveto1 = MoveToBuilder::new();
+        moveto1.set_x(-1.0).set_y(1.0).set_orientation(-PI / 4.);
+        action_wrapper.push(
+            self.id,
+            moveto1.build(),
+        );
+        action_wrapper.push(
+            self.id,
+            MoveToBuilder::new().set_x(1.0).set_y(1.0).set_orientation(-3.* PI / 4.).build(),
+        );
+        action_wrapper.push(
+            self.id,
+            MoveToBuilder::new().set_x(1.0).set_y(-1.0).set_orientation(3.* PI / 4.).build(),
+        );
+        action_wrapper.push(
+            self.id,
+            MoveToBuilder::new().set_x(-1.0).set_y(-1.0).set_orientation(PI / 4.).build(),
+        );
         false
     }
 }
