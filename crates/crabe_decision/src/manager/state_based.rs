@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use std::vec;
 // use clap::builder::styling::Color;
 // use crate::action::state::State::Running;
@@ -40,13 +41,13 @@ impl StateBasedManager {
         let mut robots_left = world.allies_bot.iter().count() - self.benched.len();
         let mut chosen_bots = vec![];
 
-        if !self.benched.contains(&ATTACKER_ID) {
+        if !self.benched.contains(&ATTACKER_ID) && robots_left > 0 {
             self.strategies.push(Box::new(Attacker::new(ATTACKER_ID)));
             robots_left -= 1;
             chosen_bots.push(ATTACKER_ID);
         }
 
-        if !self.benched.contains(&KEEPER_ID) {
+        if !self.benched.contains(&KEEPER_ID) && robots_left > 0 {
             self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
             robots_left -= 1;
             chosen_bots.push(KEEPER_ID);
@@ -166,7 +167,7 @@ impl Manager for StateBasedManager {
         }
 
         for s in &mut self.strategies {
-            s.step(world, tools_data, action_wrapper);
+          s.step(world, tools_data, action_wrapper);
         };
     }
 }
