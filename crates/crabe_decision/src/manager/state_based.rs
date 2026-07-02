@@ -1,13 +1,13 @@
 use std::vec;
-use clap::builder::styling::Color;
-use crate::action::state::State::Running;
+// use clap::builder::styling::Color;
+// use crate::action::state::State::Running;
 use crate::action::ActionWrapper;
 use crate::exception::Exception;
 use crate::exception::card_exception::CardException;
 use crate::manager::Manager;
 use crate::strategy::defensive::{DefenseWall, GoalKeeper};
 use crate::strategy::offensive::Attacker;
-use crate::strategy::testing::Square;
+// use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
 use crate::utils::{ATTACKER_ID, KEEPER_ID};
 use crate::strategy::rule_actions::{Halt,PrepareStart,PrepareKickOff,PreparePenalty, ExcecutePenalty};

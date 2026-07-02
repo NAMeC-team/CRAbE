@@ -23,7 +23,7 @@ pub struct ExcecutePenalty {
 impl ExcecutePenalty {
     /// Creates a new StrategyPenalty instance with the desired robot id.
     pub fn new(id: u8) -> Self {
-        Self { id, decide_direction: rand::rng().random_range(-0.01..0.01), shoot_state: 0 }
+        Self { id, decide_direction: rand::rng().random_range(-0.3..0.3), shoot_state: 0 }
 
     }
 }
