@@ -1,7 +1,8 @@
 use std::vec;
 use clap::builder::styling::Color;
+use crabe_protocol::protobuf::game_controller_packet::game_event::Type::Goal;
 use crate::action::state::State::Running;
-use crate::action::ActionWrapper;
+use crate::action::{self, ActionWrapper};
 use crate::exception::Exception;
 use crate::exception::card_exception::CardException;
 use crate::manager::Manager;
@@ -79,7 +80,10 @@ impl StateBasedManager {
                 if team_color == world.team_color {
                     self.run(world, tools_data, action_wrapper);
                 } else {
-                    self.strategies.push(Box::new(PrepareKickOff::new(world.allies_bot.iter().map(|a| *a.0).collect(), team_color)));
+                    let mut ids = vec![];
+                    world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
+                    self.strategies.push(Box::new(DefenseWall::new(ids)));
+                    self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
                 }
             },
             RunningState::Penalty(team_color) => {info!("Penalty");
@@ -97,45 +101,49 @@ impl StateBasedManager {
             RunningState::FreeKick(team_color) =>
             if team_color == world.team_color {
                 self.run(world, tools_data, action_wrapper);
-            }else{
-                self.strategies.push(Box::new(PrepareKickOff::new(vec![], world.team_color)));
+            } else {
+                let mut ids = vec![];
+                world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
+                self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
+                self.strategies.push(Box::new(DefenseWall::new(ids)));
             },
-            RunningState::Run =>  {
-                info!("Run");
-                self.run(world, tools_data, action_wrapper);
-            },
-            RunningState::CornerKick(team_color) => info!("CornerKick todo"),
-            RunningState::GoalKick(team_color) => info!("GoalKick todo"),
+            RunningState::Run =>  { self.run(world, tools_data, action_wrapper); },
+            RunningState::CornerKick(_) => {self.run(world, tools_data, action_wrapper); },
+            RunningState::GoalKick(_) => { self.run(world, tools_data, action_wrapper); },
         }
     }
 
     fn manage_halted(&mut self, state: HaltedState, world: &World, tool_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
 
-            HaltedState::Halt => { info!("Halt");
-                                    self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
-            HaltedState::Timeout(team_color) => info!("Timeout todo"),
+            HaltedState::Halt => { self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
+            HaltedState::Timeout(team_color) => { self.strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect()))); },
         }
     }
 
 
-    fn manage_stopped(&mut self, state: StoppedState, world: &World, tool_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
+    fn manage_stopped(&mut self, state: StoppedState, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
 
-            StoppedState::PrepareKickoff(team_color) => { info!("PrepareKickoff");
-                self.strategies.push(Box::new(PrepareKickOff::new(world.allies_bot.iter().map(|a| *a.0).collect(), team_color)));},
+            StoppedState::PrepareKickoff(team_color) => { self.strategies.push(Box::new(PrepareKickOff::new(world.allies_bot.iter().map(|a| *a.0).collect(), team_color)));},
             StoppedState::PreparePenalty(team_color) => {
-            if (team_color == world.team_color){
+            if team_color == world.team_color {
                 self.strategies.push(Box::new(StrategyPenalty::new(ATTACKER_ID, false)));
             }else {
                 self.strategies.push(Box::new(MoveAwayFromBall::new(world.allies_bot.iter().map(|a| *a.0).collect())))
             }
             },
-            StoppedState::BallPlacement(team_color) => {info!("BallPlacement");
-                self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
-            StoppedState::Stop => {info!("Stop todo");
-            self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
-            StoppedState::PrepareCornerKick(team_color) => info!("PrepareCornerKick todo"),
+            StoppedState::BallPlacement(team_color) => { self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect()))); },
+            StoppedState::Stop => {self.strategies.push(Box::new(MoveAwayFromBall::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
+            StoppedState::PrepareCornerKick(team_color) => if team_color == world.team_color {
+                self.run(world, tools_data, action_wrapper);
+            } else {
+                let mut ids = vec![];
+                world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
+                self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
+                self.strategies.push(Box::new(MoveAwayFromBall::new(ids)));
+            }
+            ,
             StoppedState::PrepareGoalKick(team_color) => info!("PrepareGoalKick todo"),
         }
     }
