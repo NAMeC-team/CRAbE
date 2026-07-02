@@ -157,6 +157,7 @@ impl Manager for StateBasedManager {
         tools_data: &mut ToolData,
         action_wrapper: &mut ActionWrapper,
     ) {
+        action_wrapper.clear_all();
         self.strategies.clear();
         self.exceptions.iter_mut().for_each(|x| x.step(world, tools_data, action_wrapper, &mut self.benched));
 
