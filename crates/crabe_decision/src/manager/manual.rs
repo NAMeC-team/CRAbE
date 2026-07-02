@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use crate::action::ActionWrapper;
 use crate::manager::Manager;
 use crate::strategy::offensive::Attacker;
-use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
 use crabe_framework::data::{tool::ToolData, world::RobotMap};
 use crabe_framework::data::world::{AllyInfo, World};

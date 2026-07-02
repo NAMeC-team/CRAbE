@@ -167,7 +167,7 @@ impl Strategy for StrategyPenalty {
             moveto.set_target(target - to_kicker_pos).set_orientation(angle_to_point(chosed.pose.position, middle)).charging();
             
             action_wrapper.push(self.id, 
-                moveto.set_kick(Kick::StraightKick { power: 5. }).build(),
+                moveto.set_kick(Some(Kick::StraightKick { power: 5. })).build(),
             );
             
         }

@@ -44,6 +44,7 @@ impl Strategy for Halt {
                     charge: false,
                     kick: None,
                     dribbler: 0.0,
+                    avoid_ball: false,
                 }
             ));
         });
