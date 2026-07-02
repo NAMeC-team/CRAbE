@@ -1,4 +1,4 @@
-use crate::constant::{MAX_ANGULAR, MAX_DRIBBLER, MAX_LINEAR};
+use crate::constant::{MAX_ANGULAR, MAX_DRIBBLER, MIN_LINEAR, MAX_LINEAR};
 use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
@@ -8,14 +8,16 @@ use log::warn;
 use crabe_framework::data::world::game_state::GameState;
 
 pub struct SpeedGuard {
+    min_linear: f32,
     max_linear: f32,
     max_angular: f32,
     max_dribbler: f32,
 }
 
 impl SpeedGuard {
-    pub fn new(max_linear: f32, max_angular: f32,max_dribbler: f32) -> Self {
+    pub fn new(min_linear : f32,max_linear: f32, max_angular: f32,max_dribbler: f32) -> Self {
         Self {
+            min_linear,
             max_linear,
             max_angular,
             max_dribbler
@@ -26,6 +28,7 @@ impl SpeedGuard {
 impl Default for SpeedGuard {
     fn default() -> Self {
         Self {
+            min_linear : MIN_LINEAR,
             max_linear: MAX_LINEAR,
             max_angular: MAX_ANGULAR,
             max_dribbler: MAX_DRIBBLER,
@@ -67,9 +70,12 @@ impl Guard for SpeedGuard {
                 command.left_velocity = direction_normalized.y;
             }
 
-
+            if direction.norm() < self.max_angular {
+                let direction_normalized = direction.normalize() * self.min_linear;
+                command.forward_velocity = direction_normalized.x;
+                command.left_velocity = direction_normalized.y;
+            }
             
-
             if command.angular_velocity.is_nan() {
                 warn!("An attempt was made to send NaN instead of a valid value in angular_velocity. It has been adjusted to 0.");
                 command.angular_velocity = command
