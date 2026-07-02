@@ -75,7 +75,7 @@ impl StateBasedManager {
 
     fn manage_running(&mut self, state: RunningState, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
-            RunningState::KickOff(team_color) => {info!("Kickoff todo");
+            RunningState::KickOff(team_color) => {
                 if team_color == world.team_color {
                     self.run(world, tools_data, action_wrapper);
                 } else {
@@ -85,7 +85,7 @@ impl StateBasedManager {
                     self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
                 }
             },
-            RunningState::Penalty(team_color) => {info!("Penalty");
+            RunningState::Penalty(team_color) => {
                 if team_color == world.team_color {
                     self.strategies.push(Box::new(ExcecutePenalty::new(KEEPER_ID)));
                 }else {
@@ -143,7 +143,7 @@ impl StateBasedManager {
                 self.strategies.push(Box::new(MoveAwayFromBall::new(ids)));
             }
             ,
-            StoppedState::PrepareGoalKick(team_color) => info!("PrepareGoalKick todo"),
+            StoppedState::PrepareGoalKick(team_color) => self.run(world, tools_data, action_wrapper),
         }
     }
 }
