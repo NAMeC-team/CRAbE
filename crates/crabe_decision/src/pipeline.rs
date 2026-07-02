@@ -1,6 +1,7 @@
 use crate::action::ActionWrapper;
 use crate::manager::manual::Manual;
 use crate::manager::Manager;
+use crate::manager::state_based::StateBasedManager;
 use clap::Args;
 use crabe_framework::component::{Component, DecisionComponent};
 use crabe_framework::config::CommonConfig;
@@ -27,7 +28,7 @@ impl DecisionPipeline {
     pub fn with_config(_decision_cfg: DecisionConfig, _common_cfg: &CommonConfig) -> Self {
         Self {
             action_wrapper: ActionWrapper::default(),
-            manager: Box::new(Manual::new()),
+            manager: Box::new(StateBasedManager::new()),
         }
     }
 }

@@ -11,7 +11,7 @@ use crabe_framework::data::world::{self, World};
 
 /// Manager handling game states, unnamed atm
 pub struct StateBasedManager {
-    strategies: HashMap<Gam, Vec<Box<dyn Strategy>>>,
+    strategies: Vec<Box<dyn Strategy>>,
 }
 
 impl StateBasedManager {
