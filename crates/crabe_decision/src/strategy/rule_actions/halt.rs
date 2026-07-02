@@ -36,7 +36,6 @@ impl Strategy for Halt {
     ) -> bool {
         //self.messages.clear();
         self.ids.iter().enumerate().for_each(|(_, id)| {
-            action_wrapper.clear(*id);
             action_wrapper.push(*id, RawOrder::new(
                 Command {
                     forward_velocity: 0.0,
