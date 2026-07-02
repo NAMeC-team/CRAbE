@@ -76,20 +76,30 @@ impl StateBasedManager {
     fn manage_running(&mut self, state: RunningState, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
             RunningState::KickOff(team_color) => {info!("Kickoff todo");
-                if (team_color == world.team_color) {
+                if team_color == world.team_color {
                     self.run(world, tools_data, action_wrapper);
                 } else {
                     self.strategies.push(Box::new(PrepareKickOff::new(world.allies_bot.iter().map(|a| *a.0).collect(), team_color)));
                 }
             },
             RunningState::Penalty(team_color) => {info!("Penalty");
-                if (team_color == world.team_color){
-                    self.strategies.push(Box::new(StrategyPenalty::new(ATTACKER_ID, true)));
+                if team_color == world.team_color {
+                    self.strategies.push(Box::new(StrategyPenalty::new(KEEPER_ID, true)));
                 }else {
-                    self.strategies.push(Box::new(MoveAwayFromBall::new(world.allies_bot.iter().map(|a| *a.0).collect())));
+                    let mut ids = vec![];
+                    world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
+
+                    self.strategies.push(Box::new(MoveAwayFromBall::new(ids)));
+                    self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
                 }
+
             },
-            RunningState::FreeKick(team_color) => info!("FreeKick todo"),
+            RunningState::FreeKick(team_color) =>
+            if team_color == world.team_color {
+                self.run(world, tools_data, action_wrapper);
+            }else{
+                self.strategies.push(Box::new(PrepareKickOff::new(vec![], world.team_color)));
+            },
             RunningState::Run =>  {
                 info!("Run");
                 self.run(world, tools_data, action_wrapper);
@@ -101,7 +111,7 @@ impl StateBasedManager {
 
     fn manage_halted(&mut self, state: HaltedState, world: &World, tool_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
         match state {
-            
+
             HaltedState::Halt => { info!("Halt");
                                     self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
             HaltedState::Timeout(team_color) => info!("Timeout todo"),
