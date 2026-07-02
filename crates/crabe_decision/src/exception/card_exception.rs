@@ -101,13 +101,15 @@ impl Exception for CardException {
         };
 
         let mut substituted: Vec<u8> = vec![];
-
-        let nb_substitutes = ally_info.yellow_cards + ally_info.red_cards;
+        info!("Currently issued yellow cards: {:?}", ally_info.yellow_card_times);
+        info!("Issued red cards: {:?}", ally_info.red_cards);
+        let nb_substitutes = ally_info.yellow_card_times.len() as u8 + ally_info.red_cards as u8;
         for sub in 0..nb_substitutes {
             let robot_id: u8 = match robots_handled.get(sub as usize) {
                 Some(id) => *id,
                 None => {
                     let mut res = None;
+                    //get free robot
                     for robot in 1..7 {
                         if !(substituted.contains(&robot)) { res = Some(robot); break; }
                     }
@@ -126,5 +128,6 @@ impl Exception for CardException {
         }
 
         *robots_handled = substituted;
+        info!("Robots being benched: {:?}", robots_handled)
     }
 }

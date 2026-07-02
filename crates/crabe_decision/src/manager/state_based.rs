@@ -9,6 +9,7 @@ use crate::strategy::defensive::{DefenseWall, GoalKeeper};
 use crate::strategy::offensive::Attacker;
 use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
+use crate::utils::{ATTACKER_ID, KEEPER_ID};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{
     GameState, HaltedState, RunningState, StoppedState,
@@ -38,23 +39,33 @@ impl StateBasedManager {
             RunningState::Penalty(team_color) => info!("Penalty todo"),
             RunningState::FreeKick(team_color) => info!("FreeKick todo"),
             RunningState::Run =>  {
-                let robots_left = 6 - self.benched.len();
+                let mut robots_left = 6 - self.benched.len();
 
-                if robots_left > 0 {
-                    self.strategies.push(Box::new(Attacker::new(6)));
+                if !self.benched.contains(&KEEPER_ID) {
+                    self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
+                    robots_left -= 1;
                 }
 
-                if robots_left > 1 {
-                    self.strategies.push(Box::new(GoalKeeper::new(5)));
+                if !self.benched.contains(&ATTACKER_ID) {
+                    self.strategies.push(Box::new(Attacker::new(ATTACKER_ID)));
+                    robots_left -= 1;
                 }
 
-                if robots_left > 2 {
+                if (robots_left > 0) {
                     let mut wall_ids: Vec<u8> = vec![];
-                    for id in 2..(robots_left + 1) {
-                        wall_ids.push(id as u8);
+                    let mut id: u8 = 1;
+                    while robots_left > 0 {
+                        if !self.benched.contains(&id) {
+                            robots_left -= 1;
+                            wall_ids.push(id);
+                        }
+
+                        id += 1;
                     }
+
                     self.strategies.push(Box::new(DefenseWall::new(wall_ids)));
                 }
+
             },
             RunningState::CornerKick(team_color) => info!("CornerKick todo"),
             RunningState::GoalKick(team_color) => info!("GoalKick todo"),
