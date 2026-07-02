@@ -46,7 +46,7 @@ impl MoveToBuilder {
             dribbler: 0.,
             kicker: None,
             fast: true,
-            avoidance: true,
+            avoidance: false,
             avoid_ball: false,
         }
     }
