@@ -37,19 +37,19 @@ impl StateBasedManager {
     }
 
     fn run(&mut self, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
-        let mut robots_left = 6 - self.benched.len();
+        let mut robots_left = world.allies_bot.iter().count() - self.benched.len();
         let mut chosen_bots = vec![];
-
-        if !self.benched.contains(&KEEPER_ID) {
-            self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
-            robots_left -= 1;
-            chosen_bots.push(KEEPER_ID);
-        }
 
         if !self.benched.contains(&ATTACKER_ID) {
             self.strategies.push(Box::new(Attacker::new(ATTACKER_ID)));
             robots_left -= 1;
             chosen_bots.push(ATTACKER_ID);
+        }
+
+        if !self.benched.contains(&KEEPER_ID) {
+            self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
+            robots_left -= 1;
+            chosen_bots.push(KEEPER_ID);
         }
 
         if (robots_left > 0) {
@@ -104,7 +104,7 @@ impl StateBasedManager {
                 let mut ids = vec![];
                 world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
                 self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
-                self.strategies.push(Box::new(DefenseWall::new(ids)));
+                // self.strategies.push(Box::new(DefenseWall::new(ids)));
             },
             RunningState::Run =>  { self.run(world, tools_data, action_wrapper); },
             RunningState::CornerKick(_) => {self.run(world, tools_data, action_wrapper); },

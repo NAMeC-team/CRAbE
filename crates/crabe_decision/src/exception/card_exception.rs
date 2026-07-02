@@ -111,7 +111,7 @@ impl Exception for CardException {
                     let mut res = None;
                     //get free robot
                     for robot in (1..=6).rev() {
-                        if !(substituted.contains(&robot)) { res = Some(robot); break; }
+                        if !substituted.contains(&robot) && world.allies_bot.contains_key(&robot) { res = Some(robot); break; }
                     }
 
                     let Some(id) = res else {
