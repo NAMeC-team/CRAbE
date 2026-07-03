@@ -6,7 +6,6 @@ use crabe_framework::config::CommonConfig;
 use crabe_framework::data::input::InboundData;
 use crabe_protocol::protobuf::vision_packet::SslWrapperPacket;
 use log::{error, info};
-use serialport::Parity::None;
 use std::net::Ipv4Addr;
 use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
