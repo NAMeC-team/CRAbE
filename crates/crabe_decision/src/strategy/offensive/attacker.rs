@@ -17,6 +17,8 @@ use crabe_math::shape::Line;
 
 
 /// The Attacker strategy is responsible for moving the robot to the ball and then try scoring a goal
+/// 
+#[derive(Default, Debug)]
 pub struct Attacker {
     /// The id of the robot to move.
     id: u8,
@@ -31,27 +33,42 @@ impl Attacker {
     /// Find the best ally to pass the ball to
     fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball) -> MoveTo{
         // grab allies in the enemy side
+        
+        print!("empanada");
+
+        //OBTENTION DES DONNES
+
         let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
+        
+        
+        let robot_position = robot.pose.position;
+        let closest_ally: Option<&Robot<AllyInfo>> = get_best_shooting_window_bot(&allies_in_positive_x, world);
+        
+        let enemy_goal_center = &world.geometry.enemy_goal.line.center();
+        
         if allies_in_positive_x.len() == 0{
             return shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
         }
-        let robot_position = robot.pose.position;
-        let closest_ally: Option<&Robot<AllyInfo>> = get_best_shooting_window_bot(&allies_in_positive_x, world);
+
         match closest_ally {
             Some(ally) => {
+
                 let _robot_to_ally = (ally.pose.position - robot_position).normalize();
                 let move_to_command = pass(&robot, &ally, &ball, world);
+             
                 if move_to_command.kicker.is_some(){
                    //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::BallPassed(ally.id)), self.id));
                 }else{
                    //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::WantToPassBallTo(ally.id, passing_trajectory)), self.id));
                 }
+                
                 move_to_command
             },
             None => {
-                shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world)
+                shoot(robot, &ball, enemy_goal_center, world)
             }
         }
+
     }
 }
 
@@ -82,7 +99,17 @@ impl Strategy for Attacker {
     ) -> bool {
         // Clean the action wrapper otherwise the previous commands will still have to be runned before the one he will calculate now
         action_wrapper.clear(self.id);
+
         // Get the Attacker robot, otherwise exit the function
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+        println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
+
+
         let robot = match world.allies_bot.get(&self.id) {
             Some(robot) => robot,
             None => return false,
@@ -96,11 +123,14 @@ impl Strategy for Attacker {
 
         // If the ball is moving in the direction of our goal, intercept it
         let ball_trajectory_intersect_with_goal = world.geometry.enemy_goal.line.intersection_segments(&Line::new(ball.position_2d(), ball.position_2d() + ball.velocity.xy() * 1000.));
+        
+        
         if ball.velocity.norm() > 0.5 && !ball_trajectory_intersect_with_goal.is_ok(){
             action_wrapper.push(self.id, intercept(
                 &robot,
                 &ball,
             ));
+
             return false;
         }
 
@@ -110,6 +140,8 @@ impl Strategy for Attacker {
         }
 
         let biggest_shoot_window = shoot_windows.iter().reduce(|curr, x: &Line| if curr.norm() > x.norm() {curr} else {x});
+        
+        
         if let Some(shoot_window) = biggest_shoot_window{
             let target = shoot_window.center();
             tools_data.annotations.add_point("Target".to_string(), target);
@@ -118,6 +150,8 @@ impl Strategy for Attacker {
         }else{
             action_wrapper.push(self.id, self.pass_to_ally(world, robot, ball));
         }
+
+
         false
     }
 

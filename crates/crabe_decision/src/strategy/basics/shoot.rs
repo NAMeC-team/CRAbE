@@ -3,7 +3,7 @@ use crabe_framework::data::output::Kick;
 use crabe_framework::data::world::{AllyInfo, Ball, Robot, World};
 use crabe_math::shape::Line;
 use crabe_math::vectors;
-use nalgebra::Point2;
+use nalgebra::{Point2, SimdRealField};
 
 const GO_BEHIND_BALL_DIST: f64 = 0.3;
 
@@ -41,7 +41,7 @@ pub fn shoot(
         Err(_) => false,
     };
 
-    if shooting_trajectory_will_score && dot_with_ball > 0.95 && dist_to_ball < 0.5 {
+    if shooting_trajectory_will_score && dot_with_ball > 0.90 && dist_to_ball < 0.5 {
         let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius ) {
             Some(Kick::StraightKick {  power: 7. }) 
         }else {None};
@@ -50,4 +50,138 @@ pub fn shoot(
         return MoveTo::new_all_params(target, vectors::angle_to_point(robot_position,*target_shooting_position), 400.,  true, kick, false, false);
     }
     MoveTo::new_all_params(behind_ball_position, vectors::angle_to_point(robot_position, *target_shooting_position), 0., false, None, true, true)
+}
+
+
+pub fn just_shoot(
+    robot: &Robot<AllyInfo>
+) -> () {
+    Kick::StraightKick {  power: 7. };
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
+    println!("wanabana");
 }

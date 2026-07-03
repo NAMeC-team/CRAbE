@@ -3,7 +3,7 @@
 /// * Running: The action is currently being executed.
 /// * Failed: The action has failed to execute.
 /// * Done: The action has been successfully executed.
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum State {
     Running,
     Failed,

@@ -56,6 +56,7 @@ impl Strategy for Square {
             self.id,
             MoveToBuilder::new().set_x(1.0).set_y(1.0).set_orientation(-3.* PI / 4.).build(),
         );
+        print!("square");
         action_wrapper.push(
             self.id,
             MoveToBuilder::new().set_x(1.0).set_y(-1.0).set_orientation(3.* PI / 4.).build(),

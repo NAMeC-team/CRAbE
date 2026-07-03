@@ -10,7 +10,7 @@ use nalgebra::{Isometry2, Point2, Vector2, Vector3};
 use std::f64::consts::{PI, TAU};
 
 /// The `MoveTo` struct represents an action that moves the robot to a specific location on the field, with a given target orientation.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct MoveTo {
     /// The current state of the action.
     pub state: State,
@@ -146,14 +146,6 @@ impl Action for MoveTo {
         self.state
     }
 
-    /// Computes the orders to be sent to the robot and returns a `Command` instance.
-    /// If the robot arrives at the target position and orientation, the action is considered done.
-    ///
-    /// # Arguments
-    ///
-    /// * `id`: The id of the robot for which the orders are computed.
-    /// * `world`: The current state of the world.
-    /// * `tools`: A collection of external tools used by the action, such as a viewer.
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
             let mut order = Vector3::new(0., 0., 0.);
