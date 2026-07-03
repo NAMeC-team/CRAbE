@@ -46,10 +46,15 @@ impl PyRoulxsGuard {
 }
 
 fn avoid_allies_and_enemies(world: &World, obstacles: &mut Vec<Point2<f64>>, id: u8) {
+
+    let wall = vec![6,5,4,3];
+
+
     let mut obstacles: Vec<Point2<f64>> = world.allies_bot.iter()
-        .filter(|(other_id, _)| id != **other_id)
+        .filter(|(other_id, _)| id != **other_id && !wall.contains(other_id))
         .map(|(_, r)| r.pose.position)
         .collect();
+
     let enemy_poses: Vec<Point2<f64>> = world.enemies_bot.iter().map(|(_, r)| r.pose.position).collect();
     obstacles.extend(enemy_poses);
 }
