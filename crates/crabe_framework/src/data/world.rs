@@ -61,4 +61,17 @@ impl World {
             team_color,
         }
     }
+
+    pub fn get_goalkeeper(&self, color: TeamColor) -> Option<u8> {
+        let info_opt =  if self.team_color == color {
+            &self.data.ally.info
+          } else {
+            &self.data.enemy.info
+          };
+
+        match info_opt {
+            Some(info) => Some(info.goalkeeper as u8),
+            None => None,
+        }
+    }
 }

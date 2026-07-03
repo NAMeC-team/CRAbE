@@ -10,14 +10,13 @@ use crate::strategy::defensive::{DefenseWall, GoalKeeper};
 use crate::strategy::offensive::Attacker;
 // use crate::strategy::testing::Square;
 use crate::strategy::Strategy;
-use crate::utils::{ATTACKER_ID, KEEPER_ID};
 use crate::strategy::rule_actions::{Halt,PrepareStart,PrepareKickOff,PreparePenalty, ExcecutePenalty};
 use crate::strategy::formations::{MoveAwayFromBall, };
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::game_state::{
     GameState, HaltedState, RunningState, StoppedState,
 };
-use crabe_framework::data::world::{self, World};
+use crabe_framework::data::world::World;
 use log::info;
 
 
@@ -37,53 +36,39 @@ impl StateBasedManager {
         }
     }
 
-    fn run(&mut self, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
-        let mut robots_left = world.allies_bot.iter().count() - self.benched.len();
-        let mut chosen_bots = vec![];
+    fn run(&mut self, available_bots_id: Vec<u8>) {
+        let mut robots_left = available_bots_id.len();
+        let mut available_bots_left = available_bots_id.clone();
 
-        if !self.benched.contains(&ATTACKER_ID) && robots_left > 0 {
-            self.strategies.push(Box::new(Attacker::new(ATTACKER_ID)));
+        if robots_left > 0 {
+            let chosen = available_bots_left.pop().expect("mismatch between left robots and left count");
+            self.strategies.push(Box::new(Attacker::new(chosen)));
             robots_left -= 1;
-            chosen_bots.push(ATTACKER_ID);
         }
 
-        if !self.benched.contains(&KEEPER_ID) && robots_left > 0 {
-            self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
-            robots_left -= 1;
-            chosen_bots.push(KEEPER_ID);
+        if robots_left > 0 {
+            let chosen = available_bots_left.pop().expect("mismatch between left robots and left count");
+            self.strategies.push(Box::new(GoalKeeper::new(chosen)));
         }
 
-        if (robots_left > 0) {
-            let mut wall_ids: Vec<u8> = vec![];
-            let mut id: u8 = 1;
-            while robots_left > 0 {
-                //id not in chosen bots or benched
-                if !(self.benched.contains(&id) || chosen_bots.contains(&id)){
-                    robots_left -= 1;
-                    wall_ids.push(id);
-                }
-
-                if id > 6 {
-                    info!("Maximum id achieved in running state");
-                    break;
-                }
-                id += 1;
-            }
-
-            self.strategies.push(Box::new(DefenseWall::new(wall_ids)));
-        }
+        self.strategies.push(Box::new(DefenseWall::new(available_bots_left)));
     }
 
-    fn manage_running(&mut self, state: RunningState, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
+    fn manage_running(&mut self, state: RunningState, available_bots_id: Vec<u8>, world: &World) {
         match state {
             RunningState::KickOff(team_color) => {
                 if team_color == world.team_color {
-                    self.run(world, tools_data, action_wrapper);
+                    self.run(available_bots_id);
                 } else {
+                    if let Some(x) = world.get_goalkeeper(world.team_color) {
+                        self.strategies.push(Box::new(GoalKeeper::new(x)));
+                    };
+                    let keeper_id = world.get_goalkeeper(world.team_color);
+                    let keeper_id = world.get_goalkeeper(world.team_color);
+
                     let mut ids = vec![];
                     world.allies_bot.iter().for_each(|(id,_)| if *id != KEEPER_ID { ids.push(*id); });
                     self.strategies.push(Box::new(DefenseWall::new(ids)));
-                    self.strategies.push(Box::new(GoalKeeper::new(KEEPER_ID)));
                 }
             },
             RunningState::Penalty(team_color) => {
@@ -107,16 +92,16 @@ impl StateBasedManager {
         }
     }
 
-    fn manage_halted(&mut self, state: HaltedState, world: &World, tool_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
+    fn manage_halted(&mut self, state: HaltedState, available_bots_id: Vec<u8>, world: &World) {
         match state {
 
-            HaltedState::Halt => { self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
-            HaltedState::Timeout(team_color) => { self.strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect()))); },
+            HaltedState::Halt => { self .strategies.push(Box::new(Halt::new(available_bots_id.clone()))) },
+            HaltedState::Timeout(team_color) => { self.strategies.push(Box::new(Halt::new(available_bots_id))); },
         }
     }
 
 
-    fn manage_stopped(&mut self, state: StoppedState, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
+    fn manage_stopped(&mut self, state: StoppedState, available_bots_id: &mut Vec<u8>, world: &World) {
         match state {
 
             StoppedState::PrepareKickoff(team_color) => { self.strategies.push(Box::new(PrepareKickOff::new(world.allies_bot.iter().map(|a| *a.0).collect(), team_color)));},
@@ -154,11 +139,19 @@ impl Manager for StateBasedManager {
         action_wrapper.clear_all();
         self.strategies.clear();
         self.exceptions.iter_mut().for_each(|x| x.step(world, tools_data, action_wrapper, &mut self.benched));
+        let mut available_bots_id: Vec<u8> = world.allies_bot.iter().map(|(id, _)| *id).collect();
+        let mut to_bench = self.benched.len();
+        if self.benched.len() >= available_bots_id.len() {
+            info!("No bot available !!");
+            return;
+        }
+
+        available_bots_id = available_bots_id[0..(available_bots_id.len() - to_bench)].to_vec();
 
         match world.data.ref_orders.state {
-            GameState::Halted(state) => self.manage_halted(state, world, tools_data, action_wrapper),
-            GameState::Stopped(state) => self.manage_stopped(state, world, tools_data, action_wrapper),
-            GameState::Running(state) => self.manage_running(state, world, tools_data, action_wrapper),
+            GameState::Halted(state) => self.manage_halted(state, available_bots_id, world),
+            GameState::Stopped(state) => self.manage_stopped(state, available_bots_id, world),
+            GameState::Running(state) => self.manage_running(state, available_bots_id, world),
         }
 
         for s in &mut self.strategies {

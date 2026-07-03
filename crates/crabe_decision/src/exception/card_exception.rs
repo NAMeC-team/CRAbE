@@ -5,7 +5,7 @@ use crabe_framework::data::{geometry::Field, referee::TeamInfo, world::{Robot, W
 use log::info;
 use nalgebra::{Point2, Vector2};
 
-use crate::{action::{go_to::GoTo}, exception::Exception, utils::KEEPER_ID};
+use crate::{action::{go_to::GoTo}, exception::Exception};
 
 
 

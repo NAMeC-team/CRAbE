@@ -2,7 +2,6 @@ use crate::action::move_to::MoveTo;
 use crate::action::ActionWrapper;
 
 use crate::strategy::Strategy;
-use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
 use crabe_math::vectors::angle_to_point;
@@ -41,7 +40,13 @@ impl Strategy for PrepareStart {
             action_wrapper.clear(*id);
             if let Some(robot) = &world.allies_bot.get(id) {
                 let orientation = angle_to_point(robot.pose.position, nalgebra::Point2::new(0.0, 0.0));
-                if *id == KEEPER_ID {
+
+                let is_goal = match world.get_goalkeeper(world.team_color){
+                    Some(x) => *id == x as u8,
+                    None => false,
+                };
+
+                if is_goal {
                     action_wrapper.push(*id, MoveTo::new_all_params(world.geometry.ally_goal.line.center(), orientation, 0.0, false, None, true, true));
                 } else {
                     let target = nalgebra::Point2::new(world.geometry.ally_penalty.front_line.center().x + 0.2, i as f64 * (world.geometry.robot_radius * 2. + 0.02) - (((self.ids.len() as f64 -2.) / 2.) * (world.geometry.robot_radius * 2. + 0.02)));

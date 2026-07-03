@@ -7,7 +7,6 @@ use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crate::utils::get_best_shooting_window_bot;
 use crate::utils::get_open_shoot_window;
-use crate::utils::KEEPER_ID;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::AllyInfo;
 use crabe_framework::data::world::Ball;
@@ -30,8 +29,16 @@ impl Attacker {
 
     /// Find the best ally to pass the ball to
     fn pass_to_ally(&mut self, world: &World, robot: &Robot<AllyInfo>, ball: &Ball) -> MoveTo{
+        let keeper_id = world.get_goalkeeper(world.team_color);
         // grab allies in the enemy side
-        let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(|ally| ally.pose.position.x > 0. && ally.id != self.id && ally.id != KEEPER_ID).collect();
+        let allies_in_positive_x : Vec<&Robot<AllyInfo>> = world.allies_bot.values().filter(
+            |ally| ally.pose.position.x > 0. && ally.id != self.id && {
+                match keeper_id {
+                    Some(x) => ally.id != x,
+                    None => false,
+                }
+            }).collect();
+
         if allies_in_positive_x.len() == 0{
             return shoot(robot, &ball, &world.geometry.enemy_goal.line.center(), world);
         }
@@ -41,11 +48,6 @@ impl Attacker {
             Some(ally) => {
                 let _robot_to_ally = (ally.pose.position - robot_position).normalize();
                 let move_to_command = pass(&robot, &ally, &ball, world);
-                if move_to_command.kicker.is_some(){
-                   //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::BallPassed(ally.id)), self.id));
-                }else{
-                   //self.messages.push(MessageData::new(Message::AttackerMessage(AttackerMessage::WantToPassBallTo(ally.id, passing_trajectory)), self.id));
-                }
                 move_to_command
             },
             None => {

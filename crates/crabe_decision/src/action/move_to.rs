@@ -1,7 +1,6 @@
 use crate::action::state::State;
 use crate::action::Action;
 use crate::utils::navigation::obstacle_avoidance;
-use crate::utils::{penalty_zone_prevention, KEEPER_ID};
 use crabe_framework::data::output::{Command, Kick};
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::{AllyInfo, Robot, World};
@@ -164,11 +163,9 @@ impl Action for MoveTo {
             self.target_y.get_or_insert_with(|| robot.pose.position.y);
             self.orientation.get_or_insert_with(|| robot.pose.orientation);
 
-            // calculate position command 
+            // calculate position command
             let mut target = Point2::new(self.target_x.unwrap(), self.target_y.unwrap());
-            // if id != KEEPER_ID{
-            //     target = penalty_zone_prevention(&robot.pose.position, &target, world);
-            // }
+
             if self.avoidance{
                 target = obstacle_avoidance(&target, robot, world, _tools);
             }
@@ -209,4 +206,3 @@ impl Action for MoveTo {
         }
     }
 }
-
