@@ -1,4 +1,7 @@
 mod robot;
+
+use std::time::Instant;
+use chrono::{DateTime, Utc};
 pub use self::robot::{
     AllyInfo, EnemyInfo, Pose, Robot, RobotAcceleration, RobotMap, RobotVelocity,
 };
@@ -21,6 +24,7 @@ use crate::config::CommonConfig;
 use crate::data::geometry::Geometry;
 
 use serde::Serialize;
+pub use crate::data::world::robot::KEEPER_ID;
 
 /// The `World` struct represents the state of the world in the SSL game,
 /// containing information about the game state, the field geometry, the robots and the ball.
@@ -42,6 +46,9 @@ pub struct World {
     pub ball: Option<Ball>,
     /// The team color of our team.
     pub team_color: TeamColor,
+    #[serde(skip)]
+    pub timestamp: Instant,
+    pub keeper_id: u8,
 }
 
 impl World {
@@ -59,6 +66,8 @@ impl World {
             enemies_bot: Default::default(),
             ball: None,
             team_color,
+            timestamp: Instant::now(), // TODO: update,
+            keeper_id: KEEPER_ID
         }
     }
 }

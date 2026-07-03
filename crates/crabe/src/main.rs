@@ -20,6 +20,9 @@ use std::sync::Arc;
 use std::thread;
 use std::time::{Duration, Instant};
 use log::info;
+use crabe_behavior::assignment::GreedyAssigner;
+use crabe_behavior::engine::BehaviorEngine;
+use crabe_behavior::managers::simple::SimpleManager;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -173,18 +176,23 @@ fn main() {
         .write_style_or("CRABE_LOG_STYLE", "always");
     env_logger::init_from_env(env);
 
-    let mut system = SystemBuilder::default()
+
+
+    let builder = SystemBuilder::default()
         .world(World::with_config(&cli.common))
         .input_component(InputPipeline::with_config(cli.input_config, &cli.common))
         .filter_component(FilterPipeline::with_config(cli.filter_config, &cli.common))
-        .decision_component(DecisionPipeline::with_config(
-            cli.decision_config,
-            &cli.common,
-        ))
         .tool_component(ToolServer::with_config(cli.tool_config, &cli.common))
         .guard_component(GuardPipeline::with_config(cli.guard_config, &cli.common))
-        .output_component(OutputPipeline::with_config(cli.output_config, &cli.common))
-        .build();
+        .output_component(OutputPipeline::with_config(cli.output_config, &cli.common));
+
+    let builder = if cli.common.bt {
+        builder.decision_component(BehaviorEngine::new(Box::new(SimpleManager::new(GreedyAssigner))))
+    } else {
+        builder.decision_component(DecisionPipeline::with_config(cli.decision_config, &cli.common))
+    };
+    
+    let mut system = builder.build();
 
     system.run(Duration::from_millis(16));
     system.close();

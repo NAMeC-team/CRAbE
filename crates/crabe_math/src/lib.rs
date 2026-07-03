@@ -8,3 +8,5 @@
 /// which are used in various parts of the system to represent and manipulate shapes.
 pub mod shape;
 pub mod vectors;
+pub mod angles;
+pub mod geometry;

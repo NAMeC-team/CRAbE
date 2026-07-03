@@ -3,7 +3,7 @@ use crabe_math::vectors::angle_to_point;
 use nalgebra::{Point2, Vector2};
 use serde::Serialize;
 use std::collections::HashMap;
-
+pub const KEEPER_ID: u8 = 3;
 /// The `AllyInfo` struct represents the information related to allies in the game.
 #[derive(Serialize, Clone, Default, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -74,6 +74,20 @@ pub struct Robot<T> {
     pub acceleration: RobotAcceleration,
     /// The timestamp indicating when this information was last updated.
     pub timestamp: DateTime<Utc>,
+}
+
+impl<T> Robot<T> {
+    pub fn pose(&self) -> &Pose {
+        &self.pose
+    }
+
+    pub fn position(&self) -> Point2<f64> {
+        self.pose.position
+    }
+
+    pub fn orientation(&self) -> f64 {
+        self.pose.orientation
+    }
 }
 
 impl<T: Clone> Clone for Robot<T> {
