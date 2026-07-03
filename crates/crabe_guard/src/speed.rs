@@ -1,4 +1,4 @@
-use crate::constant::{MIN_LINEAR, MAX_LINEAR,MIN_ANGULAR , MAX_ANGULAR, MAX_DRIBBLER };
+use crate::constant::{MIN_LINEAR, MAX_LINEAR, MIN_ANGULAR, MAX_ANGULAR, MAX_DRIBBLER, EPSILON_LINEAR , EPSILON_ANGULAR};
 use crate::pipeline::Guard;
 use crabe_framework::data::output::CommandMap;
 use crabe_framework::data::tool::ToolCommands;
@@ -76,10 +76,8 @@ impl Guard for SpeedGuard {
             let mut x_abs = direction.x.abs();
             let mut y_abs = direction.y.abs();
 
-            const EPSILON : f32 = 0.05;
-
             if direction.norm() != 0. && (x_abs < self.max_angular || y_abs < self.max_angular) {
-                if x_abs > EPSILON && x_abs < self.min_angular {
+                if x_abs > EPSILON_LINEAR && x_abs < self.min_angular {
                     let fact = self.min_angular / x_abs;
                     direction.x *= fact;
                     direction.y *= fact;
@@ -87,7 +85,7 @@ impl Guard for SpeedGuard {
 
 
                 y_abs = direction.y.abs();
-                if y_abs > EPSILON && y_abs < self.min_angular {
+                if y_abs > EPSILON_LINEAR && y_abs < self.min_angular {
                     let fact = self.min_angular / y_abs;
                     direction.x *= fact;
                     direction.y *= fact;
@@ -96,10 +94,10 @@ impl Guard for SpeedGuard {
                 y_abs = direction.y.abs();
                 x_abs = direction.x.abs();
 
-                if x_abs < EPSILON {
+                if x_abs < EPSILON_LINEAR {
                     direction.x = 0.;
                 }
-                if y_abs < EPSILON {
+                if y_abs < EPSILON_LINEAR {
                     direction.y = 0.;
                 }
 
@@ -117,7 +115,7 @@ impl Guard for SpeedGuard {
                 command.angular_velocity = command
                     .angular_velocity
                     .clamp(-self.max_angular, self.max_angular);
-            } else if command.angular_velocity != 0.0 && command.angular_velocity.abs() < self.min_angular {
+            } else if command.angular_velocity != 0.0 && EPSILON_ANGULAR < command.angular_velocity.abs() && command.angular_velocity.abs() < self.min_angular {
                 command.angular_velocity = self.min_angular * command.angular_velocity.signum();
             }
 
