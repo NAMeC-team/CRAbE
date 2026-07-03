@@ -58,7 +58,7 @@ impl Guard for SpeedGuard {
                 command.left_velocity = 0.;
             }
 
-            let direction = Vector2::new(command.forward_velocity, command.left_velocity);
+            let mut direction = Vector2::new(command.forward_velocity, command.left_velocity);
             let mut max_speed = self.max_linear;
             match world.data.ref_orders.state {
                 GameState::Stopped(_) => {
@@ -73,10 +73,39 @@ impl Guard for SpeedGuard {
                 command.left_velocity = direction_normalized.y;
             }
 
-            if direction.norm() != 0. && direction.norm() < self.max_angular {
-                let direction_normalized = direction.normalize() * self.min_linear;
-                command.forward_velocity = direction_normalized.x;
-                command.left_velocity = direction_normalized.y;
+            let mut x_abs = direction.x.abs();
+            let mut y_abs = direction.y.abs();
+
+            const EPSILON : f32 = 0.05;
+
+            if direction.norm() != 0. && (x_abs < self.max_angular || y_abs < self.max_angular) {
+                if x_abs > EPSILON && x_abs < self.min_angular {
+                    let fact = self.min_angular / x_abs;
+                    direction.x *= fact;
+                    direction.y *= fact;
+                }
+
+
+                y_abs = direction.y.abs();
+                if y_abs > EPSILON && y_abs < self.min_angular {
+                    let fact = self.min_angular / y_abs;
+                    direction.x *= fact;
+                    direction.y *= fact;
+                }
+
+                y_abs = direction.y.abs();
+                x_abs = direction.x.abs();
+
+                if x_abs < EPSILON {
+                    direction.x = 0.;
+                }
+                if y_abs < EPSILON {
+                    direction.y = 0.;
+                }
+
+
+                command.forward_velocity = direction.x;
+                command.left_velocity = direction.y;
             }
 
             if command.angular_velocity.is_nan() {
