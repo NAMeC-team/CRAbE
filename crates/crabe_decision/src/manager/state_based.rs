@@ -20,7 +20,6 @@ use crabe_framework::data::world::game_state::{
 use crabe_framework::data::world::{self, World};
 use log::info;
 
-
 /// Manager handling game states, unnamed atm
 pub struct StateBasedManager {
     strategies: Vec<Box<dyn Strategy>>,
