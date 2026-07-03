@@ -134,7 +134,7 @@ impl StateBasedManager {
             }
             },
             StoppedState::BallPlacement(team_color) => { self .strategies.push(Box::new(Halt::new(world.allies_bot.iter().map(|a| *a.0).collect()))); },
-            StoppedState::Stop => {self.strategies.push(Box::new(MoveAwayFromBall::new(world.allies_bot.iter().map(|a| *a.0).collect())));},
+            StoppedState::Stop => {self.run(world, tools_data, action_wrapper);},
             StoppedState::PrepareCornerKick(team_color) => if team_color == world.team_color {
                 self.run(world, tools_data, action_wrapper);
             } else {
