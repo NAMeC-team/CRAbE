@@ -110,10 +110,10 @@ impl Strategy for ExcecutePenalty {
                 MoveTo::new_all_params(ball.position_2d(), orientation, 0., false, None, true, true),
             );
 
-            action_wrapper.push(
-                self.id,
-                MoveTo::new_all_params(ball.position_2d(), orientation, 0., false, None, true, true),
-            );
+            // action_wrapper.push(
+            //     self.id,
+            //     MoveTo::new_all_params(ball.position_2d(), orientation, 0., false, None, true, true),
+            // );
 
             if delta_x < 0.0 {
                 delta_x = - delta_x;
