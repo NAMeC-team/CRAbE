@@ -3,7 +3,7 @@ use clap::Args;
 /// Represents the configuration settings for the SSL Game Controller.
 #[derive(Args)]
 pub struct GameControllerConfig {
-    #[arg(long, default_value = "224.5.23.1")]
+    #[arg(long, default_value = "255.255.255.255")]
     pub gc_ip: String,
 
     #[arg(long, default_value_t = 10003)]
