@@ -38,6 +38,10 @@ impl StateBasedManager {
     }
 
     fn run(&mut self, world: &World, tools_data: &mut ToolData, action_wrapper: &mut ActionWrapper) {
+        if self.benched.len() >= world.allies_bot.iter().count() {
+            info!("Not enough bots");
+            return;
+        }
         let mut robots_left = world.allies_bot.iter().count() - self.benched.len();
         let mut chosen_bots = vec![];
 
