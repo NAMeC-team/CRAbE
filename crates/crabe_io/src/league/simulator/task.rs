@@ -95,6 +95,7 @@ impl Simulator {
 
 impl CommandSenderTask for Simulator {
     fn step(&mut self, commands: CommandMap) -> FeedbackMap {
+        dbg!(&commands);
         let packet = self.prepare_packet(commands.into_iter());
         self.socket.send(packet);
         self.fetch()

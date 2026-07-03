@@ -3,7 +3,10 @@ use crate::action::ActionWrapper;
 use crate::strategy::Strategy;
 use crabe_framework::data::tool::ToolData;
 use crabe_framework::data::world::World;
-use std::f64::consts::PI;
+use std::f64::consts::{PI, TAU};
+use crabe_framework::data::output::Command;
+use crate::action::order_raw::RawOrder;
+use crate::strategy::basics::intercept;
 
 /// The Square struct represents a strategy that commands a robot to move in a square shape
 /// in a counter-clockwise. It is used for testing purposes.
@@ -19,7 +22,14 @@ impl Square {
         Self { id}
     }
 }
-
+fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
+    let diff = alpha1 - alpha2;
+    match diff {
+        d if d > PI => d - TAU,
+        d if d < -PI => d + TAU,
+        d => d,
+    }
+}
 impl Strategy for Square {
     fn name(&self) -> &'static str {
         "Square"
@@ -33,7 +43,7 @@ impl Strategy for Square {
     /// # Arguments
     ///
     /// * world: The current state of the game world.
-    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.    
+    /// * tools_data: A collection of external tools used by the strategy, such as a viewer.
     /// * action_wrapper: An `ActionWrapper` instance used to issue actions to the robot.
     ///
     /// # Returns
@@ -64,6 +74,6 @@ impl Strategy for Square {
             self.id,
             MoveToBuilder::new().set_x(-1.0).set_y(-1.0).set_orientation(PI / 4.).build(),
         );
-        true
+        false
     }
 }

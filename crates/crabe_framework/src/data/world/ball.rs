@@ -26,7 +26,7 @@ pub struct Ball {
 impl Default for Ball {
     fn default() -> Self {
         Ball {
-            position: Point3::new(10000.,10000., 10000.),
+            position: Point3::new(0., 0., 0.),
             timestamp: Default::default(),
             velocity: Default::default(),
             acceleration:  Default::default(),

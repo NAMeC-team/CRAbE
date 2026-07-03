@@ -59,7 +59,7 @@ impl FilterPipeline {
         let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
             Box::new(RobotFilter),
             Box::new(GeometryFilter),
-            Box::new(BallFilter),
+            Box::new(BallFilter::default()),
         ];
 
         if common_config.gc {
