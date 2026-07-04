@@ -7,7 +7,6 @@ use crabe_framework::data::world::{TeamColor, World};
 use serde::{Deserialize, Serialize};
 use crate::pipeline::Guard;
 use serde_json;
-use
 use crabe_framework::data::world::game_state::{GameState, RunningState};
 
 pub struct PyRoulxsGuard {
@@ -78,8 +77,10 @@ fn avoidance_gamestate(world: &World, obstacles: &mut Vec<Point2<f64>>, cmd: &Co
             match running_state {
                 RunningState::GoalKick(tc) | RunningState::Penalty(tc) | RunningState::FreeKick(tc) |
                 RunningState::CornerKick(tc) | RunningState::KickOff(tc) => {
-                    if let Some(ball) = &world.ball {
-                        obstacles.push(ball.position_2d())
+                    if tc != world.team_color {
+                        if let Some(ball) = &world.ball {
+                            obstacles.push(ball.position_2d())
+                        }
                     }
                 }
                 _ => {}
