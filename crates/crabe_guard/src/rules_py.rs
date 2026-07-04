@@ -3,10 +3,12 @@ use log::{error, info, warn};
 use nalgebra::{Point2, Vector2};
 use crabe_framework::data::output::{Command, CommandMap};
 use crabe_framework::data::tool::ToolCommands;
-use crabe_framework::data::world::World;
+use crabe_framework::data::world::{TeamColor, World};
 use serde::{Deserialize, Serialize};
 use crate::pipeline::Guard;
 use serde_json;
+use
+use crabe_framework::data::world::game_state::{GameState, RunningState};
 
 pub struct PyRoulxsGuard {
     ctx: zmq::Context,
@@ -43,10 +45,15 @@ impl PyRoulxsGuard {
 }
 
 fn avoid_allies_and_enemies(world: &World, obstacles: &mut Vec<Point2<f64>>, id: u8) {
+
+    let wall = vec![6,5,4,3];
+
+
     let mut obstacles: Vec<Point2<f64>> = world.allies_bot.iter()
-        .filter(|(other_id, _)| id != **other_id)
+        .filter(|(other_id, _)| id != **other_id && !wall.contains(other_id))
         .map(|(_, r)| r.pose.position)
         .collect();
+
     let enemy_poses: Vec<Point2<f64>> = world.enemies_bot.iter().map(|(_, r)| r.pose.position).collect();
     obstacles.extend(enemy_poses);
 }
@@ -59,6 +66,28 @@ fn avoid_ball(world: &World, obstacles: &mut Vec<Point2<f64>>, cmd: &Command) {
     }
 }
 
+
+fn avoidance_gamestate(world: &World, obstacles: &mut Vec<Point2<f64>>, cmd: &Command) {
+    match world.data.ref_orders.state {
+        GameState::Halted(_) | GameState::Stopped(_) => {
+            if let Some(ball) = &world.ball {
+                obstacles.push(ball.position_2d());
+            }
+        }
+        GameState::Running(running_state) => {
+            match running_state {
+                RunningState::GoalKick(tc) | RunningState::Penalty(tc) | RunningState::FreeKick(tc) |
+                RunningState::CornerKick(tc) | RunningState::KickOff(tc) => {
+                    if let Some(ball) = &world.ball {
+                        obstacles.push(ball.position_2d())
+                    }
+                }
+                _ => {}
+            };
+        },
+    }
+}
+
 impl Guard for PyRoulxsGuard {
     fn guard(&mut self, world: &World, commands: &mut CommandMap, _tools_commands: &mut ToolCommands) {
         commands.iter_mut().for_each(|(id, cmd)| {
@@ -67,6 +96,7 @@ impl Guard for PyRoulxsGuard {
             let mut obstacles: Vec<Point2<f64>> = vec![];
             avoid_allies_and_enemies(world, &mut obstacles, *id);
             avoid_ball(&world, &mut obstacles, &cmd);
+            avoidance_gamestate(&world, &mut obstacles, &cmd);
             
             let rob_info = world.allies_bot.get(&id).unwrap(); // safe unwrap here
             let req = SolverRequest {
