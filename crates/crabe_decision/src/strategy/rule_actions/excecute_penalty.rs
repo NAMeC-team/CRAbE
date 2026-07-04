@@ -3,7 +3,7 @@ use crate::action::move_to_builder::MoveToBuilder;
 // use crate::action::state::State;
 use crate::action::{self, ActionWrapper, state};
 use crate::strategy::Strategy;
-use crate::strategy::basics::{just_shoot, shoot};
+use crate::strategy::basics::{shoot};
 use crabe_framework::data::referee::Stage;
 // use crabe_framework::data::referee::Stage::{self, PenaltyShootout};
 use crabe_framework::data::{output::Kick, tool::ToolData};
@@ -88,7 +88,7 @@ impl Strategy for ExcecutePenalty {
         if chosed.pose.position.x >= -0.5 && -0.2 < chosed.pose.position.y && chosed.pose.position.y < 0.2{
             self.shoot_state = 1;
         }
-        
+
         if chosed.pose.position.x >= 0.0 {
             self.shoot_state = 2;
         }
@@ -114,7 +114,7 @@ impl Strategy for ExcecutePenalty {
 
         if self.shoot_state == 2 {
             action_wrapper.clear(self.id);
-            
+
             // if (chosed.pose.position - ball_position).norm() < 0.01 + world.geometry.robot_radius + world.geometry.ball_radius {
             //     let ball_position = ball.position_2d();
             //     let orientation = vectors::angle_to_point(chosed.pose.position,ball_position);
@@ -123,15 +123,15 @@ impl Strategy for ExcecutePenalty {
             // let target = trajectory.closest_point_on_segment(&chosed.pose.position);
             //     let mut moveto = MoveToBuilder::new();
             //     moveto.set_target(target - to_kicker_pos).set_orientation(angle_to_point(chosed.pose.position, Point2::new(4.5, self.decide_direction))).charging();
-            
-            
+
+
 
             //     // action_wrapper.push(self.id,
             //     //     moveto.set_kick(Kick::StraightKick{ power: 5. }).build(),
             //     // );
-    
+
             //     dbg!(just_shoot(&chosed));
-                
+
             // // }
             // println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");println!("");
 
@@ -142,16 +142,16 @@ impl Strategy for ExcecutePenalty {
             // let target = trajectory.closest_point_on_segment(&chosed.pose.position);
             // let mut moveto = MoveToBuilder::new();
             // moveto.set_target(target - to_kicker_pos).set_orientation(angle_to_point(chosed.pose.position, Point2::new(4.5, self.decide_direction))).charging();
-            
-            
+
+
             // let robot_position = chosed.pose.position;
             // let robot_direction = vectors::vector_from_angle(chosed.pose.orientation);
             // let ball_position = ball.position_2d();
             // let robot_to_ball = ball_position - robot_position;
             // let dot_with_ball = robot_direction.normalize().dot(&robot_to_ball.normalize());
             // let dist_to_ball = robot_to_ball.norm();
-            
-            
+
+
             // let robot_to_ball = ball_position - robot_position;
 
             // let dist_to_ball = robot_to_ball.norm();
@@ -163,7 +163,7 @@ impl Strategy for ExcecutePenalty {
             // dbg!(just_shoot(chosed));
 
             // let kick: Option<Kick> = if dist_to_ball < (world.geometry.robot_radius + world.geometry.ball_radius ) {
-            //     Some(Kick::StraightKick {  power: 7. }) 
+            //     Some(Kick::StraightKick {  power: 7. })
             // }else {None};
 
             // action_wrapper.push(
