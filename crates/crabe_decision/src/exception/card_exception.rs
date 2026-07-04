@@ -59,7 +59,7 @@ impl CardException{
     fn compute_free_substitute_slot(&self, world: &World, current_robot: u8) -> Option<Point2<f64>> {
         for slot_id in 0..self.slots_per_zone * 2 {
             let Some(slot) = self.slot_from_id(slot_id) else {
-                info!("Incorrect slot found when computing free slot");
+                //info!("Incorrect slot found when computing free slot");
                 continue;
             };
 
@@ -77,7 +77,7 @@ impl CardException{
 
     pub fn go_to_shadow_realm(&mut self, action_wrapper: &mut crate::action::ActionWrapper, world: &World, id: u8) {
         let Some(slot) = self.compute_free_substitute_slot(world, id) else {
-            info!("No empty slot found !!");
+            //info!("No empty slot found !!");
             return;
         };
 
@@ -101,8 +101,8 @@ impl Exception for CardException {
         };
 
         let mut substituted: Vec<u8> = vec![];
-        info!("Currently issued yellow cards: {:?}", ally_info.yellow_card_times);
-        info!("Issued red cards: {:?}", ally_info.red_cards);
+        //info!("Currently issued yellow cards: {:?}", ally_info.yellow_card_times);
+        //info!("Issued red cards: {:?}", ally_info.red_cards);
         let nb_substitutes = ally_info.yellow_card_times.len() as u8 + ally_info.red_cards as u8;
         for sub in 0..nb_substitutes {
             let robot_id: u8 = match robots_handled.get(sub as usize) {
@@ -128,6 +128,6 @@ impl Exception for CardException {
         }
 
         *robots_handled = substituted;
-        info!("Robots being benched: {:?}", robots_handled)
+        //info!("Robots being benched: {:?}", robots_handled)
     }
 }
