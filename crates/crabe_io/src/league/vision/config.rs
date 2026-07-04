@@ -4,7 +4,7 @@ use clap::Args;
 /// module.
 #[derive(Args)]
 pub struct VisionConfig {
-    #[arg(long, default_value = "255.255.255.255")]
+    #[arg(long, default_value = "224.5.23.2")]
     pub vision_ip: String,
     #[arg(long)]
     pub vision_port: Option<u16>,
