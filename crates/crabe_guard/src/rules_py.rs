@@ -97,8 +97,9 @@ impl Guard for PyRoulxsGuard {
             avoid_allies_and_enemies(world, &mut obstacles, *id);
             avoid_ball(&world, &mut obstacles, &cmd);
             avoidance_gamestate(&world, &mut obstacles, &cmd);
-            
-            let rob_info = world.allies_bot.get(&id).unwrap(); // safe unwrap here
+
+
+            let Some(rob_info) = world.allies_bot.get(&id) else { return; };
             let req = SolverRequest {
                 obstacles,
                 rob_pos: rob_info.pose.position,
