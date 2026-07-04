@@ -169,9 +169,9 @@ impl Action for MoveTo {
             // if id != KEEPER_ID{
             //     target = penalty_zone_prevention(&robot.pose.position, &target, world);
             // }
-            if self.avoidance{
-                target = obstacle_avoidance(&target, robot, world, _tools);
-            }
+            // if self.avoidance{
+            //     target = obstacle_avoidance(&target, robot, world, _tools);
+            // }
             _tools.annotations.add_circle(vec!["target".to_string(), id.to_string()].join("-"),Circle::new(target, 0.1));
             let target_in_robot = Point2::new(target.x, target.y);
             order.x = target.x - robot.pose.position.x;
