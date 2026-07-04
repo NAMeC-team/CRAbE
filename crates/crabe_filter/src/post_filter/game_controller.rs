@@ -236,6 +236,8 @@ impl GameControllerPostFilter {
                 Stopped(Stop)
             }
 
+            (_, RC::PrepareKickoff(tc), ..) => { Stopped(PrepareKickoff(*tc)) }
+
             // any state can lead to Halt
             (_, RC::Halt, ..) => {
                 self.ball_ref_pos = None;
