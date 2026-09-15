@@ -107,5 +107,6 @@ impl ActionWrapper {
             command_map.insert(*id, action.compute_order(*id, world, tools));
         });
         command_map
+        
     }
 }
