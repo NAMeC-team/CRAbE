@@ -28,9 +28,9 @@ pub enum Kick {
     ChipKick { power: f32 },
 }
 
-#[derive(Copy, Debug, Clone, Default, Deserialize)]
+#[derive(Copy, Debug, Clone, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct  Command {
+pub struct Command {
     /// Velocity forward in m.s-1 (towards the dribbler)
     pub forward_velocity: f32,
     /// Velocity to the left in m.s-1
@@ -43,4 +43,20 @@ pub struct  Command {
     pub kick: Option<Kick>,
     /// Dribbler speed in rounds per minute rpm
     pub dribbler: f32,
+
+    pub avoid_ball: bool
+}
+
+impl Default for Command {
+    fn default() -> Self {
+        Command {
+            forward_velocity: 0.0,
+            left_velocity: 0.0,
+            angular_velocity: 0.0,
+            charge: false,
+            kick: None,
+            dribbler: 0.0,
+            avoid_ball: false,
+        }
+    }
 }

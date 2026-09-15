@@ -1,9 +1,26 @@
+use std::time::{Duration, Instant};
+use log::warn;
+use nalgebra::Point3;
 use crate::data::FilterData;
 use crate::post_filter::PostFilter;
 use crabe_framework::data::world::{game_state::{GameState, RunningState}, Ball, BallTouchInfo, TeamColor, World};
 use crabe_decision::utils::closest_bot_to_point;
 
-pub struct BallFilter;
+pub struct BallFilter {
+    /// Last registered ball position
+    /// Can only be None if the software was just started, and no ball is detected
+    last_ball_pos: Option<Point3<f64>>,
+    vanish_timer: Option<Instant>,
+}
+
+impl Default for BallFilter {
+    fn default() -> Self {
+        Self {
+            last_ball_pos: None,
+            vanish_timer: None,
+        }
+    }
+}
 
 const MIN_ACCELERATION_TO_SWITCH_POSSESSION: f64 = 1.;
 const MIN_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.1;
@@ -11,6 +28,9 @@ const MAX_DISTANCE_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.3;
 const MAX_DIFFERENCE_VELOCITY_TO_SWITCH_POSSESSION: f64 = 0.1;
 const DOT_DIFFERENCE_TO_SWITCH_POSSESSION: f64 = 0.75;
 
+/// In seconds, determines how long we consider the ball is still at its current location
+/// After this time elapses, sets the Ball to None, and show a warning
+const OLD_BALL_POS_DURATION: u64 = 8;
 
 fn calculated_possession(ball: &mut Ball, world: &World) {
     let ball_world = match &world.ball {
@@ -148,17 +168,38 @@ impl PostFilter for BallFilter {
     fn step(&mut self, filter_data: &FilterData, world: &mut World) {
         if let Some(tracked_ball) = &filter_data.ball {
             let mut ball = tracked_ball.data.clone();
-            if ball.position.x > 1000.{
-                if let Some(b) = &world.ball{
-                    ball = b.clone();
-                    calculated_possession(&mut ball, &world);
-                    calculate_last_touch(&mut ball, &world);
-                    world.ball = Some(ball);
+            calculated_possession(&mut ball, &world);
+            calculate_last_touch(&mut ball, &world);
+
+            // save ball's position in case it vanishes from vision
+            self.last_ball_pos = Some(ball.position);
+            self.vanish_timer = None;
+
+            world.ball = Some(ball);
+        } else {
+            // ball disappeared from vision, consider it is still at its last location
+            match (self.last_ball_pos, self.vanish_timer) {
+                // No ball ever registered on field, so there is no ball
+                (None, _) => { world.ball = Some(Ball::default()); }
+                
+                // Ball had disappeared, check if we use last saved position or not
+                (Some(pos), Some(instant)) => {
+                    // it has been more than x seconds since we have seen the ball, so it is not on field anymore
+                    if instant.elapsed() > Duration::from_secs(OLD_BALL_POS_DURATION) {
+                        warn!("Ball has disappeared from vision, considering it is not on field anymore");
+                        self.vanish_timer = None;
+                        if let Some(w_ball) = &mut world.ball {
+                            w_ball.position = pos;
+                        }
+                    }
+                    // Otherwise, maybe robots are hiding the ball. Suppose that it's still at the same location
+                    else if let Some(w_ball) = &mut world.ball {
+                        w_ball.position = pos;
+                    }
                 }
-            }else{
-                calculated_possession(&mut ball, &world);
-                calculate_last_touch(&mut ball, &world);
-                world.ball = Some(ball);
+                (Some(_), None) => {
+                    self.vanish_timer = Some(Instant::now());
+                }
             }
         }
     }

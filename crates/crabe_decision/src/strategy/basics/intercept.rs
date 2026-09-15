@@ -10,7 +10,7 @@ pub fn intercept(
     let ball_position = ball.position_2d();
     let orientation = vectors::angle_to_point(robot.pose.position,ball_position);
     if ball.velocity.norm() < 0.4 {
-        return MoveTo::new_all_params(ball_position, orientation, 0., false, None, true, true);
+        return MoveTo::new_all_params(ball_position, orientation, 0., false, None, true, false);
     }
     let trajectory = Line::new(ball_position, ball_position + ball.velocity.xy().normalize() * 100.);
     let target = trajectory.closest_point_on_segment(&robot.pose.position);

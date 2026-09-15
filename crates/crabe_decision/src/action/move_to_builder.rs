@@ -15,6 +15,7 @@ pub struct MoveToBuilder {
     pub kicker: Option<Kick>,
     pub fast: bool,
     pub avoidance: bool,
+    pub avoid_ball: bool
 }
 
 impl From<&mut MoveToBuilder> for MoveToBuilder {
@@ -27,7 +28,8 @@ impl From<&mut MoveToBuilder> for MoveToBuilder {
             dribbler: other.dribbler,
             kicker: other.kicker,
             fast: other.fast,
-            avoidance: other.avoidance
+            avoidance: other.avoidance,
+            avoid_ball: other.avoid_ball,
         }
     }
 }
@@ -44,7 +46,8 @@ impl MoveToBuilder {
             dribbler: 0.,
             kicker: None,
             fast: true,
-            avoidance: true
+            avoidance: false,
+            avoid_ball: false,
         }
     }
 
@@ -70,8 +73,8 @@ impl MoveToBuilder {
     /// 
     /// # Arguments
     /// * `kicker`: The kicker to be used by the robot.
-    pub fn set_kick(&mut self, kicker: Kick) -> &mut Self {
-        self.kicker = Some(kicker);
+    pub fn set_kick(&mut self, kicker: Option<Kick>) -> &mut Self {
+        self.kicker = kicker;
         self
     }
 
@@ -121,6 +124,11 @@ impl MoveToBuilder {
         self
     }
 
+    pub fn set_avoid_ball(&mut self, avoid_ball: bool) -> &mut Self {
+        self.avoid_ball = avoid_ball;
+        self
+    }
+    
     /// Build the `MoveTo` command.
     /// 
     /// # Returns
@@ -135,6 +143,7 @@ impl MoveToBuilder {
             kicker: self.kicker,
             fast: self.fast,
             avoidance: self.avoidance,
+            avoid_ball: self.avoid_ball,
             ..Default::default()
         }
     }

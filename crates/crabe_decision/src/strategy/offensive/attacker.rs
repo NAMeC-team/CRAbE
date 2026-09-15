@@ -61,6 +61,9 @@ impl Strategy for Attacker {
         return "Attacker";
     }
 
+    fn robots(&self) -> Vec<u8> {
+        vec![self.id]
+    }
 
     /// # Arguments
     ///

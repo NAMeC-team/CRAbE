@@ -23,3 +23,5 @@ pub use self::instant_kick::InstantKick;
 
 mod follow_ball;
 pub use self::follow_ball::FollowBall;
+mod pass_two;
+pub use self::pass_two::PassTwo;

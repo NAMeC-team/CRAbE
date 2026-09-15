@@ -33,7 +33,7 @@ impl Strategy for FollowBall {
         if let Some(ball) = &world.ball {
             if let Some(robot) = world.allies_bot.get(&self.id) {
                 let mut moveto = MoveToBuilder::new();
-                moveto.set_target(ball.position_2d()).set_orientation(robot.angle_to(ball.position_2d()));
+                moveto.set_target(ball.position_2d()).set_orientation(robot.angle_to(ball.position_2d())).no_avoidance();
                 if robot.has_ball {
                     println!("Robot {} has ball", self.id);
                     // moveto.set_kick(Kick::StraightKick { power: 3. });

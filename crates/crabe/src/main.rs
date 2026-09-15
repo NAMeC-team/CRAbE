@@ -132,12 +132,13 @@ pub struct System {
 }
 
 impl System {
-    pub fn run(&mut self, _refresh_rate: Duration) {
+    pub fn run(&mut self) {
         let mut feedback: FeedbackMap = Default::default();
 
         while self.running.load(Ordering::SeqCst) {
             let timer = Instant::now();
             let receive_data = self.input_component.step(&mut feedback);
+
             self.filter_component.step(receive_data, &mut self.world);
             let (mut command_map, mut tool_data) = self.decision_component.step(&self.world);
             self.tool_component
@@ -147,10 +148,6 @@ impl System {
             feedback = self.output_component.step(command_map, ToolCommands);
             // info!("Execution time : {} μs", &timer.elapsed().as_micros());
             let elapsed = timer.elapsed();
-            if elapsed < _refresh_rate {
-                let sleep_time = Duration::from(_refresh_rate - elapsed);
-                thread::sleep(sleep_time);
-            }
             // info!("Actual refresh time : {} μs", &timer.elapsed().as_micros());
         }
     }
@@ -185,6 +182,6 @@ fn main() {
         .output_component(OutputPipeline::with_config(cli.output_config, &cli.common))
         .build();
 
-    system.run(Duration::from_millis(16));
+    system.run();
     system.close();
 }

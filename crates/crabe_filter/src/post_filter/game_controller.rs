@@ -236,6 +236,8 @@ impl GameControllerPostFilter {
                 Stopped(Stop)
             }
 
+            (_, RC::PrepareKickoff(tc), ..) => { Stopped(PrepareKickoff(*tc)) }
+
             // any state can lead to Halt
             (_, RC::Halt, ..) => {
                 self.ball_ref_pos = None;
@@ -271,6 +273,13 @@ impl PostFilter for GameControllerPostFilter {
                 println!("{:?} -> {:?}) (cmd: {:?})", prev_state, &new_state, &referee.command);
                 world.data.ref_orders.state = new_state;
             }
+
+            world.data.ally.update_info(&referee.ally);
+            world.data.enemy.update_info(&referee.enemy);
+
+            if let Some(positive_half) = referee.positive_half {
+                world.data.positive_half = positive_half;
+            }
         }
     }
 }
@@ -285,9 +294,9 @@ mod tests {
     use crabe_framework::data::referee::Stage;
     use crabe_framework::data::world::TeamColor;
     use super::RC as RC;
-    use super::HaltedState::*;
-    use super::StoppedState::*;
-    use super::RunningState::*;
+    //use super::HaltedState::*;
+    //use super::StoppedState::*;
+    //use super::RunningState::*;
     use super::*;
 
     fn all_states() -> Vec<GameState> {
