@@ -25,7 +25,10 @@ fn main() {
 
     compile_packet(
         "vision_packet",
-        &["protobuf/vision/messages_robocup_ssl_wrapper.proto"],
+        &[
+            "protobuf/vision/messages_robocup_ssl_wrapper.proto",
+            "protobuf/vision/messages_robocup_ssl_wrapper_tracked.proto",
+        ],
         &["protobuf/vision"],
     );
 

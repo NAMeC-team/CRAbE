@@ -26,7 +26,7 @@ use crabe_framework::data::input::InboundData;
 use crabe_framework::data::world::{TeamColor, World};
 use filter::team_side::TeamSideFilter;
 use post_filter::field_mask::FieldMaskFilter;
-
+use crate::pre_filter::tracker::TrackerFilter;
 
 #[derive(Args)]
 pub struct FilterConfig {
@@ -38,6 +38,11 @@ pub struct FilterConfig {
 pub enum FieldMask {
     Positive,
     Negative
+}
+struct FilterCompositePipeline<'a> {
+    pre_filters: Vec<&'a Box<dyn PreFilter>>,
+    filters: Vec<&'a Box<dyn Filter>>,
+    post_filters: Vec<&'a Box<dyn PostFilter>>,
 }
 pub struct FilterPipeline {
     pub pre_filters: Vec<Box<dyn PreFilter>>,
@@ -52,8 +57,8 @@ impl FilterPipeline {
         let mut pre_filters: Vec<Box<dyn PreFilter>> = vec![Box::new(VisionFilter::new())];
         let filters: Vec<Box<dyn Filter>> = vec![
             Box::new(PassthroughFilter),
+
             Box::new(TeamSideFilter),
-            Box::new(VelocityAccelerationFilter),
             Box::<InactiveFilter>::default(),
         ];
         let mut post_filters: Vec<Box<dyn PostFilter>> = vec![
@@ -65,6 +70,14 @@ impl FilterPipeline {
         if common_config.gc {
             pre_filters.push(Box::new(GameControllerPreFilter));
             post_filters.push(Box::new(GameControllerPostFilter::default()));
+        }
+
+
+        if common_config.tracker {
+            pre_filters.push(Box::new(TrackerFilter));
+        } else {
+            filters.push(Box::new(VelocityAccelerationFilter));
+            filters.push(Box::new(PassthroughFilter));
         }
 
         if let Some(field_mask) = config.field_mask {
