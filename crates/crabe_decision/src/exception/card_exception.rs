@@ -5,9 +5,8 @@ use crabe_framework::data::{geometry::Field, referee::TeamInfo, world::{Robot, W
 use log::info;
 use nalgebra::{Point2, Vector2};
 
-use crate::{action::{go_to::GoTo}, exception::Exception, utils::KEEPER_ID};
-
-
+use crate::{exception::Exception, utils::KEEPER_ID};
+use crate::action::move_to::MoveTo;
 
 /// Sizes for the substitutes zones
 const SUBSTITUTE_ZONE_WIDTH: f64 = 0.3;
@@ -81,7 +80,7 @@ impl CardException{
             return;
         };
 
-        let goto = GoTo::new(slot, 0., false, None, false);
+        let goto = MoveTo::new_all_params(slot, 0., 0., false, None, false, false);
         action_wrapper.clear(id);
         action_wrapper.push(id, goto);
     }
