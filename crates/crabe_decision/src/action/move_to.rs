@@ -98,22 +98,6 @@ impl MoveTo {
     }
 }
 
-fn frame(x: f64, y: f64, orientation: f64) -> Isometry2<f64> {
-    Isometry2::new(Vector2::new(x, y), orientation)
-}
-
-fn frame_inv(frame: Isometry2<f64>) -> Isometry2<f64> {
-    frame.inverse()
-}
-
-fn robot_frame(robot: &Robot<AllyInfo>) -> Isometry2<f64> {
-    frame(
-        robot.pose.position.x,
-        robot.pose.position.y,
-        robot.pose.orientation,
-    )
-}
-
 fn angle_difference(alpha1: f64, alpha2: f64) -> f64 {
     let diff = alpha1 - alpha2;
     match diff {
@@ -157,7 +141,6 @@ impl Action for MoveTo {
     fn compute_order(&mut self, id: u8, world: &World, _tools: &mut ToolData) -> Command {
         if let Some(robot) = world.allies_bot.get(&id) {
             let mut order = Vector3::new(0., 0., 0.);
-            let ti = frame_inv(robot_frame(robot));
 
             // set the target position and orientation to the current position and orientation of the robot if they are not set
             self.target_x.get_or_insert_with(|| robot.pose.position.x);
